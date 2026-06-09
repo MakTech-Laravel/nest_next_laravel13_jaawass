@@ -1,0 +1,37 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('user_factory_images', function (Blueprint $table) {
+            $table->id();
+
+            $table->unsignedBigInteger('user_id')->index();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+
+            $table->string('path')->nullable();
+            $table->string('mime_type')->nullable()->index();
+            $table->string('extension')->nullable()->index();
+            $table->string('original_name')->nullable()->index();
+            $table->timestamps();
+
+            
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('user_factory_images');
+    }
+};

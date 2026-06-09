@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "sourcenest",
+  "private_key_id": "83cca988dc43c294926b2625197ff720c2c9a66f",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQD54n2Tp+U4zuQJ\nExtyi4yRKjRZDTLmFmuvc9VDD5rK8z8p/Y5bQpeODmcY8JfBN8E4yLV2ug83+XCA\nw6VdEVt1fVNYMNky6cFAD6TpAS1dtInsC25TA4QQ/60++NeOxXQuPXN999rmonrh\nL+qQ34lAfhpobGl1c4AEcS5VTrj/8NOyH2swstnoR0KVYCnxPoSc+CHVsSuzvHdG\n0JLlkx3NVtBId+YG8fKPxa7f4LCgeF1wWVUPmL36HudGYkSMKJnFWS+1/7kcqWXQ\nCxfaUUHy4DzDvGXU0tTHXV4/X8J+mZ6/f/MpGmhfVOegjasB8wpNeo35smRM5HfM\n2+Sab6IPAgMBAAECggEATCG8PsNVbBRkl3sxzplDr2qbXlJOIpnMHz18SR00/QZV\nRTbSK23DfO1YbdnHcn/JJ8LGvrB7OIOPyjtRY2SJZ+dSADmJwyBC14CsrqzEJJt/\nteHZsAMPNpqfLuNj0UTJW9kvGb7s+32fUIJnxdHFIFgLNatqCfWxmCjfg/AjHx6n\nUVQtlt7ebG9peu6xcOeJ9bpphjrdOFv/fDjrTGpqLM24qglCicsSxikbFxoiwqI/\n3L+61QsU5IUFjJ6yZUt0L5x7phypmvJ39rjoZoWGAE2nNprv2fqyb/dhT8ZABlBd\nClFRfLyYCS6HtkE7+qWI3lxh/wcmbU0ba5XnVE4wCQKBgQD+/tg38c4GSFFKI58n\nCBTM1/l3FYCG2xyZUBsqSTnu0jlVkMTibQi5ScLbnc4LwKc8XizDZKF67O0a3Fdw\nFQLtIWsoU4z885mVOQ0ofcWFHdVSIGbst6xMibge9DumMW6eniUvXjFJjMrOFdwK\nKv52iIvxni0fYsXeZ2WR3TWtywKBgQD63n3sAr5y/OdKlcd36/vfAvr1XJPV3xVj\nQy5/bZfiW+Czet0mW9K6Z7gqF9ZIp5iU3yawgXByw6C56vtDze98a02Rmg/25ixA\n1inVQ9PgJNVHbymlAHMiHJ7b1nyrOXT2Edyr140eY640nCguuFg+BdEUPivMHuJy\nJ5vaEFOUTQKBgQCCVA5+yX/bhirGEd7OPDslV12Rl9PRGTxMv7yiqDqL7baQHSYD\n9GZ5DVIinU0qhJT1Lc0DMPO3uFCXYfbuuk58lJAIVGvC/V6J/lbTUzUZDF5zU0xH\nwLi3hcwtRfcWwj0fpQSsaSAXz3X4TwPfzomwW6nrHEVDvWAUhBRNsRo2cQKBgQD4\nhcmBMQayq1AGV3MPnjwapb0vrNLXoPRzLW621j8NA7AKncDP609LUszjBlJGD6Hc\neWS+nrxjNOHYzKy2cyC4xSRHBbSjB0r3wDIZD+SpvFN9POaoi1WDiY7mgglnJrhz\nvSY7JoKqhF1jyP8VqZHhf6mswBprUH1MUWjYEix6UQKBgHIcKtu1dDAv+d6XJVDf\nglR+M/1w3Dpjx6J0Au5niv+bu9g8cdR/TrgFypeYO5hVE1CpHHPNgmL4pFxR7dPJ\n/30SeaKL5WsclsMZIDjSJkrw+cikCubgXfFvwSdJxrqZCG2EOo34AVB336oBUTFS\nwCbw1OpwraSBT0IVh5k4YnYk\n-----END PRIVATE KEY-----\n",
+  "client_email": "translation-service@sourcenest.iam.gserviceaccount.com",
+  "client_id": "113241395166839565370",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/translation-service%40sourcenest.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
