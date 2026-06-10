@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Admin\ArticleCategoryController;
 use App\Http\Controllers\Api\V1\Admin\ArticleController;
 use App\Http\Controllers\Api\V1\Admin\CertificateTypeController;
 use App\Http\Controllers\Api\V1\Admin\CertificationController;
+use App\Http\Controllers\Api\V1\Admin\ContactController;
 use App\Http\Controllers\Api\V1\Admin\CurrencyAdminController;
 use App\Http\Controllers\Api\V1\Admin\FaqCategoryController;
 use App\Http\Controllers\Api\V1\Admin\FaqController;
@@ -207,6 +208,13 @@ Route::prefix('articles')->group(function (): void {
         Route::delete('/{article}', 'destroy');
         Route::patch('/{article}/toggle-status', 'toggleStatus');
     });
+});
+
+Route::controller(ContactController::class)->prefix('contacts')->group(function (): void {
+    Route::get('/', 'index');
+    Route::get('/{contact}', 'show');
+    Route::delete('/{contact}', 'destroy');
+    Route::patch('/{contact}/read-status', 'updateReadStatus');
 });
 
 Route::prefix('help-center')->group(function (): void {

@@ -41,7 +41,12 @@ class TranslateModelJob implements ShouldQueue
         public ?string $modelUpdatedAtSnapshot = null,
     ) {
         $this->onQueue(config('translation.queue.name', 'translations'));
-        $this->onConnection(config('translation.queue.connection', 'default'));
+
+        $connection = config('translation.queue.connection');
+
+        if (filled($connection) && array_key_exists($connection, config('queue.connections', []))) {
+            $this->onConnection($connection);
+        }
 
         if ($this->modelUpdatedAtSnapshot === null) {
             $this->modelUpdatedAtSnapshot = $this->model->updated_at?->toIso8601String();

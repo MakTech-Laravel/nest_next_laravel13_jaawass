@@ -99,4 +99,8 @@ return [
     'compare_supplier_not_found' => 'المورد غير موجود في قائمة المقارنة.',
 
     'buyer_own_supplier_not_allowed' => 'لا يمكنك إضافة نفسك كمورد.',
+    'contact_created_successfully' => 'تم إرسال الاستفسار بنجاح.',
+    'admin_contacts_fetched_successfully' => 'تم جلب الاستفسارات بنجاح.',
+    'admin_contact_fetched_successfully' => 'تم جلب الاستفسار بنجاح.',
+    'admin_contact_read_status_updated_successfully' => 'تم تحديث حالة الاستفسار بنجاح.',
 ];

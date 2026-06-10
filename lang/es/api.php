@@ -99,4 +99,9 @@ return [
     'compare_supplier_not_found' => 'El proveedor no est? en tu lista de comparaci?n.',
 
     'buyer_own_supplier_not_allowed' => 'No puedes agregarte a ti mismo como proveedor.',
+
+    'contact_created_successfully' => 'Consulta de contacto enviada correctamente.',
+    'admin_contacts_fetched_successfully' => 'Contactos de administraci?n obtenidos correctamente.',
+    'admin_contact_fetched_successfully' => 'Contacto de administraci?n obtenido correctamente.',
+    'admin_contact_read_status_updated_successfully' => 'Estado de lectura del contacto actualizado correctamente.',
 ];

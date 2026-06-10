@@ -81,7 +81,8 @@ return [
     */
     'queue' => [
         'enabled' => env('TRANSLATION_QUEUE_ENABLED', true),
-        'connection' => env('TRANSLATION_QUEUE_CONNECTION', 'default'),
+        // null = use the app's default queue connection (config queue.default).
+        'connection' => env('TRANSLATION_QUEUE_CONNECTION'),
         'name' => env('TRANSLATION_QUEUE_NAME', 'translations'),
     ],
 
