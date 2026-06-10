@@ -156,6 +156,20 @@ test('admin can show update read status and delete contact', function () {
     expect(ContactTranslation::query()->where('contact_id', $contact->id)->exists())->toBeFalse();
 });
 
+test('admin show returns translated not found for missing contact', function () {
+    $admin = User::factory()->create([
+        'role' => UserRole::ADMIN->value,
+    ]);
+    $token = $admin->createToken('test')->accessToken;
+
+    $this->withToken($token)
+        ->getJson('/api/v1/admin/contacts/99999')
+        ->assertNotFound()
+        ->assertJsonPath('success', false)
+        ->assertJsonPath('message', __('common.not_found'))
+        ->assertJsonPath('data', null);
+});
+
 test('admin contact routes require authentication', function () {
     $contact = Contact::factory()->create();
 
