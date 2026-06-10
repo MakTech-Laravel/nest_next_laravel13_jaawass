@@ -99,4 +99,8 @@ return [
     'compare_supplier_not_found' => 'הספק אינו ברשימת ההשוואה.',
 
     'buyer_own_supplier_not_allowed' => 'לא ניתן להוסיף את עצמך כספק.',
+    'contact_created_successfully' => 'הפנייה נשלחה בהצלחה.',
+    'admin_contacts_fetched_successfully' => 'הפניות נטענו בהצלחה.',
+    'admin_contact_fetched_successfully' => 'הפנייה נטענה בהצלחה.',
+    'admin_contact_read_status_updated_successfully' => 'הסטטוס של הפנייה עודכן בהצלחה.',
 ];

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\AccountController;
 use App\Http\Controllers\Api\V1\Admin\AdminCategoryAndSubCategoryController;
 use App\Http\Controllers\Api\V1\Admin\ArticleController;
+use App\Http\Controllers\Api\V1\Admin\ContactController;
 use App\Http\Controllers\Api\V1\Admin\FaqCategoryController;
 use App\Http\Controllers\Api\V1\Admin\FaqController;
 use App\Http\Controllers\Api\V1\Admin\HelpCenterArticleController;
@@ -110,4 +111,8 @@ Route::controller(HelpCenterArticleController::class)->prefix('help-center-artic
     Route::get('/', 'index');
     Route::get('/{helpCenterArticle}', 'showArticleInFrontend');
     Route::patch('/{helpCenterArticle}/is-helpful', 'articleHelpful');
+});
+
+Route::controller(ContactController::class)->prefix('contact')->group(function () {
+    Route::post('/', 'store');
 });

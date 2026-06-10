@@ -116,6 +116,11 @@ return [
     'admin_ticket_updated_successfully' => 'Admin ticket updated successfully.',
     'admin_ticket_message_sent_successfully' => 'Admin ticket reply sent successfully.',
 
+    'contact_created_successfully' => 'Contact inquiry submitted successfully.',
+    'admin_contacts_fetched_successfully' => 'Admin contacts fetched successfully.',
+    'admin_contact_fetched_successfully' => 'Admin contact fetched successfully.',
+    'admin_contact_read_status_updated_successfully' => 'Contact read status updated successfully.',
+
     'saved_products_fetched_successfully' => 'Saved products fetched successfully.',
     'product_saved_successfully' => 'Product saved successfully.',
     'product_unsaved_successfully' => 'Product removed from saved list successfully.',

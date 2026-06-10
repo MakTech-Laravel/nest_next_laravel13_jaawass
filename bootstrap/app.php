@@ -5,10 +5,12 @@ use App\Http\Middleware\EnsureBuyer;
 use App\Http\Middleware\EnsureManufacturer;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -41,5 +43,16 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (ModelNotFoundException $exception, Request $request) {
+            if (! $request->is('api/*') && ! $request->expectsJson()) {
+                return null;
+            }
+
+            return sendResponse(
+                status: false,
+                message: __('common.not_found'),
+                data: null,
+                statusCode: HttpStatus::HTTP_NOT_FOUND
+            );
+        });
     })->create();
