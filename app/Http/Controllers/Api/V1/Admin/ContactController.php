@@ -67,8 +67,14 @@ class ContactController extends Controller
         );
     }
 
-    public function show(Contact $contact): JsonResponse
+    public function show(int $contact): JsonResponse
     {
+        $contact = $this->findContact($contact);
+
+        if ($contact instanceof JsonResponse) {
+            return $contact;
+        }
+
         $contact->load('translations');
 
         return sendResponse(
@@ -79,8 +85,14 @@ class ContactController extends Controller
         );
     }
 
-    public function destroy(Contact $contact): JsonResponse
+    public function destroy(int $contact): JsonResponse
     {
+        $contact = $this->findContact($contact);
+
+        if ($contact instanceof JsonResponse) {
+            return $contact;
+        }
+
         $contact->load('translations');
 
         $contactData = new ContactResource($contact);
@@ -94,8 +106,14 @@ class ContactController extends Controller
         );
     }
 
-    public function updateReadStatus(UpdateContactReadStatusRequest $request, Contact $contact): JsonResponse
+    public function updateReadStatus(UpdateContactReadStatusRequest $request, int $contact): JsonResponse
     {
+        $contact = $this->findContact($contact);
+
+        if ($contact instanceof JsonResponse) {
+            return $contact;
+        }
+
         $contact->update([
             'is_read' => $request->boolean('is_read'),
         ]);
@@ -108,6 +126,22 @@ class ContactController extends Controller
             data: new ContactResource($contact),
             statusCode: HttpStatus::HTTP_OK
         );
+    }
+
+    private function findContact(int $id): Contact|JsonResponse
+    {
+        $contact = Contact::query()->find($id);
+
+        if (! $contact) {
+            return sendResponse(
+                status: false,
+                message: __('common.not_found'),
+                data: null,
+                statusCode: HttpStatus::HTTP_NOT_FOUND
+            );
+        }
+
+        return $contact;
     }
 
     /**
