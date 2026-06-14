@@ -14,10 +14,10 @@ use App\Models\ProductImage;
 use App\Services\Manufacturer\ManufacturerProductStatsService;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
@@ -97,8 +97,8 @@ class ManufacturerProductController extends Controller
                     'description' => $validate['description'],
                     'industry_id' => $validate['category_id'],
                     'sub_category_id' => $validate['sub_category_id'],
-                    'keywords' => json_encode($validate['keywords']),
-                    'status' => ProductStatusEnum::ACTIVE->value,
+                    'keywords' => Arr::get($validate, 'keywords'),
+                    'status' => Arr::get($validate, 'status', ProductStatusEnum::ACTIVE->value),
                 ]);
 
                 $product->autoTranslate(
@@ -109,171 +109,133 @@ class ManufacturerProductController extends Controller
                     $request->locale ?? null
                 );
 
-                // Handle Images
-                if ($validate['product_images']) {
+                $productImages = Arr::get($validate, 'product_images', []);
 
-                    $images = $validate['product_images'];
-
-                    $imageData = [];
-                    foreach ($images as $image) {
-
-                        if ($image instanceof UploadedFile) {
-
-                            $fileName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME)
-                                .'_'.uniqid().'.'
-                                .$image->getClientOriginalExtension();
-
-                            Storage::disk('public')->put('products/'.$fileName, file_get_contents($image));
-
-                            $imageData[] = [
-                                'image_path' => 'products/'.$fileName,
-                                'product_id' => $product->id,
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ];
-                        }
+                foreach ($productImages as $image) {
+                    if (! $image instanceof UploadedFile) {
+                        continue;
                     }
 
-                    // Insert all images at once
-                    if (! empty($imageData)) {
-                        ProductImage::insert($imageData);
-                    }
+                    $fileName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME)
+                        .'_'.uniqid().'.'
+                        .$image->getClientOriginalExtension();
+
+                    Storage::disk('public')->put('products/'.$fileName, file_get_contents($image));
+
+                    ProductImage::query()->create([
+                        'image_path' => 'products/'.$fileName,
+                        'product_id' => $product->id,
+                    ]);
                 }
 
-                // Pricing and Quantities
+                if (isset($validate['min_price'], $validate['max_price'], $validate['minimum_order_quantity'], $validate['unit'])) {
+                    $product->pricingQuantities()->create([
+                        'min_price' => $validate['min_price'],
+                        'max_price' => $validate['max_price'],
+                        'minimum_order_quantity' => $validate['minimum_order_quantity'],
+                        'unit' => $validate['unit'],
+                        'lead_time' => Arr::get($validate, 'lead_time', '-'),
+                        'currency_id' => Arr::get($validate, 'currency_id'),
+                        'production_capacity' => Arr::get($validate, 'production_capacity', 0),
+                        'production_duration' => Arr::get($validate, 'production_duration', '-'),
+                        'production_unit' => Arr::get($validate, 'production_unit', '-'),
+                    ]);
+                }
 
-                $product->pricingQuantities()->create([
-                    'min_price' => $validate['min_price'],
-                    'max_price' => $validate['max_price'],
-                    'minimum_order_quantity' => $validate['minimum_order_quantity'],
-                    'unit' => $validate['unit'],
-                    'lead_time' => $validate['lead_time'],
-                    'currency_id' => $validate['currency_id'],
-                    'production_capacity' => $validate['production_capacity'],
-                    'production_duration' => $validate['production_duration'],
-                    'production_unit' => $validate['production_unit'],
-                    'production_capacity' => $validate['production_capacity'],
-                ]);
-                // Product Specification
-                if ($validate['product_specifications']) {
+                foreach (Arr::get($validate, 'product_specifications', []) as $specification) {
+                    $specificationModel = $product->specifications()->create([
+                        'specification_title' => $specification['specification_title'],
+                        'specification_value' => $specification['specification_value'],
+                    ]);
 
-                    $specifications = $validate['product_specifications'];
-
-                    foreach ($specifications as $specification) {
-
-                        $specificationData = [
+                    $specificationModel->autoTranslate(
+                        [
                             'specification_title' => $specification['specification_title'],
                             'specification_value' => $specification['specification_value'],
-                        ];
-
-                        $specificationModel = $product->specifications()->create($specificationData);
-
-                        $specificationModel->autoTranslate(
-                            [
-                                'specification_title' => $specification['specification_title'],
-                                'specification_value' => $specification['specification_value'],
-                            ],
-                            $request->locale ?? null
-                        );
-                    }
+                        ],
+                        $request->locale ?? null
+                    );
                 }
 
-                // Key Features
+                foreach (Arr::get($validate, 'key_features', []) as $key) {
+                    $productKeyFeatureModel = $product->productKeyFeatures()->create([
+                        'key_feature' => $key,
+                    ]);
 
-                if ($validate['key_features']) {
-
-                    $keyFeatures = $validate['key_features'];
-                    foreach ($keyFeatures as $key) {
-                        $productKeyFeatureModel = $product->productKeyFeatures()->create([
-                            'key_feature' => $key,
-                        ]);
-
-                        $productKeyFeatureModel->autoTranslate(
-                            [
-                                'key_feature' => $key,
-                            ],
-                            $request->locale ?? null
-                        );
-                    }
+                    $productKeyFeatureModel->autoTranslate(
+                        ['key_feature' => $key],
+                        $request->locale ?? null
+                    );
                 }
 
-                // Customizations Options
+                foreach (Arr::get($validate, 'customize_options', []) as $customOption) {
+                    $customizeModel = $product->customizationOptions()->create([
+                        'option' => $customOption,
+                    ]);
 
-                if ($validate['customize_options']) {
-
-                    $customOptions = $validate['customize_options'];
-
-                    foreach ($customOptions as $customOption) {
-                        $customOptionData = [
-                            'option' => $customOption,
-                        ];
-
-                        $customizeModel = $product->customizationOptions()->create($customOptionData);
-                        $customizeModel->autoTranslate(
-                            [
-                                'option' => $customOption,
-                            ],
-                            $request->locale ?? null
-                        );
-                    }
+                    $customizeModel->autoTranslate(
+                        ['option' => $customOption],
+                        $request->locale ?? null
+                    );
                 }
 
-                // Shipping & Packaging
-
-                $shippingPackaging = $product->shippingPackaging()->create([
-                    'packaging_type' => $validate['packaging_type'],
-                    'port_of_loading' => $validate['port_of_loading'],
-                    'packaging_dimensions' => $validate['packaging_dimensions'],
-                    'packaging_weight' => $validate['packaging_weight'],
-                    'packaging_cost_per_unit' => $validate['packaging_cost_per_unit'],
-                    'packaging_description' => $validate['packaging_description'],
-                ]);
-
-                $shippingPackaging->autoTranslate(
-                    [
+                if (filled(Arr::get($validate, 'packaging_type'))) {
+                    $shippingPackaging = $product->shippingPackaging()->create([
                         'packaging_type' => $validate['packaging_type'],
-                        'port_of_loading' => $validate['port_of_loading'],
-                        'packaging_dimensions' => $validate['packaging_dimensions'],
-                        'packaging_weight' => $validate['packaging_weight'],
-                        'packaging_description' => $validate['packaging_description'],
-                    ],
-                    $request->locale ?? null
-                );
+                        'port_of_loading' => Arr::get($validate, 'port_of_loading', '-'),
+                        'packaging_dimensions' => Arr::get($validate, 'packaging_dimensions', '-'),
+                        'packaging_weight' => Arr::get($validate, 'packaging_weight', '-'),
+                        'packaging_cost_per_unit' => Arr::get($validate, 'packaging_cost_per_unit', 0),
+                        'packaging_description' => Arr::get($validate, 'packaging_description', '-'),
+                    ]);
 
-                // Available Shipping Methods
+                    $shippingPackaging->autoTranslate(
+                        [
+                            'packaging_type' => $validate['packaging_type'],
+                            'port_of_loading' => Arr::get($validate, 'port_of_loading', '-'),
+                            'packaging_dimensions' => Arr::get($validate, 'packaging_dimensions', '-'),
+                            'packaging_weight' => Arr::get($validate, 'packaging_weight', '-'),
+                            'packaging_description' => Arr::get($validate, 'packaging_description', '-'),
+                        ],
+                        $request->locale ?? null
+                    );
+                }
 
-                $product->shippingMethods()->attach($validate['shipping_methods']);
+                $shippingMethods = Arr::get($validate, 'shipping_methods', []);
+
+                if ($shippingMethods !== []) {
+                    $product->shippingMethods()->attach($shippingMethods);
+                }
 
                 $broschure_path = null;
-                if ($image = $validate['product_broschure']) {
-                    if ($image instanceof UploadedFile) {
+                $brochure = Arr::get($validate, 'product_broschure');
 
-                        $fileName = pathinfo($image->getClientOriginalName(), PATHINFO_FILENAME)
-                            .'_'.uniqid().'.'
-                            .$image->getClientOriginalExtension();
+                if ($brochure instanceof UploadedFile) {
+                    $fileName = pathinfo($brochure->getClientOriginalName(), PATHINFO_FILENAME)
+                        .'_'.uniqid().'.'
+                        .$brochure->getClientOriginalExtension();
 
-                        Storage::disk('public')->put('products/broshure/'.$fileName, file_get_contents($image));
+                    Storage::disk('public')->put('products/broshure/'.$fileName, file_get_contents($brochure));
 
-                        $broschure_path = 'products/broshure/'.$fileName;
-                    }
+                    $broschure_path = 'products/broshure/'.$fileName;
                 }
 
-                // Available Options
-
                 $availableOption = $product->availableOptions()->create([
-                    'sample_available' => $validate['sample_available'],
-                    'sample_price' => $validate['sample_price'],
-                    'customization_available' => $validate['customization_available'],
-                    'customization_detail' => $validate['customization_detail'],
+                    'sample_available' => Arr::get($validate, 'sample_available', false),
+                    'sample_price' => Arr::get($validate, 'sample_price', 0),
+                    'customization_available' => Arr::get($validate, 'customization_available', false),
+                    'customization_detail' => Arr::get($validate, 'customization_detail'),
                     'product_broschure' => $broschure_path,
                 ]);
 
-                $availableOption->autoTranslate(
-                    [
-                        'customization_detail' => $validate['customization_detail'],
-                    ],
-                    $request->locale ?? null
-                );
+                if (filled(Arr::get($validate, 'customization_detail'))) {
+                    $availableOption->autoTranslate(
+                        [
+                            'customization_detail' => $validate['customization_detail'],
+                        ],
+                        $request->locale ?? null
+                    );
+                }
 
                 return $product->load([
                     'user',

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Admin\FaqController;
 use App\Http\Controllers\Api\V1\Admin\HelpCenterArticleController;
 use App\Http\Controllers\Api\V1\Admin\HelpCenterCategoryController;
 use App\Http\Controllers\Api\V1\Admin\PlanController;
+use App\Http\Controllers\Api\V1\Admin\PromotionController;
 use App\Http\Controllers\Api\V1\Admin\ShippinMethodController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CurrencyController;
@@ -76,6 +77,10 @@ Route::controller(FaqController::class)->prefix('faqs')->group(function () {
 // Get Plans without Auth
 Route::controller(PlanController::class)->prefix('plans')->group(function () {
     Route::get('/', 'index');
+});
+
+Route::controller(PromotionController::class)->prefix('promotions')->group(function () {
+    Route::get('/active', 'active');
 });
 
 // Categories and Sub Categories
