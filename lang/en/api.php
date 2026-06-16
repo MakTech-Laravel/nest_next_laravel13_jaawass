@@ -105,6 +105,7 @@ return [
     'manufacturer_orders_fetched_successfully' => 'Manufacturer orders fetched successfully.',
     'manufacturer_order_fetched_successfully' => 'Manufacturer order fetched successfully.',
     'manufacturer_order_created_successfully' => 'Order created successfully.',
+    'manufacturer_order_stats_fetched_successfully' => 'Order statistics fetched successfully.',
     'manufacturer_order_product_not_owned' => 'The selected product does not belong to your account.',
     'manufacturer_order_buyer_not_connected' => 'The selected buyer has no RFQ for this product with you.',
 
@@ -113,9 +114,11 @@ return [
     'order_status_update_content_required' => 'Please provide notes, a photo, or an attachment.',
     'admin_order_fetched_successfully' => 'Order fetched successfully.',
     'admin_orders_fetched_successfully' => 'Orders fetched successfully.',
+    'admin_order_stats_fetched_successfully' => 'Order statistics fetched successfully.',
 
     'buyer_orders_fetched_successfully' => 'Your orders fetched successfully.',
     'buyer_order_fetched_successfully' => 'Order fetched successfully.',
+    'buyer_order_stats_fetched_successfully' => 'Order statistics fetched successfully.',
 
     'ticket_options_fetched_successfully' => 'Ticket options fetched successfully.',
 

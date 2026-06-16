@@ -239,6 +239,7 @@ Route::prefix('help-center')->group(function (): void {
 });
 
 Route::controller(OrderController::class)->prefix('orders')->group(function (): void {
+    Route::get('/stats', 'stats');
     Route::get('/', 'index');
     Route::get('/{order}', 'show');
 });

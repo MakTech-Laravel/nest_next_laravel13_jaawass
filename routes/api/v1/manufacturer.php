@@ -66,6 +66,7 @@ Route::prefix('')->group(function () {
         Route::get('/select/products', 'selectProducts');
         Route::get('/select/buyers', 'selectBuyers');
         Route::get('/status-options', 'statusOptions');
+        Route::get('/stats', 'stats');
         Route::get('/', 'index');
         Route::post('/create', 'store');
         Route::post('/{order}/status-updates', 'storeStatusUpdate');

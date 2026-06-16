@@ -27,6 +27,7 @@ Route::controller(BuyerRfqController::class)->prefix('rfqs')->name('rfqs.')->gro
 });
 
 Route::controller(OrderController::class)->prefix('orders')->group(function (): void {
+    Route::get('/stats', 'stats');
     Route::get('/', 'index');
     Route::get('/{order}', 'show');
 });

@@ -14,6 +14,7 @@ use App\Http\Resources\Api\V1\Admin\OrderProductSelectResource;
 use App\Http\Resources\Api\V1\Manufacturer\OrderResource;
 use App\Models\Order;
 use App\Services\Manufacturer\ManufacturerOrderService;
+use App\Services\Order\OrderStatsService;
 use App\Services\Order\OrderStatusUpdateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,7 +25,18 @@ class OrderController extends Controller
     public function __construct(
         private readonly ManufacturerOrderService $manufacturerOrderService,
         private readonly OrderStatusUpdateService $orderStatusUpdateService,
+        private readonly OrderStatsService $orderStatsService,
     ) {}
+
+    public function stats(Request $request): JsonResponse
+    {
+        return sendResponse(
+            status: true,
+            message: __('api.manufacturer_order_stats_fetched_successfully'),
+            data: $this->orderStatsService->forManufacturer((int) $request->user()->id),
+            statusCode: HttpStatus::HTTP_OK,
+        );
+    }
 
     public function index(IndexOrderRequest $request): JsonResponse
     {
