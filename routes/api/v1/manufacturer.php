@@ -1,12 +1,13 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\CertificateTypeController;
 use App\Http\Controllers\Api\V1\Manufacturer\CertificationController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerCatalogController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerProductController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerProfileController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerRfqController;
+use App\Http\Controllers\Api\V1\Manufacturer\OrderController;
 use App\Http\Controllers\Api\V1\Manufacturer\SubscriptionController;
-use App\Http\Controllers\Api\V1\Admin\CertificateTypeController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('')->group(function () {
@@ -61,6 +62,17 @@ Route::prefix('')->group(function () {
         Route::post('/{rfq}/quote', 'sendQuote')->name('send-quote');
     });
 
+    Route::controller(OrderController::class)->prefix('orders')->group(function (): void {
+        Route::get('/select/products', 'selectProducts');
+        Route::get('/select/buyers', 'selectBuyers');
+        Route::get('/status-options', 'statusOptions');
+        Route::get('/stats', 'stats');
+        Route::get('/', 'index');
+        Route::post('/create', 'store');
+        Route::post('/{order}/status-updates', 'storeStatusUpdate');
+        Route::get('/{order}', 'show');
+    });
+
     Route::controller(CertificateTypeController::class)->prefix('certificate/types')->group(function () {
         Route::get('/', 'index');
     });
@@ -71,6 +83,6 @@ Route::prefix('')->group(function () {
         Route::get('/{certificatId}', 'show');
         Route::put('/{certificatId}', 'update');
         Route::delete('/{certificateId}', 'destroy');
-        
+
     });
 });

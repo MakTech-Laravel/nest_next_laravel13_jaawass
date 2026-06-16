@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['user_id', 'currency_id', 'slug', 'industry_id', 'sub_category_id', 'name', 'description', 'view_count', 'inquiry_count', 'price', 'quantity', 'image', 'status', 'is_approved', 'keywords'])]
 #[Hidden(['user_id'])]
@@ -184,5 +185,10 @@ class Product extends Model
     {
         return $this->belongsToMany(User::class, 'compare_products', 'product_id', 'user_id')
             ->withTimestamps();
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class, 'product_id', 'id');
     }
 }
