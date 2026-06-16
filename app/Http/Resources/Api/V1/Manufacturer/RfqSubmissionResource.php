@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api\V1\Manufacturer;
 
+use App\Http\Resources\Api\V1\Concerns\FormatsRfqQuoteFields;
 use App\Enums\RfqSubmissionStatus;
 use App\Models\RfqSubmission;
 use Illuminate\Http\Request;
@@ -12,6 +13,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class RfqSubmissionResource extends JsonResource
 {
+    use FormatsRfqQuoteFields;
+
     /**
      * @return array<string, mixed>
      */
@@ -36,14 +39,7 @@ class RfqSubmissionResource extends JsonResource
             'destination_port_city' => $this->destination_port_city,
             'packaging_details' => $this->packaging_details,
             'additional_requirements' => $this->additional_requirements,
-            'manufacturer_reply' => $this->manufacturer_reply,
-            'quoted_price' => $this->quoted_price,
-            'quote_currency_code' => $this->quote_currency_code,
-            'minimum_order_quantity' => $this->minimum_order_quantity,
-            'lead_time_days' => $this->lead_time_days,
-            'quote_valid_until' => $this->quote_valid_until,
-            'quoted_at' => $this->quoted_at?->toIso8601String(),
-            'buyer_action_at' => $this->buyer_action_at?->toIso8601String(),
+            ...$this->quoteFields($this->resource),
             'product' => $this->product === null ? null : [
                 'id' => $this->product->id,
                 'name' => $this->product->name,

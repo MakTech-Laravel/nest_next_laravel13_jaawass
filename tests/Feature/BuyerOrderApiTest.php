@@ -74,8 +74,9 @@ test('buyer can view own order with product and progress updates', function (): 
 
     $this->getJson("/api/v1/buyer/orders/{$orderId}")
         ->assertOk()
-        ->assertJsonStructure(['data' => ['product' => ['id'], 'manufacturer' => ['id'], 'progress_updates']])
-        ->assertJsonCount(2, 'data.progress_updates');
+        ->assertJsonStructure(['data' => ['product' => ['id'], 'manufacturer' => ['id'], 'progress_updates', 'status_updates']])
+        ->assertJsonCount(2, 'data.progress_updates')
+        ->assertJsonCount(2, 'data.status_updates');
 });
 
 test('buyer cannot view another buyers order', function (): void {

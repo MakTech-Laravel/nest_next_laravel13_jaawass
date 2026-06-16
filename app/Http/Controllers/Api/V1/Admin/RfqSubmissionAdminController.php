@@ -28,6 +28,7 @@ class RfqSubmissionAdminController extends Controller
                 'manufacturer.company',
                 'product',
                 'conversation',
+                'quoteAttachments',
             ])
             ->latest('id');
 
@@ -75,6 +76,7 @@ class RfqSubmissionAdminController extends Controller
             'manufacturer.company',
             'product',
             'conversation',
+            'quoteAttachments',
         ]);
 
         return sendResponse(

@@ -63,11 +63,28 @@ class OrderStatsService
             + $byStatus[OrderStatus::ReadyForShipment->value]
             + $byStatus[OrderStatus::Shipped->value];
 
+        $totalOrders = array_sum($byStatus);
+        $completedOrders = $byStatus[OrderStatus::Completed->value];
+        $cancelledOrders = $byStatus[OrderStatus::Cancelled->value];
+        $orderValueByCurrency = $this->orderValueByCurrency($query);
+        $totalValue = array_reduce(
+            $orderValueByCurrency,
+            static fn (float $carry, array $row): float => $carry + (float) $row['total_amount'],
+            0.0,
+        );
+
         return [
-            'total_orders' => array_sum($byStatus),
+            'total_orders' => $totalOrders,
+            'total' => $totalOrders,
             'active_orders' => $activeOrders,
+            'active' => $activeOrders,
+            'completed' => $completedOrders,
+            'completed_orders' => $completedOrders,
+            'cancelled' => $cancelledOrders,
+            'cancelled_orders' => $cancelledOrders,
+            'total_value' => round($totalValue, 2),
             ...$byStatus,
-            'order_value_by_currency' => $this->orderValueByCurrency($query),
+            'order_value_by_currency' => $orderValueByCurrency,
         ];
     }
 

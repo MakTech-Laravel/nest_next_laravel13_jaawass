@@ -23,8 +23,16 @@ class OrderResource extends JsonResource
         $locale = $request->query('locale') ?? app()->getLocale();
         $localized = $this->localizedData($locale);
 
+        $statusUpdates = OrderStatusUpdateResource::collection(
+            $this->whenLoaded('statusUpdates'),
+        );
+
         return [
             'id' => $this->id,
+            'order_number' => sprintf('ORD-%05d', $this->id),
+            'buyer_id' => $this->buyer_id,
+            'manufacturer_id' => $this->manufacturer_id,
+            'product_id' => $this->product_id,
             'title' => $localized['title'],
             'quantity' => $this->quantity,
             'quantity_unit' => $this->quantity_unit,
@@ -36,10 +44,8 @@ class OrderResource extends JsonResource
             'shipping_terms' => $this->shipping_terms,
             'destination' => $this->destination,
             'notes' => $localized['notes'],
-            'status' => [
-                'value' => $this->status->value,
-                'label' => $this->status->label(),
-            ],
+            'status' => $this->status->value,
+            'status_label' => $this->status->label(),
             'created_at' => TimezoneFormatter::format($this->created_at),
             'updated_at' => TimezoneFormatter::format($this->updated_at),
             'buyer' => $this->buyer === null ? null : [
@@ -55,13 +61,13 @@ class OrderResource extends JsonResource
                 'last_name' => $this->manufacturer->last_name,
                 'email' => $this->manufacturer->email,
                 'company_name' => $this->manufacturer->company?->company_name,
+                'name' => $this->manufacturer->company?->company_name,
             ],
             'product' => $this->product === null
                 ? null
                 : new ProductResource($this->product),
-            'progress_updates' => OrderStatusUpdateResource::collection(
-                $this->whenLoaded('statusUpdates'),
-            ),
+            'status_updates' => $statusUpdates,
+            'progress_updates' => $statusUpdates,
             'attachments' => OrderAttachmentResource::collection(
                 $this->whenLoaded('attachments'),
             ),

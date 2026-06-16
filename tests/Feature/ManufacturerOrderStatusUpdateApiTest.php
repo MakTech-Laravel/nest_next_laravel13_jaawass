@@ -80,10 +80,11 @@ test('manufacturer can post order progress update with notes and files', functio
 
     $response->assertCreated()
         ->assertJsonPath('success', true)
-        ->assertJsonPath('data.status.value', OrderStatus::InProduction->value)
+        ->assertJsonPath('data.status', OrderStatus::InProduction->value)
         ->assertJsonPath('data.product.id', $order->product_id)
         ->assertJsonCount(2, 'data.progress_updates')
-        ->assertJsonPath('data.progress_updates.0.status.value', OrderStatus::InProduction->value)
+        ->assertJsonCount(2, 'data.status_updates')
+        ->assertJsonPath('data.progress_updates.0.status', OrderStatus::InProduction->value)
         ->assertJsonPath('data.progress_updates.0.notes', 'Production started on line 2.')
         ->assertJsonPath('data.progress_updates.0.user.role_label', 'Manufacturer');
 

@@ -72,8 +72,9 @@ test('admin can view any order with product and progress updates', function (): 
 
     $this->getJson("/api/v1/admin/orders/{$orderId}")
         ->assertOk()
-        ->assertJsonStructure(['data' => ['product' => ['id'], 'progress_updates']])
-        ->assertJsonCount(2, 'data.progress_updates');
+        ->assertJsonStructure(['data' => ['product' => ['id'], 'progress_updates', 'status_updates']])
+        ->assertJsonCount(2, 'data.progress_updates')
+        ->assertJsonCount(2, 'data.status_updates');
 });
 
 test('admin cannot post order progress update', function (): void {
