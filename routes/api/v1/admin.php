@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\V1\Admin\FeatureController;
 use App\Http\Controllers\Api\V1\Admin\HelpCenterArticleController;
 use App\Http\Controllers\Api\V1\Admin\HelpCenterCategoryController;
 use App\Http\Controllers\Api\V1\Admin\ManufacturerController;
+use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\PlanController;
 use App\Http\Controllers\Api\V1\Admin\Product\AdminProductController;
 use App\Http\Controllers\Api\V1\Admin\PromotionController;
@@ -235,4 +236,8 @@ Route::prefix('help-center')->group(function (): void {
         Route::put('/{id}/position', 'updatePosition');
         Route::delete('/{id}', 'destroy');
     });
+});
+
+Route::controller(OrderController::class)->prefix('orders')->group(function (): void {
+    Route::get('/{order}', 'show');
 });

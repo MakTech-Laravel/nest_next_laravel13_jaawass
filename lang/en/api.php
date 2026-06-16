@@ -100,6 +100,18 @@ return [
     'manufacturer_rfq_replied_successfully' => 'Manufacturer reply sent successfully.',
     'manufacturer_rfq_quoted_successfully' => 'Manufacturer quotation sent successfully.',
     'manufacturer_rfq_counts_fetched_successfully' => 'Manufacturer RFQ counts fetched successfully.',
+    'manufacturer_order_products_select_fetched_successfully' => 'Order product options fetched successfully.',
+    'manufacturer_order_buyers_select_fetched_successfully' => 'Order buyer options fetched successfully.',
+    'manufacturer_orders_fetched_successfully' => 'Manufacturer orders fetched successfully.',
+    'manufacturer_order_fetched_successfully' => 'Manufacturer order fetched successfully.',
+    'manufacturer_order_created_successfully' => 'Order created successfully.',
+    'manufacturer_order_product_not_owned' => 'The selected product does not belong to your account.',
+    'manufacturer_order_buyer_not_connected' => 'The selected buyer has no RFQ for this product with you.',
+
+    'order_status_options_fetched_successfully' => 'Order status options fetched successfully.',
+    'order_status_update_created_successfully' => 'Order progress update posted successfully.',
+    'order_status_update_content_required' => 'Please provide notes, a photo, or an attachment.',
+    'admin_order_fetched_successfully' => 'Order fetched successfully.',
 
     'ticket_options_fetched_successfully' => 'Ticket options fetched successfully.',
 
