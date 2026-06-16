@@ -112,6 +112,10 @@ return [
     'order_status_update_created_successfully' => 'Order progress update posted successfully.',
     'order_status_update_content_required' => 'Please provide notes, a photo, or an attachment.',
     'admin_order_fetched_successfully' => 'Order fetched successfully.',
+    'admin_orders_fetched_successfully' => 'Orders fetched successfully.',
+
+    'buyer_orders_fetched_successfully' => 'Your orders fetched successfully.',
+    'buyer_order_fetched_successfully' => 'Order fetched successfully.',
 
     'ticket_options_fetched_successfully' => 'Ticket options fetched successfully.',
 

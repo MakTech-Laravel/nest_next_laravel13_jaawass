@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 use App\Models\Order;
-use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 
@@ -18,47 +16,6 @@ beforeEach(function (): void {
         provider: config('auth.guards.api.provider')
     );
 });
-
-/**
- * @return array{buyer: User, manufacturer: User, product: Product}
- */
-function seedManufacturerOrderScenario(): array
-{
-    $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
-    $product = seedOrderSelectProduct($manufacturer);
-
-    DB::table('companies')->insert([
-        [
-            'user_id' => $buyer->id,
-            'company_name' => 'ABC Imports LLC',
-            'country' => 'United States',
-            'city' => 'Los Angeles',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ],
-        [
-            'user_id' => $manufacturer->id,
-            'company_name' => 'Zenith Manufacturing',
-            'country' => 'China',
-            'city' => 'Shenzhen',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ],
-    ]);
-
-    Passport::actingAs($buyer);
-    test()->postJson('/api/v1/buyer/rfqs', [
-        'product_id' => $product->id,
-        'quantity' => 5000,
-    ])->assertCreated();
-
-    return [
-        'buyer' => $buyer,
-        'manufacturer' => $manufacturer,
-        'product' => $product,
-    ];
-}
 
 test('manufacturer can create order for connected buyer and product', function (): void {
     ['buyer' => $buyer, 'manufacturer' => $manufacturer, 'product' => $product] = seedManufacturerOrderScenario();

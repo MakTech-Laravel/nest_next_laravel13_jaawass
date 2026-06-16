@@ -3,7 +3,7 @@
 namespace App\Services\Manufacturer;
 
 use App\Enums\OrderStatus;
-use App\Filters\Api\V1\Manufacturer\Order\OrderFilter;
+use App\Filters\Api\V1\Order\OrderFilter;
 use App\Http\Requests\Api\V1\Manufacturer\Order\IndexOrderRequest;
 use App\Http\Requests\Api\V1\Manufacturer\Order\SelectOrderBuyersRequest;
 use App\Http\Requests\Api\V1\Manufacturer\Order\SelectOrderProductsRequest;
@@ -13,25 +13,15 @@ use App\Models\OrderStatusUpdate;
 use App\Models\Product;
 use App\Models\RfqSubmission;
 use App\Models\User;
+use App\Services\Order\OrderStatusUpdateService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 class ManufacturerOrderService
 {
-    /**
-     * @return array<int, string>
-     */
-    private function orderRelations(): array
-    {
-        return [
-            'buyer.company',
-            'manufacturer.company',
-            'product.images',
-            'product.category',
-            'product.subCategory',
-            'translations',
-        ];
-    }
+    public function __construct(
+        private readonly OrderStatusUpdateService $orderStatusUpdateService,
+    ) {}
 
     /**
      * @return array<int|string, mixed>
@@ -39,7 +29,7 @@ class ManufacturerOrderService
     private function orderDetailRelations(): array
     {
         return [
-            ...$this->orderRelations(),
+            ...$this->orderStatusUpdateService->listRelations(),
             'statusUpdates' => fn ($query) => $query
                 ->with(['user.company', 'attachments', 'translations'])
                 ->latest('id'),
@@ -49,9 +39,12 @@ class ManufacturerOrderService
     public function paginate(IndexOrderRequest $request, int $manufacturerId): LengthAwarePaginator
     {
         return OrderFilter::apply(
-            Order::query()->with($this->orderRelations()),
-            $request,
-            $manufacturerId,
+            Order::query()->with($this->orderStatusUpdateService->listRelations()),
+            manufacturerId: $manufacturerId,
+            buyerId: $request->buyerId(),
+            productId: $request->productId(),
+            status: $request->orderStatus(),
+            searchTerm: $request->searchTerm(),
         )
             ->latest('id')
             ->paginate(

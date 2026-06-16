@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Api\V1\Manufacturer\Order;
+namespace App\Http\Requests\Api\V1\Buyer\Order;
 
 use App\Http\Requests\Api\V1\Concerns\InteractsWithOrderIndexFilters;
 use Illuminate\Foundation\Http\FormRequest;
@@ -22,12 +22,12 @@ class IndexOrderRequest extends FormRequest
     {
         return [
             ...$this->orderIndexFilterRules(),
-            'buyer_id' => ['sometimes', 'integer', Rule::exists('users', 'id')],
+            'manufacturer_id' => ['sometimes', 'integer', Rule::exists('users', 'id')],
         ];
     }
 
-    public function buyerId(): ?int
+    public function manufacturerId(): ?int
     {
-        return $this->filled('buyer_id') ? $this->integer('buyer_id') : null;
+        return $this->filled('manufacturer_id') ? $this->integer('manufacturer_id') : null;
     }
 }

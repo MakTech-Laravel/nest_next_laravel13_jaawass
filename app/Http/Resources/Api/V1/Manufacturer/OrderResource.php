@@ -48,6 +48,13 @@ class OrderResource extends JsonResource
                 'email' => $this->buyer->email,
                 'company_name' => $this->buyer->company?->company_name,
             ],
+            'manufacturer' => $this->manufacturer === null ? null : [
+                'id' => $this->manufacturer->id,
+                'first_name' => $this->manufacturer->first_name,
+                'last_name' => $this->manufacturer->last_name,
+                'email' => $this->manufacturer->email,
+                'company_name' => $this->manufacturer->company?->company_name,
+            ],
             'product' => $this->product === null
                 ? null
                 : new ProductResource($this->product),

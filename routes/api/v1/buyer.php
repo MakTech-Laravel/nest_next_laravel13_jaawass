@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\Buyer\BuyerProductController;
 use App\Http\Controllers\Api\V1\Buyer\BuyerProfileController;
 use App\Http\Controllers\Api\V1\Buyer\BuyerRfqController;
 use App\Http\Controllers\Api\V1\Buyer\BuyerSupplierController;
+use App\Http\Controllers\Api\V1\Buyer\OrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('profile')->controller(BuyerProfileController::class)->group(function () {
@@ -25,6 +26,10 @@ Route::controller(BuyerRfqController::class)->prefix('rfqs')->name('rfqs.')->gro
     Route::post('/{rfq}/respond-quote', 'respondToQuote')->name('respond-quote');
 });
 
+Route::controller(OrderController::class)->prefix('orders')->group(function (): void {
+    Route::get('/', 'index');
+    Route::get('/{order}', 'show');
+});
 
 Route::controller(BuyerProductController::class)->prefix('products')->group(function () {
     Route::get('/saved', 'indexSaved');

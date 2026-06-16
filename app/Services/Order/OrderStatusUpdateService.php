@@ -56,16 +56,26 @@ class OrderStatusUpdateService
     public function loadOrderWithRelations(Order $order): Order
     {
         return $order->load([
+            ...$this->listRelations(),
+            'statusUpdates' => fn ($query) => $query
+                ->with(['user.company', 'attachments', 'translations'])
+                ->latest('id'),
+        ]);
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    public function listRelations(): array
+    {
+        return [
             'buyer.company',
             'manufacturer.company',
             'product.images',
             'product.category',
             'product.subCategory',
             'translations',
-            'statusUpdates' => fn ($query) => $query
-                ->with(['user.company', 'attachments', 'translations'])
-                ->latest('id'),
-        ]);
+        ];
     }
 
     /**
