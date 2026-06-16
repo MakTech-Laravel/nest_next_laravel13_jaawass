@@ -4,8 +4,10 @@ namespace App\Http\Resources\Api\V1\Product;
 
 use App\Http\Resources\Api\V1\Admin\SubCategoryResource;
 use App\Http\Resources\Api\V1\IndustryResource;
+use App\Http\Resources\Api\V1\ProductReviewResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Collection;
 
 class ProductResource extends JsonResource
 {
@@ -76,7 +78,38 @@ class ProductResource extends JsonResource
             'shipping_methods' => $this->whenLoaded('shippingMethods', function () {
                 return ProductShippingMethodResource::collection($this->shippingMethods);
             }),
+            'review_stats' => $this->whenLoaded('reviews', fn () => $this->reviewStats()),
+            'reviews' => ProductReviewResource::collection($this->whenLoaded('reviews')),
 
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function reviewStats(): array
+    {
+        /** @var Collection<int, mixed> $reviews */
+        $reviews = $this->reviews;
+        $totalReviews = $reviews->count();
+        $averageRating = $totalReviews > 0
+            ? round((float) $reviews->avg('rating'), 1)
+            : 0.0;
+
+        $breakdown = [];
+        foreach ([5, 4, 3, 2, 1] as $star) {
+            $count = $reviews->where('rating', $star)->count();
+            $breakdown[] = [
+                'rating' => $star,
+                'count' => $count,
+                'percentage' => $totalReviews > 0 ? (int) round(($count / $totalReviews) * 100) : 0,
+            ];
+        }
+
+        return [
+            'average_rating' => $averageRating,
+            'total_reviews' => $totalReviews,
+            'breakdown' => $breakdown,
         ];
     }
 }

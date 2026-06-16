@@ -33,6 +33,9 @@ return [
     'product_updated_successfully' => 'Product updated successfully.',
 
     'product_deleted_successfully' => 'Product deleted successfully.',
+    'review_created_successfully' => 'Review submitted successfully.',
+    'review_order_not_eligible' => 'You can review only completed purchases of this product.',
+    'review_already_exists_for_order' => 'You already submitted a review for this order.',
 
     'product_approval_status_updated_successfully' => 'Product approval status updated successfully.',
 

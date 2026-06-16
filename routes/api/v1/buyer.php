@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\V1\Buyer\BuyerProfileController;
 use App\Http\Controllers\Api\V1\Buyer\BuyerRfqController;
 use App\Http\Controllers\Api\V1\Buyer\BuyerSupplierController;
 use App\Http\Controllers\Api\V1\Buyer\OrderController;
+use App\Http\Controllers\Api\V1\Buyer\ProductReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('profile')->controller(BuyerProfileController::class)->group(function () {
@@ -40,6 +41,10 @@ Route::controller(BuyerProductController::class)->prefix('products')->group(func
     Route::get('/compare', 'indexCompare');
     Route::post('/compare', 'addToCompare');
     Route::delete('/compare/{product}', 'removeFromCompare');
+});
+
+Route::controller(ProductReviewController::class)->prefix('products')->group(function () {
+    Route::post('/{product}/reviews', 'store');
 });
 
 Route::controller(BuyerSupplierController::class)->prefix('suppliers')->group(function () {
