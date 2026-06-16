@@ -7,6 +7,7 @@ use App\Models\RfqSubmission;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\File;
 
 class StoreOrderRequest extends FormRequest
 {
@@ -35,6 +36,12 @@ class StoreOrderRequest extends FormRequest
             'destination' => ['sometimes', 'nullable', 'string', 'max:255'],
             'notes' => ['sometimes', 'nullable', 'string', 'max:5000'],
             'locale' => ['sometimes', 'nullable', 'string', 'max:10'],
+            'attachments' => ['sometimes', 'array', 'max:5'],
+            'attachments.*' => [
+                'file',
+                File::types(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'jpg', 'jpeg', 'png', 'webp'])
+                    ->max(51200),
+            ],
         ];
     }
 

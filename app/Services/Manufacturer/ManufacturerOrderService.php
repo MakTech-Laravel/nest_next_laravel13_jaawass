@@ -9,6 +9,7 @@ use App\Http\Requests\Api\V1\Manufacturer\Order\SelectOrderBuyersRequest;
 use App\Http\Requests\Api\V1\Manufacturer\Order\SelectOrderProductsRequest;
 use App\Http\Requests\Api\V1\Manufacturer\Order\StoreOrderRequest;
 use App\Models\Order;
+use App\Models\OrderAttachment;
 use App\Models\OrderStatusUpdate;
 use App\Models\Product;
 use App\Models\RfqSubmission;
@@ -16,6 +17,8 @@ use App\Models\User;
 use App\Services\Order\OrderStatusUpdateService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class ManufacturerOrderService
 {
@@ -89,6 +92,8 @@ class ManufacturerOrderService
             );
         }
 
+        $this->storeAttachments($order, $request->file('attachments', []));
+
         return $order->load($this->orderDetailRelations());
     }
 
@@ -152,5 +157,37 @@ class ManufacturerOrderService
                 pageName: 'page',
                 page: $request->pageNumber(),
             );
+    }
+
+    /**
+     * @param  array<int, UploadedFile>  $files
+     */
+    private function storeAttachments(Order $order, array $files): void
+    {
+        if ($files === []) {
+            return;
+        }
+
+        $disk = 'public';
+
+        foreach ($files as $file) {
+            if (! $file instanceof UploadedFile) {
+                continue;
+            }
+
+            $path = $file->store(
+                'orders/'.$order->id.'/documents',
+                ['disk' => $disk],
+            );
+
+            OrderAttachment::query()->create([
+                'order_id' => $order->id,
+                'disk' => $disk,
+                'file_path' => $path,
+                'file_mime' => (string) $file->getClientMimeType(),
+                'original_name' => $file->getClientOriginalName(),
+                'size_bytes' => $file->getSize() ?? Storage::disk($disk)->size($path),
+            ]);
+        }
     }
 }

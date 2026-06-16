@@ -9,7 +9,6 @@ use App\Models\OrderStatusUpdate;
 use App\Models\OrderStatusUpdateAttachment;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -75,6 +74,7 @@ class OrderStatusUpdateService
             'product.category',
             'product.subCategory',
             'translations',
+            'attachments',
         ];
     }
 
@@ -87,7 +87,7 @@ class OrderStatusUpdateService
             return;
         }
 
-        $disk = (string) Config::get('orders.attachments.disk', 'public');
+        $disk = 'public';
 
         foreach ($files as $file) {
             if (! $file instanceof UploadedFile) {

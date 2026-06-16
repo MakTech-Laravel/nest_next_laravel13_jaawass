@@ -19,17 +19,17 @@ trait ValidatesOrderStatusUpdate
             'status' => ['required', new Enum(OrderStatus::class)],
             'notes' => ['sometimes', 'nullable', 'string', 'max:5000'],
             'locale' => ['sometimes', 'nullable', 'string', 'max:10'],
-            'photos' => ['sometimes', 'array', 'max:'.config('orders.attachments.max_photos', 5)],
+            'photos' => ['sometimes', 'array', 'max:5'],
             'photos.*' => [
                 'file',
-                File::types(config('orders.attachments.photo_extensions', []))
-                    ->max(config('orders.attachments.max_photo_kb', 5120)),
+                File::types(['jpg', 'jpeg', 'png', 'webp'])
+                    ->max(51200),
             ],
-            'attachments' => ['sometimes', 'array', 'max:'.config('orders.attachments.max_files', 5)],
+            'attachments' => ['sometimes', 'array', 'max:5'],
             'attachments.*' => [
                 'file',
-                File::types(config('orders.attachments.file_extensions', []))
-                    ->max(config('orders.attachments.max_file_kb', 10240)),
+                File::types(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'jpg', 'jpeg', 'png', 'webp'])
+                    ->max(51200),
             ],
         ];
     }

@@ -113,4 +113,9 @@ class Order extends Model
     {
         return $this->hasMany(OrderStatusUpdate::class, 'order_id', 'id');
     }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(OrderAttachment::class, 'order_id', 'id');
+    }
 }

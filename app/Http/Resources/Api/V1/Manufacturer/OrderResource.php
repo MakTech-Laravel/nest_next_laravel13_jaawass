@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api\V1\Manufacturer;
 
+use App\Http\Resources\Api\V1\OrderAttachmentResource;
 use App\Http\Resources\Api\V1\OrderStatusUpdateResource;
 use App\Http\Resources\Api\V1\Product\ProductResource;
 use App\Models\Order;
@@ -60,6 +61,9 @@ class OrderResource extends JsonResource
                 : new ProductResource($this->product),
             'progress_updates' => OrderStatusUpdateResource::collection(
                 $this->whenLoaded('statusUpdates'),
+            ),
+            'attachments' => OrderAttachmentResource::collection(
+                $this->whenLoaded('attachments'),
             ),
         ];
     }

@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 use App\Models\Order;
+use App\Models\OrderAttachment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 
@@ -15,6 +18,8 @@ beforeEach(function (): void {
         name: 'Test Personal Access Client',
         provider: config('auth.guards.api.provider')
     );
+
+    Storage::fake('public');
 });
 
 test('manufacturer can create order for connected buyer and product', function (): void {
@@ -151,4 +156,29 @@ test('manufacturer order endpoints require manufacturer role', function (): void
         'total_amount' => 1000,
         'estimated_delivery_at' => now()->addDays(10)->toDateString(),
     ])->assertForbidden();
+});
+
+test('manufacturer can create order with document attachments', function (): void {
+    ['buyer' => $buyer, 'manufacturer' => $manufacturer, 'product' => $product] = seedManufacturerOrderScenario();
+
+    Passport::actingAs($manufacturer);
+
+    $response = $this->postJson('/api/v1/manufacturer/orders/create', [
+        'buyer_id' => $buyer->id,
+        'product_id' => $product->id,
+        'title' => 'Order with files',
+        'quantity' => 500,
+        'total_amount' => 8800,
+        'estimated_delivery_at' => now()->addDays(20)->toDateString(),
+        'attachments' => [
+            UploadedFile::fake()->create('po.pdf', 100, 'application/pdf'),
+            UploadedFile::fake()->create('packing-list.xlsx', 60, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'),
+        ],
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('success', true)
+        ->assertJsonCount(2, 'data.attachments');
+
+    expect(OrderAttachment::query()->count())->toBe(2);
 });
