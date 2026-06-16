@@ -2,14 +2,14 @@
 
 namespace App\Http\Resources\Api\V1;
 
-use App\Models\OrderStatusUpdateAttachment;
+use App\Models\RfqQuoteAttachment;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * @mixin OrderStatusUpdateAttachment
+ * @mixin RfqQuoteAttachment
  */
-class OrderStatusUpdateAttachmentResource extends JsonResource
+class RfqQuoteAttachmentResource extends JsonResource
 {
     /**
      * @return array<string, mixed>

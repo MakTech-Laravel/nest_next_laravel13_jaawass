@@ -90,6 +90,7 @@ class BuyerRfqController extends Controller
                 'product',
                 'manufacturer.company',
                 'conversation',
+                'quoteAttachments',
             ])
             ->findOrFail($rfq);
 
@@ -109,6 +110,7 @@ class BuyerRfqController extends Controller
                 'product',
                 'manufacturer.company',
                 'conversation',
+                'quoteAttachments',
             ])
             ->findOrFail($rfq);
 
@@ -168,6 +170,7 @@ class BuyerRfqController extends Controller
                 'product',
                 'manufacturer.company',
                 'conversation',
+                'quoteAttachments',
             ])
             ->findOrFail($rfq);
 
@@ -220,6 +223,7 @@ class BuyerRfqController extends Controller
                 'product',
                 'manufacturer.company',
                 'conversation',
+                'quoteAttachments',
             ])
             ->latest('id');
 

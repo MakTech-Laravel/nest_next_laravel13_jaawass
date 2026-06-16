@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api\V1\Admin;
 
+use App\Http\Resources\Api\V1\Concerns\FormatsRfqQuoteFields;
 use App\Enums\RfqSubmissionStatus;
 use App\Models\RfqSubmission;
 use Illuminate\Http\Request;
@@ -12,6 +13,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class RfqSubmissionAdminResource extends JsonResource
 {
+    use FormatsRfqQuoteFields;
+
     /**
      * @return array<string, mixed>
      */
@@ -30,14 +33,7 @@ class RfqSubmissionAdminResource extends JsonResource
             'target_price' => $this->target_price,
             'target_currency_code' => $this->target_currency_code,
             'required_delivery_date' => $this->required_delivery_date,
-            'manufacturer_reply' => $this->manufacturer_reply,
-            'quoted_price' => $this->quoted_price,
-            'quote_currency_code' => $this->quote_currency_code,
-            'minimum_order_quantity' => $this->minimum_order_quantity,
-            'lead_time_days' => $this->lead_time_days,
-            'quote_valid_until' => $this->quote_valid_until,
-            'quoted_at' => $this->quoted_at?->toIso8601String(),
-            'buyer_action_at' => $this->buyer_action_at?->toIso8601String(),
+            ...$this->quoteFields($this->resource),
             'created_at' => $this->created_at?->toIso8601String(),
             'buyer' => $this->buyer === null ? null : [
                 'id' => $this->buyer->id,

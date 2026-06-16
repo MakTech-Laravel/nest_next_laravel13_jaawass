@@ -17,6 +17,9 @@ class OrderProductSelectResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'slug' => $this->slug,
             'value' => $this->id,
             'label' => $this->name,
             'manufacturer_id' => $this->user_id,

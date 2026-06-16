@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\Manufacturer\ReplyToRfqRequest;
 use App\Http\Requests\Api\V1\Manufacturer\SendRfqQuoteRequest;
 use App\Http\Resources\Api\V1\Manufacturer\RfqSubmissionResource;
 use App\Models\RfqSubmission;
+use App\Services\Manufacturer\RfqQuoteService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -16,6 +17,10 @@ use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
 class ManufacturerRfqController extends Controller
 {
+    public function __construct(
+        private readonly RfqQuoteService $rfqQuoteService,
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
         $this->markExpiredQuotes();
@@ -28,7 +33,7 @@ class ManufacturerRfqController extends Controller
 
         $query = RfqSubmission::query()
             ->where('manufacturer_id', $request->user()->id)
-            ->with(['buyer', 'product', 'conversation'])
+            ->with(['buyer', 'product', 'conversation', 'quoteAttachments'])
             ->latest('id');
 
         if (isset($validated['status'])) {
@@ -102,21 +107,12 @@ class ManufacturerRfqController extends Controller
         $rfqSubmission = $this->manufacturerRfqQuery((int) $request->user()->id)
             ->findOrFail($rfq);
 
-        $rfqSubmission->forceFill([
-            'quoted_price' => $request->validated('quoted_price'),
-            'quote_currency_code' => strtoupper((string) $request->validated('quote_currency_code')),
-            'minimum_order_quantity' => $request->validated('minimum_order_quantity'),
-            'lead_time_days' => $request->validated('lead_time_days'),
-            'quote_valid_until' => $request->validated('quote_valid_until'),
-            'manufacturer_reply' => $request->validated('manufacturer_reply'),
-            'quoted_at' => now(),
-            'status' => RfqSubmissionStatus::Quoted->value,
-        ])->save();
+        $rfqSubmission = $this->rfqQuoteService->sendQuote($rfqSubmission, $request);
 
         return sendResponse(
             status: true,
             message: __('api.manufacturer_rfq_quoted_successfully'),
-            data: new RfqSubmissionResource($rfqSubmission->fresh(['buyer', 'product', 'conversation'])),
+            data: new RfqSubmissionResource($rfqSubmission),
             statusCode: HttpStatus::HTTP_OK
         );
     }
@@ -151,7 +147,7 @@ class ManufacturerRfqController extends Controller
     {
         return RfqSubmission::query()
             ->where('manufacturer_id', $manufacturerId)
-            ->with(['buyer', 'product', 'conversation']);
+            ->with(['buyer', 'product', 'conversation', 'quoteAttachments']);
     }
 
     private function markExpiredQuotes(): void

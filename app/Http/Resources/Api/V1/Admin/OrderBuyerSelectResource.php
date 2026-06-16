@@ -23,10 +23,15 @@ class OrderBuyerSelectResource extends JsonResource
             : $fullName;
 
         return [
-            'value' => $this->id,
-            'label' => $label,
+            'id' => $this->id,
+            'first_name' => $this->first_name,
+            'last_name' => $this->last_name,
+            'name' => $fullName,
             'email' => $this->email,
             'company_name' => $companyName,
+            'company' => $companyName,
+            'value' => $this->id,
+            'label' => $label,
             'location' => $this->company?->country,
         ];
     }

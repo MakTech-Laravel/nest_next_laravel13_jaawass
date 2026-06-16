@@ -22,15 +22,18 @@ class OrderStatusUpdateResource extends JsonResource
         $localized = $this->localizedData($locale);
         $status = OrderStatus::from($this->status);
 
+        $photoAttachments = $this->relationLoaded('attachments')
+            ? $this->attachments->where('type', 'photo')->values()
+            : collect();
+
         return [
             'id' => $this->id,
-            'status' => [
-                'value' => $status->value,
-                'label' => $status->label(),
-            ],
+            'status' => $status->value,
+            'status_label' => $status->label(),
             'notes' => $localized['notes'],
             'created_at' => TimezoneFormatter::format($this->created_at),
             'updated_at' => TimezoneFormatter::format($this->updated_at),
+            'author' => $this->whenLoaded('user', fn () => $this->user?->role?->value ?? 'manufacturer'),
             'user' => $this->whenLoaded('user', fn () => $this->user === null ? null : [
                 'id' => $this->user->id,
                 'first_name' => $this->user->first_name,
@@ -41,7 +44,7 @@ class OrderStatusUpdateResource extends JsonResource
                 'company_name' => $this->user->company?->company_name,
             ]),
             'photos' => $this->relationLoaded('attachments')
-                ? OrderStatusUpdateAttachmentResource::collection($this->attachments->where('type', 'photo')->values())
+                ? $photoAttachments->map(fn ($attachment) => $attachment->url)->values()->all()
                 : [],
             'attachments' => $this->relationLoaded('attachments')
                 ? OrderStatusUpdateAttachmentResource::collection($this->attachments->where('type', 'file')->values())

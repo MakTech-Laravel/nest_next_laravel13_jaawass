@@ -75,6 +75,9 @@ class OrderStatusUpdateService
             'product.subCategory',
             'translations',
             'attachments',
+            'statusUpdates' => fn ($query) => $query
+                ->with(['user.company', 'attachments', 'translations'])
+                ->latest('id'),
         ];
     }
 

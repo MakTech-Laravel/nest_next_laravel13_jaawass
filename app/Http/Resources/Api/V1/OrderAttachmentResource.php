@@ -18,6 +18,7 @@ class OrderAttachmentResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'name' => $this->original_name,
             'original_name' => $this->original_name,
             'file_mime' => $this->file_mime,
             'size_bytes' => $this->size_bytes,
