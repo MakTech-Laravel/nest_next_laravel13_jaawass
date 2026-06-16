@@ -8,9 +8,9 @@ use App\Models\Product;
 use App\Rules\EnabledCurrencyCode;
 use App\Services\Currency\PersistedListingCurrencyResolver;
 use App\Services\Product\ProductCatalogService;
-use Illuminate\Support\Arr;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
 class ProductController extends Controller
@@ -69,7 +69,12 @@ class ProductController extends Controller
 
     public function show(Request $request, Product $product): JsonResponse
     {
-        $product->load($this->productCatalogService->eagerRelationsForPublicProduct());
+        $product->load([
+            ...$this->productCatalogService->eagerRelationsForPublicProduct(),
+            'reviews' => fn ($query) => $query
+                ->with(['reviewer.company', 'order'])
+                ->latest('id'),
+        ]);
 
         return sendResponse(
             status: true,
