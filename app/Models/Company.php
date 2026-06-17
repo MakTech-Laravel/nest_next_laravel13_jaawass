@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Jobs\TranslateModelJob;
+use App\Services\Company\CompanySlugService;
 use App\Services\LocaleTranslationResolver;
 use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -44,6 +45,22 @@ class Company extends Model
     protected $table = 'companies';
 
     use HasTranslations;
+
+    protected static function booted(): void
+    {
+        static::creating(function (Company $company): void {
+            if (blank($company->slug)) {
+                app(CompanySlugService::class)->assignSlug($company);
+            }
+        });
+
+        static::updating(function (Company $company): void {
+            if ($company->isDirty('company_name')) {
+                app(CompanySlugService::class)->assignSlug($company, $company->company_name);
+            }
+        });
+    }
+
     /* --------------------------------------------------------------
     |                       Relationships
     | -------------------------------------------------------------- */

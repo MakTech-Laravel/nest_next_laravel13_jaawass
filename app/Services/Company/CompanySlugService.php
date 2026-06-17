@@ -26,19 +26,53 @@ class CompanySlugService
         return $slug;
     }
 
-    public function syncSlug(Company $company, ?string $companyName = null): void
+    public function assignSlug(Company $company, ?string $companyName = null): void
     {
-        $name = $companyName ?? $company->company_name;
+        $name = $companyName;
 
-        if (! is_string($name) || trim($name) === '') {
+        if ($name === null || trim($name) === '') {
+            $name = $this->resolveSlugSource($company);
+        }
+
+        if ($name === null || trim($name) === '') {
             return;
         }
 
-        $slug = $this->generateUniqueSlug($name, $company->id);
+        $company->slug = $this->generateUniqueSlug($name, $company->exists ? $company->id : null);
+    }
 
-        if ($company->slug !== $slug) {
-            $company->forceFill(['slug' => $slug])->save();
+    public function syncSlug(Company $company, ?string $companyName = null): void
+    {
+        $this->assignSlug($company, $companyName);
+
+        if (! $company->isDirty('slug')) {
+            return;
         }
+
+        $company->save();
+    }
+
+    private function resolveSlugSource(Company $company): ?string
+    {
+        if (is_string($company->company_name) && trim($company->company_name) !== '') {
+            return trim($company->company_name);
+        }
+
+        if ($company->relationLoaded('user') || $company->user_id !== null) {
+            $user = $company->user;
+
+            if ($user !== null) {
+                $fromUser = trim("{$user->first_name} {$user->last_name}");
+
+                if ($fromUser !== '') {
+                    return $fromUser;
+                }
+
+                return 'supplier-'.$user->id;
+            }
+        }
+
+        return null;
     }
 
     private function slugExists(string $slug, ?int $ignoreCompanyId = null): bool
