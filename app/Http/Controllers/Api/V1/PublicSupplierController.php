@@ -128,7 +128,7 @@ class PublicSupplierController extends Controller
                 $key = strtolower(trim($country['country']));
                 $matched = $countryCounts->get($key);
 
-                return [
+                return $this->withCountryFlag([
                     'name' => $country['name'],
                     'country' => $country['country'],
                     'country_code' => $country['country_code'],
@@ -137,7 +137,7 @@ class PublicSupplierController extends Controller
                     'coordinates' => $country['coordinates'] ?? ['lat' => null, 'lng' => null],
                     'suppliers_count' => (int) ($matched['suppliers_count'] ?? 0),
                     'has_suppliers' => isset($matched['suppliers_count']) && (int) $matched['suppliers_count'] > 0,
-                ];
+                ]);
             })
             ->values();
 
@@ -146,7 +146,7 @@ class PublicSupplierController extends Controller
             ->filter(fn (array $entry, string $key): bool => ! $predefined->contains(
                 fn (array $pre) => strtolower(trim($pre['country'])) === $key
             ))
-            ->map(fn (array $entry): array => [
+            ->map(fn (array $entry): array => $this->withCountryFlag([
                 'name' => $entry['country'],
                 'country' => $entry['country'],
                 'country_code' => null,
@@ -155,7 +155,7 @@ class PublicSupplierController extends Controller
                 'coordinates' => ['lat' => null, 'lng' => null],
                 'suppliers_count' => $entry['suppliers_count'],
                 'has_suppliers' => $entry['suppliers_count'] > 0,
-            ])
+            ]))
             ->values();
 
         $merged = $countries
@@ -269,13 +269,13 @@ class PublicSupplierController extends Controller
                 $key = (string) $row->country_key;
                 $meta = $countryMeta->get($key);
 
-                return [
+                return $this->withCountryFlag([
                     'country' => (string) $row->country,
                     'country_code' => $meta['country_code'] ?? null,
                     'group' => $meta['group'] ?? 'Other',
                     'subregion' => $meta['subregion'] ?? null,
                     'manufacturers_count' => (int) $row->manufacturers_count,
-                ];
+                ]);
             })
             ->when($group !== null, fn (Collection $items) => $items->where('group', $group))
             ->when($search !== null && $search !== '', function (Collection $items) use ($search): Collection {
@@ -604,6 +604,40 @@ class PublicSupplierController extends Controller
             ['name' => 'Tuvalu', 'country' => 'Tuvalu', 'country_code' => 'TV', 'group' => 'Oceania', 'subregion' => 'Polynesia'],
             ['name' => 'Vanuatu', 'country' => 'Vanuatu', 'country_code' => 'VU', 'group' => 'Oceania', 'subregion' => 'Melanesia'],
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $country
+     * @return array<string, mixed>
+     */
+    private function withCountryFlag(array $country): array
+    {
+        $code = $country['country_code'] ?? null;
+
+        if (! is_string($code) || strlen($code) !== 2) {
+            return array_merge($country, [
+                'flag' => null,
+                'flag_icon' => null,
+            ]);
+        }
+
+        $normalized = strtoupper($code);
+
+        return array_merge($country, [
+            'flag' => $this->countryCodeToEmoji($normalized),
+            'flag_icon' => 'https://flagcdn.com/w40/'.strtolower($normalized).'.png',
+        ]);
+    }
+
+    private function countryCodeToEmoji(string $countryCode): string
+    {
+        $emoji = '';
+
+        foreach (str_split(strtoupper($countryCode)) as $char) {
+            $emoji .= mb_chr(127397 + ord($char));
+        }
+
+        return $emoji;
     }
 
     /**

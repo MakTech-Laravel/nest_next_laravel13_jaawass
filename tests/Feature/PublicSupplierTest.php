@@ -136,8 +136,10 @@ test('public suppliers map endpoint returns predefined country list with supplie
 
     expect($china)->not->toBeNull()
         ->and($china['suppliers_count'])->toBeGreaterThan(0)
+        ->and($china['flag_icon'])->toBe('https://flagcdn.com/w40/cn.png')
         ->and($bangladesh)->not->toBeNull()
-        ->and($bangladesh['suppliers_count'])->toBeGreaterThan(0);
+        ->and($bangladesh['suppliers_count'])->toBeGreaterThan(0)
+        ->and($bangladesh['flag_icon'])->toBe('https://flagcdn.com/w40/bd.png');
 });
 
 test('public suppliers map endpoint supports group filter and pagination', function (): void {
@@ -206,7 +208,9 @@ test('public suppliers map top countries endpoint returns sorted manufacturers c
 
     expect($china)->not->toBeNull()
         ->and($bangladesh)->not->toBeNull()
-        ->and($china['manufacturers_count'])->toBeGreaterThanOrEqual($bangladesh['manufacturers_count']);
+        ->and($china['manufacturers_count'])->toBeGreaterThanOrEqual($bangladesh['manufacturers_count'])
+        ->and($china['flag_icon'])->toBe('https://flagcdn.com/w40/cn.png')
+        ->and($china['flag'])->not->toBeNull();
 });
 
 test('public supplier show resolves by slug and numeric id', function (): void {
