@@ -14,6 +14,7 @@ test('products index returns spanish name and description when Accept-Language i
     $product = Product::factory()->create([
         'name' => 'Canonical English Name',
         'description' => 'Canonical English description.',
+        'is_approved' => true,
     ]);
 
     ProductTranslation::query()->create([
@@ -45,6 +46,7 @@ test('products index returns english translation when Accept-Language is en', fu
     $product = Product::factory()->create([
         'name' => 'Canonical English Name',
         'description' => 'Canonical English description.',
+        'is_approved' => true,
     ]);
 
     ProductTranslation::query()->create([
@@ -76,6 +78,7 @@ test('products index falls back to english translation when spanish row is missi
     $product = Product::factory()->create([
         'name' => 'Fallback Base Name',
         'description' => 'Fallback base description.',
+        'is_approved' => true,
     ]);
 
     ProductTranslation::query()->create([
@@ -127,6 +130,7 @@ test('products by category endpoint returns only selected category products', fu
         'industry_id' => $industryA->id,
         'sub_category_id' => $subCategoryA->id,
         'status' => 'active',
+        'is_approved' => true,
     ]);
 
     Product::query()->create([
@@ -136,6 +140,7 @@ test('products by category endpoint returns only selected category products', fu
         'industry_id' => $industryB->id,
         'sub_category_id' => $subCategoryB->id,
         'status' => 'active',
+        'is_approved' => true,
     ]);
 
     /** @var TestCase $this */
@@ -184,6 +189,7 @@ test('products by sub category endpoint returns only selected sub category produ
         'industry_id' => $industryA->id,
         'sub_category_id' => $subCategoryA1->id,
         'status' => 'active',
+        'is_approved' => true,
     ]);
 
     Product::query()->create([
@@ -193,6 +199,7 @@ test('products by sub category endpoint returns only selected sub category produ
         'industry_id' => $industryA->id,
         'sub_category_id' => $subCategoryA2->id,
         'status' => 'active',
+        'is_approved' => true,
     ]);
 
     Product::query()->create([
@@ -202,6 +209,7 @@ test('products by sub category endpoint returns only selected sub category produ
         'industry_id' => $industryB->id,
         'sub_category_id' => $subCategoryB1->id,
         'status' => 'active',
+        'is_approved' => true,
     ]);
 
     /** @var TestCase $this */

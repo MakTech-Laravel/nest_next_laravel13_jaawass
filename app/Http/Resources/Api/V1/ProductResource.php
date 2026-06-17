@@ -47,9 +47,15 @@ class ProductResource extends JsonResource
         $listingCurrency = $this->currency ?? Currency::base();
         $money = MoneyPresenter::priceWithDisplay($this->price, $listingCurrency);
 
+        $supplier = $this->resolveSupplier();
+
         return [
             'id' => $this->id,
             'supplier_id' => $this->user_id,
+            'supplier_name' => $supplier['name'],
+            'supplier_country' => $supplier['country'],
+            'supplier_city' => $supplier['city'],
+            'supplier' => $supplier,
             'name' => $name,
             'slug' => $this->slug,
             'description' => $description,
@@ -118,6 +124,32 @@ class ProductResource extends JsonResource
             }),
             'review_stats' => $this->whenLoaded('reviews', fn () => $this->reviewStats()),
             'reviews' => ProductReviewResource::collection($this->whenLoaded('reviews')),
+        ];
+    }
+
+    /**
+     * @return array{id: int|null, name: string|null, country: string|null, city: string|null}
+     */
+    private function resolveSupplier(): array
+    {
+        $this->resource->loadMissing('user.company');
+
+        $company = $this->user?->company;
+        $name = $company?->company_name;
+
+        if ($name === null || $name === '') {
+            $firstName = trim((string) ($this->user?->first_name ?? ''));
+            $lastName = trim((string) ($this->user?->last_name ?? ''));
+            $fullName = trim("{$firstName} {$lastName}");
+
+            $name = $fullName !== '' ? $fullName : null;
+        }
+
+        return [
+            'id' => $this->user_id,
+            'name' => $name,
+            'country' => $company?->country,
+            'city' => $company?->city,
         ];
     }
 
