@@ -131,7 +131,7 @@ class Product extends Model
 
     public function subCategory()
     {
-        return $this->belongsTo(Industry::class, 'sub_category_id', 'id');
+        return $this->belongsTo(SubCategory::class, 'sub_category_id', 'id');
     }
 
     public function pricingQuantities()

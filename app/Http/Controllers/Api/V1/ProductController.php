@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\PublicProductIndexRequest;
 use App\Http\Resources\Api\V1\ProductResource;
 use App\Models\Product;
 use App\Rules\EnabledCurrencyCode;
@@ -27,9 +28,9 @@ class ProductController extends Controller
     |  requested locale. Translations are eager-loaded in one query.
     | ------------------------------------------------------------------ */
 
-    public function index(Request $request): JsonResponse
+    public function index(PublicProductIndexRequest $request): JsonResponse
     {
-        $products = $this->productCatalogService->getPublicProducts();
+        $products = $this->productCatalogService->paginatePublicProducts($request);
 
         return sendResponse(
             status: true,
@@ -70,10 +71,7 @@ class ProductController extends Controller
     public function show(Request $request, Product $product): JsonResponse
     {
         $product->load([
-            ...$this->productCatalogService->eagerRelationsForPublicProduct(),
-            'reviews' => fn ($query) => $query
-                ->with(['reviewer.company', 'order'])
-                ->latest('id'),
+            ...$this->productCatalogService->eagerRelationsForPublicProduct(withReviews: true),
         ]);
 
         return sendResponse(
