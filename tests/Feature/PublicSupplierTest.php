@@ -176,6 +176,39 @@ test('public suppliers map groups endpoint returns total groups and stats', func
         ->and($asia['suppliers_count'])->toBeGreaterThan(0);
 });
 
+test('public suppliers map top countries endpoint returns sorted manufacturers count with pagination', function (): void {
+    seedPublicSupplier([
+        'company_name' => 'China One',
+        'slug' => 'china-one',
+        'country' => 'China',
+    ]);
+    seedPublicSupplier([
+        'company_name' => 'China Two',
+        'slug' => 'china-two',
+        'country' => 'China',
+    ]);
+    seedPublicSupplier([
+        'company_name' => 'Bangladesh One',
+        'slug' => 'bangladesh-one',
+        'country' => 'Bangladesh',
+    ]);
+
+    $response = $this->getJson('/api/v1/suppliers/map/top-countries?per_page=10&page=1');
+
+    $response->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('data.pagination.current_page', 1)
+        ->assertJsonPath('data.pagination.per_page', 10);
+
+    $countries = collect($response->json('data.countries'));
+    $china = $countries->firstWhere('country_code', 'CN');
+    $bangladesh = $countries->firstWhere('country_code', 'BD');
+
+    expect($china)->not->toBeNull()
+        ->and($bangladesh)->not->toBeNull()
+        ->and($china['manufacturers_count'])->toBeGreaterThanOrEqual($bangladesh['manufacturers_count']);
+});
+
 test('public supplier show resolves by slug and numeric id', function (): void {
     $supplier = seedPublicSupplier([
         'slug' => 'techvision-electronics',

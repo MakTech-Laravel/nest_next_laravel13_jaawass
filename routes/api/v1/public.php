@@ -107,6 +107,7 @@ Route::controller(PublicSupplierController::class)->prefix('suppliers')->group(f
     Route::get('/', 'index');
     Route::get('/map', 'mapCountries');
     Route::get('/map/groups', 'mapCountryGroups');
+    Route::get('/map/top-countries', 'mapTopManufacturerCountries');
     Route::get('/{supplier}', 'show');
     Route::get('/{supplier}/products', 'products');
     Route::get('/{supplier}/reviews', 'reviews');

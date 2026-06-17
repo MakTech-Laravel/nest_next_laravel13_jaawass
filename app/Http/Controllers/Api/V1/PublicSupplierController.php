@@ -240,6 +240,76 @@ class PublicSupplierController extends Controller
         );
     }
 
+    public function mapTopManufacturerCountries(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'group' => ['sometimes', 'string', 'in:Africa,Americas,Asia,Europe,Oceania'],
+            'search' => ['sometimes', 'string', 'max:120'],
+            'page' => ['sometimes', 'integer', 'min:1'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:250'],
+        ]);
+
+        $group = $validated['group'] ?? null;
+        $search = isset($validated['search']) ? strtolower(trim((string) $validated['search'])) : null;
+        $page = (int) ($validated['page'] ?? 1);
+        $perPage = (int) ($validated['per_page'] ?? 15);
+
+        $countryMeta = collect($this->predefinedCountryMapData())
+            ->keyBy(fn (array $country): string => strtolower(trim($country['country'])));
+
+        $rows = $this->supplierCatalogService
+            ->publicSupplierBaseQuery()
+            ->join('companies', 'companies.user_id', '=', 'users.id')
+            ->whereNotNull('companies.country')
+            ->where('companies.country', '!=', '')
+            ->selectRaw('LOWER(TRIM(companies.country)) as country_key, MIN(TRIM(companies.country)) as country, COUNT(DISTINCT users.id) as manufacturers_count')
+            ->groupBy('country_key')
+            ->get()
+            ->map(function ($row) use ($countryMeta): array {
+                $key = (string) $row->country_key;
+                $meta = $countryMeta->get($key);
+
+                return [
+                    'country' => (string) $row->country,
+                    'country_code' => $meta['country_code'] ?? null,
+                    'group' => $meta['group'] ?? 'Other',
+                    'subregion' => $meta['subregion'] ?? null,
+                    'manufacturers_count' => (int) $row->manufacturers_count,
+                ];
+            })
+            ->when($group !== null, fn (Collection $items) => $items->where('group', $group))
+            ->when($search !== null && $search !== '', function (Collection $items) use ($search): Collection {
+                return $items->filter(
+                    fn (array $country): bool => str_contains(strtolower($country['country']), $search)
+                        || str_contains(strtolower((string) ($country['country_code'] ?? '')), $search)
+                );
+            })
+            ->sortByDesc('manufacturers_count')
+            ->values();
+
+        $total = $rows->count();
+        $data = $rows->forPage($page, $perPage)->values();
+
+        return sendResponse(
+            status: true,
+            message: __('api.supplier_map_top_countries_fetched_successfully'),
+            data: [
+                'countries' => $data,
+                'filters' => [
+                    'group' => $group,
+                    'search' => $search,
+                ],
+                'pagination' => [
+                    'current_page' => $page,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                    'last_page' => (int) ceil($total / max($perPage, 1)),
+                ],
+            ],
+            statusCode: HttpStatus::HTTP_OK
+        );
+    }
+
     public function products(PublicProductIndexRequest $request, User $supplier): JsonResponse
     {
         $request->merge(['supplier_id' => $supplier->id]);
