@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'user_id',
     'company_name',
+    'slug',
     'short_description',
     'long_description',
     'minimum_order_value',

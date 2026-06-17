@@ -31,6 +31,7 @@ class SupplierResource extends JsonResource
         return [
             'id' => $this->id,
             'company_name' => $companyName,
+            'slug' => $company?->slug,
             'avatar_url' => $this->avatar_url,
             'location' => collect([
                 $company?->city,

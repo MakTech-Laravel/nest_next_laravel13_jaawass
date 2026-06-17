@@ -7,6 +7,7 @@ use App\Http\Requests\Api\V1\Admin\StoreManufacturerRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Jobs\SendManufacturerAccountDetailJob;
 use App\Models\User;
+use App\Services\Company\CompanySlugService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
@@ -90,6 +91,8 @@ class ManufacturerController extends Controller
             ],
             sourceLocale: $validated['locale'] ?? null,
         );
+
+        app(CompanySlugService::class)->syncSlug($company, $validated['company_name']);
 
          if($validated['industries_id']) {
             $manufacturer->load('company');

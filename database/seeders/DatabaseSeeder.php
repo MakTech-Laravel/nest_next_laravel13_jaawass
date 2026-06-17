@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             CurrencySeeder::class,
             CurrencyRateSeeder::class,
             UserSeeder::class,
+            ManufacturerCompanySeeder::class,
             UserNotificationSeeder::class,
             IndustrySeeder::class,
             SubCategorySeeder::class,

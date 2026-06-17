@@ -294,6 +294,21 @@ class User extends Authenticatable implements OAuthenticatable
         return $this->hasMany(Review::class, 'user_id');
     }
 
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    public function catalogs(): HasMany
+    {
+        return $this->hasMany(Catalog::class);
+    }
+
+    public function certificates(): HasMany
+    {
+        return $this->hasMany(Certificate::class);
+    }
+
     public function reviewerReviews()
     {
         return $this->hasMany(Review::class, 'reviewer_id');
