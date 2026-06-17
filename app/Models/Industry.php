@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 use App\Jobs\TranslateModelJob;
 use App\Services\LocaleTranslationResolver;
 use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 #[Fillable([
     'name',
@@ -79,5 +82,33 @@ class Industry extends Model
     public function subCategories()
     {
         return $this->hasMany(SubCategory::class, 'industry_id', 'id');
+    }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class, 'industry_id', 'id');
+    }
+
+    public function companies()
+    {
+        return $this->belongsToMany(Company::class, 'company_industry', 'industry_id', 'company_id');
+    }
+
+    /**
+     * @param  Builder<Industry>  $query
+     * @return Builder<Industry>
+     */
+    public function scopeWithSupplierCount(Builder $query): Builder
+    {
+        return $query->withCount([
+            'products as suppliers_count' => fn (Builder $productQuery) => $productQuery
+                ->select(DB::raw('count(distinct user_id)'))
+                ->whereIn(
+                    'user_id',
+                    User::query()
+                        ->select('id')
+                        ->where('role', UserRole::MANUFACTURER->value),
+                ),
+        ]);
     }
 }

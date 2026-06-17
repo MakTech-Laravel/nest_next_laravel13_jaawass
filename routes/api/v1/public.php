@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\Admin\ShippinMethodController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CurrencyController;
 use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\PublicSupplierController;
 use App\Http\Controllers\Api\V1\QuickFilterController;
 use App\Http\Controllers\Api\V1\SocialAuthController;
 use Illuminate\Support\Facades\Route;
@@ -100,6 +101,15 @@ Route::controller(ProductController::class)->prefix('products')->group(function 
     Route::get('/{product}', 'show');
     Route::put('/{product}', 'update');
     Route::delete('/{product}', 'destroy');
+});
+
+Route::controller(PublicSupplierController::class)->prefix('suppliers')->group(function () {
+    Route::get('/', 'index');
+    Route::get('/{supplier}', 'show');
+    Route::get('/{supplier}/products', 'products');
+    Route::get('/{supplier}/reviews', 'reviews');
+    Route::get('/{supplier}/catalogs', 'catalogs');
+    Route::get('/{supplier}/certifications', 'certifications');
 });
 
 Route::controller(ArticleController::class)->prefix('articles')->group(function () {

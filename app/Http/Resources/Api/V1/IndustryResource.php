@@ -42,11 +42,22 @@ class IndustryResource extends JsonResource
                 return SubCategoryResource::collection($this->subCategories);
             }),
 
-            'supplier_count' => $this->whenLoaded('suppliers', function () {
-                return $this->suppliers->count();
-            }),
+            'supplier_count' => $this->resolveSupplierCount(),
             'created_at' => TimezoneFormatter::format($this->created_at),
             'updated_at' => TimezoneFormatter::format($this->updated_at),
         ];
+    }
+
+    private function resolveSupplierCount(): int
+    {
+        if (isset($this->suppliers_count)) {
+            return (int) $this->suppliers_count;
+        }
+
+        if ($this->relationLoaded('companies')) {
+            return $this->companies->count();
+        }
+
+        return 0;
     }
 }

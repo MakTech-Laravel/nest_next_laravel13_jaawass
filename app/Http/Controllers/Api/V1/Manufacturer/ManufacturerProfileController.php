@@ -7,6 +7,7 @@ use App\Http\Requests\Api\V1\Manufacturer\Profile\UpdateManufacturerProfileReque
 use App\Http\Resources\Api\V1\UserResource;
 use App\Models\User;
 use App\Models\UserFactoryImage;
+use App\Services\Company\CompanySlugService;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -185,6 +186,8 @@ class ManufacturerProfileController extends Controller
                 );
             }
         }
+
+        app(CompanySlugService::class)->syncSlug($company, $validated['company_name'] ?? null);
 
 
 

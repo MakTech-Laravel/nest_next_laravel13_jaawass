@@ -7,6 +7,7 @@ use App\Enums\UserRole;
 use App\Models\Plan;
 use App\Models\Promotion;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -48,6 +49,36 @@ class PromotionService
         Promotion::query()
             ->where('id', '!=', $promotion->id)
             ->update(['status' => false]);
+    }
+
+    /**
+     * @return Builder<Promotion>
+     */
+    public function activePromotionQuery(): Builder
+    {
+        return Promotion::query()
+            ->where('status', true)
+            ->where(function (Builder $query): void {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->with([
+                'translations',
+                'plan.currency',
+                'plan.planFeatures.feature',
+            ])
+            ->withCount([
+                'users as accepted_count' => fn ($q) => $q->where('promotion_user.status', PromotionUserStatus::ACCEPTED->value),
+                'users as pending_count' => fn ($q) => $q->where('promotion_user.status', PromotionUserStatus::PENDING->value),
+                'users as rejected_count' => fn ($q) => $q->where('promotion_user.status', PromotionUserStatus::REJECTED->value),
+                'users as total_participants_count',
+            ])
+            ->latest('id');
+    }
+
+    public function findActivePromotion(): ?Promotion
+    {
+        return $this->activePromotionQuery()->first();
     }
 
     public function reset(): Promotion

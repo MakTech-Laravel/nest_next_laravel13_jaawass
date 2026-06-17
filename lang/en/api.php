@@ -33,6 +33,12 @@ return [
     'product_updated_successfully' => 'Product updated successfully.',
 
     'product_deleted_successfully' => 'Product deleted successfully.',
+
+    'suppliers_fetched_successfully' => 'Suppliers fetched successfully.',
+    'supplier_fetched_successfully' => 'Supplier fetched successfully.',
+    'supplier_reviews_fetched_successfully' => 'Supplier reviews fetched successfully.',
+    'supplier_catalogs_fetched_successfully' => 'Supplier catalogs fetched successfully.',
+    'supplier_certifications_fetched_successfully' => 'Supplier certifications fetched successfully.',
     'review_created_successfully' => 'Review submitted successfully.',
     'review_order_not_eligible' => 'You can review only completed purchases of this product.',
     'review_already_exists_for_order' => 'You already submitted a review for this order.',
