@@ -95,10 +95,11 @@ class PublicSupplierFilter
             return $this;
         }
 
-        $like = '%'.$country.'%';
+        $normalizedCountry = mb_strtolower(trim($country));
+        $like = '%'.$normalizedCountry.'%';
 
         $this->query->whereHas('company', fn (Builder $company) => $company
-            ->where('country', 'like', $like));
+            ->whereRaw('LOWER(TRIM(country)) LIKE ?', [$like]));
 
         return $this;
     }

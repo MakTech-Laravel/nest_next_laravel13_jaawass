@@ -94,6 +94,10 @@ test('public suppliers index supports search and slug filter fields', function (
     $this->getJson('/api/v1/suppliers?country=China')
         ->assertOk()
         ->assertJsonPath('data.0.id', $supplier->id);
+
+    $this->getJson('/api/v1/suppliers?country=cHiNa')
+        ->assertOk()
+        ->assertJsonPath('data.0.id', $supplier->id);
 });
 
 test('public suppliers index can fetch suppliers by ids for compare', function (): void {
