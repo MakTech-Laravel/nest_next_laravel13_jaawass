@@ -36,6 +36,8 @@ return [
 
     'suppliers_fetched_successfully' => 'Suppliers fetched successfully.',
     'supplier_fetched_successfully' => 'Supplier fetched successfully.',
+    'supplier_map_fetched_successfully' => 'Supplier map countries fetched successfully.',
+    'supplier_map_groups_fetched_successfully' => 'Supplier map groups fetched successfully.',
     'supplier_reviews_fetched_successfully' => 'Supplier reviews fetched successfully.',
     'supplier_catalogs_fetched_successfully' => 'Supplier catalogs fetched successfully.',
     'supplier_certifications_fetched_successfully' => 'Supplier certifications fetched successfully.',
