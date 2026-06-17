@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Buyer\BuyerDashboardController;
 use App\Http\Controllers\Api\V1\Buyer\BuyerProductController;
 use App\Http\Controllers\Api\V1\Buyer\BuyerProfileController;
 use App\Http\Controllers\Api\V1\Buyer\BuyerRfqController;
@@ -7,6 +8,8 @@ use App\Http\Controllers\Api\V1\Buyer\BuyerSupplierController;
 use App\Http\Controllers\Api\V1\Buyer\OrderController;
 use App\Http\Controllers\Api\V1\Buyer\ProductReviewController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/dashboard', [BuyerDashboardController::class, 'overview']);
 
 Route::prefix('profile')->controller(BuyerProfileController::class)->group(function () {
     Route::get('/', 'show');

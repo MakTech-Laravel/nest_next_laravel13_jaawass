@@ -2,18 +2,23 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Enums\DashboardEventType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Admin\StoreManufacturerRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Jobs\SendManufacturerAccountDetailJob;
 use App\Models\User;
 use App\Services\Company\CompanySlugService;
+use App\Services\Dashboard\EventTrackerService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
 class ManufacturerController extends Controller
 {
+    public function __construct(
+        private readonly EventTrackerService $eventTracker,
+    ) {}
 
     public function index()
     {
@@ -220,6 +225,25 @@ class ManufacturerController extends Controller
             'manufacture_status_at' => now(),
         ]);
 
+        $eventType = match ($validated['manufacture_status']) {
+            'approved' => DashboardEventType::SupplierApproved,
+            'rejected' => DashboardEventType::SupplierRejected,
+            default => null,
+        };
+
+        if ($eventType !== null) {
+            $this->eventTracker->track(
+                eventType: $eventType,
+                actor: $request->user(),
+                entityType: 'supplier',
+                entityId: (int) $manufacturer->id,
+                counterparty: $manufacturer,
+                metadata: [
+                    'manufacture_status' => $validated['manufacture_status'],
+                ],
+            );
+        }
+
         $manufacturer->load('company.industries');
 
 
@@ -263,6 +287,17 @@ class ManufacturerController extends Controller
             'suspend_reason' => $validated['suspend_reason'] ?? null,
             'suspended_at' => now(),
         ]);
+
+        $this->eventTracker->track(
+            eventType: DashboardEventType::SupplierSuspended,
+            actor: $request->user(),
+            entityType: 'supplier',
+            entityId: (int) $manufacturer->id,
+            counterparty: $manufacturer,
+            metadata: [
+                'suspend_reason' => $validated['suspend_reason'] ?? null,
+            ],
+        );
 
         $manufacturer->load('company.industries');
 

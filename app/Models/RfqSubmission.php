@@ -39,6 +39,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'quote_certifications',
     'quote_notes',
     'quoted_at',
+    'first_manufacturer_response_at',
     'buyer_action_at',
     'status',
 ])]
@@ -65,6 +66,7 @@ class RfqSubmission extends Model
             'quote_valid_until' => 'date',
             'quote_certifications' => 'array',
             'quoted_at' => 'datetime',
+            'first_manufacturer_response_at' => 'datetime',
             'buyer_action_at' => 'datetime',
         ];
     }

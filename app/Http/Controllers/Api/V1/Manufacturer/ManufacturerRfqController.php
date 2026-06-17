@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1\Manufacturer;
 
+use App\Enums\DashboardEventType;
 use App\Enums\RfqSubmissionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Manufacturer\ReplyToRfqRequest;
 use App\Http\Requests\Api\V1\Manufacturer\SendRfqQuoteRequest;
 use App\Http\Resources\Api\V1\Manufacturer\RfqSubmissionResource;
 use App\Models\RfqSubmission;
+use App\Services\Dashboard\EventTrackerService;
 use App\Services\Manufacturer\RfqQuoteService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -19,6 +21,7 @@ class ManufacturerRfqController extends Controller
 {
     public function __construct(
         private readonly RfqQuoteService $rfqQuoteService,
+        private readonly EventTrackerService $eventTracker,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -94,6 +97,18 @@ class ManufacturerRfqController extends Controller
                 : $rfqSubmission->status->value,
         ])->save();
 
+        $this->recordFirstManufacturerResponse($rfqSubmission);
+        $this->eventTracker->track(
+            eventType: DashboardEventType::RfqReplied,
+            actor: $request->user(),
+            entityType: 'rfq_submission',
+            entityId: (int) $rfqSubmission->id,
+            counterparty: $rfqSubmission->buyer,
+            metadata: [
+                'status' => $rfqSubmission->status->value,
+            ],
+        );
+
         return sendResponse(
             status: true,
             message: __('api.manufacturer_rfq_replied_successfully'),
@@ -108,6 +123,20 @@ class ManufacturerRfqController extends Controller
             ->findOrFail($rfq);
 
         $rfqSubmission = $this->rfqQuoteService->sendQuote($rfqSubmission, $request);
+        $this->recordFirstManufacturerResponse($rfqSubmission);
+
+        $this->eventTracker->track(
+            eventType: DashboardEventType::RfqQuoted,
+            actor: $request->user(),
+            entityType: 'rfq_submission',
+            entityId: (int) $rfqSubmission->id,
+            counterparty: $rfqSubmission->buyer,
+            metadata: [
+                'quoted_price' => $rfqSubmission->quoted_price,
+                'quote_currency_code' => $rfqSubmission->quote_currency_code,
+            ],
+            occurredAt: $rfqSubmission->quoted_at,
+        );
 
         return sendResponse(
             status: true,
@@ -156,5 +185,16 @@ class ManufacturerRfqController extends Controller
             ->where('status', RfqSubmissionStatus::Quoted->value)
             ->whereDate('quote_valid_until', '<', now()->toDateString())
             ->update(['status' => RfqSubmissionStatus::Expired->value]);
+    }
+
+    private function recordFirstManufacturerResponse(RfqSubmission $rfqSubmission): void
+    {
+        if ($rfqSubmission->first_manufacturer_response_at !== null) {
+            return;
+        }
+
+        $rfqSubmission->forceFill([
+            'first_manufacturer_response_at' => now(),
+        ])->save();
     }
 }
