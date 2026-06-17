@@ -54,17 +54,7 @@ class PromotionController extends Controller
 
     public function active()
     {
-        $promotion = Promotion::query()
-            ->where('status', true)
-            ->with('plan')
-            ->withCount([
-                'users as accepted_count' => fn ($q) => $q->where('promotion_user.status', PromotionUserStatus::ACCEPTED->value),
-                'users as pending_count' => fn ($q) => $q->where('promotion_user.status', PromotionUserStatus::PENDING->value),
-                'users as rejected_count' => fn ($q) => $q->where('promotion_user.status', PromotionUserStatus::REJECTED->value),
-                'users as total_participants_count',
-            ])
-            ->latest('id')
-            ->first();
+        $promotion = $this->promotionService->findActivePromotion();
 
         if (! $promotion) {
             return sendResponse(

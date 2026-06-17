@@ -24,13 +24,18 @@ class AdminCategoryAndSubCategoryController extends Controller
 {
     public function index(IndustryIndexRequest $request)
     {
-        $industries = IndustryFilter::apply(Industry::query()->with([
+        $industries = IndustryFilter::apply(
+            Industry::query()
+                ->withSupplierCount()
+                ->with([
             'subCategories' => function ($query) {
                 $query->orderByRaw('CASE WHEN sort_order = 0 THEN 1 ELSE 0 END, sort_order ASC');
             },
             'subCategories.translations',
             'translations',
-        ]), $request)->paginate(
+        ]),
+            $request
+        )->paginate(
             perPage: $request->perPage(),
             pageName: 'page',
             page: $request->pageNumber(),
@@ -109,7 +114,7 @@ class AdminCategoryAndSubCategoryController extends Controller
 
     public function show($id)
     {
-        $industry = Industry::find($id);
+        $industry = Industry::query()->withSupplierCount()->find($id);
 
         if (! $industry) {
             return sendResponse(
@@ -546,7 +551,10 @@ class AdminCategoryAndSubCategoryController extends Controller
 
     public function getAllCategories()
     {
-        $categories = Industry::with(['subCategories.translations', 'translations'])->get();
+        $categories = Industry::query()
+            ->withSupplierCount()
+            ->with(['subCategories.translations', 'translations'])
+            ->get();
 
         return sendResponse(
             status: true,

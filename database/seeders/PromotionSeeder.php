@@ -21,6 +21,7 @@ class PromotionSeeder extends Seeder
             'button_text' => 'Get Started',
             'cta_button_text' => 'Get Started',
             'highlight_text' => 'Get started with basic features',
+            'status' => true,
         ]);
     }
 }
