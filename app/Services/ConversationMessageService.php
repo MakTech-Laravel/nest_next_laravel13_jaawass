@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\DashboardEventType;
 use App\Events\MessageSent;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\MessageAttachment;
 use App\Models\User;
+use App\Services\Dashboard\EventTrackerService;
 use App\Services\Realtime\RealtimeBroadcastDispatcher;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
@@ -19,6 +21,7 @@ final class ConversationMessageService
 {
     public function __construct(
         private readonly RealtimeBroadcastDispatcher $realtimeBroadcastDispatcher,
+        private readonly EventTrackerService $eventTracker,
     ) {}
 
     /**
@@ -36,6 +39,23 @@ final class ConversationMessageService
             $this->storeAttachments($conversation, $message, $attachments);
 
             $message->load(['sender', 'attachments']);
+            $conversation->loadMissing('participants');
+
+            $counterparty = $conversation->participants
+                ->firstWhere('id', '!=', $sender->id);
+
+            $this->eventTracker->track(
+                eventType: DashboardEventType::MessageSent,
+                actor: $sender,
+                entityType: 'conversation',
+                entityId: (int) $conversation->id,
+                counterparty: $counterparty,
+                metadata: [
+                    'message_id' => (int) $message->id,
+                    'has_attachments' => $message->attachments->isNotEmpty(),
+                ],
+                occurredAt: $message->created_at,
+            );
 
             $this->realtimeBroadcastDispatcher->queue(new MessageSent($message));
 

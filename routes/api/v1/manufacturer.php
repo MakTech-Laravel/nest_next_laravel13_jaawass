@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\Admin\CertificateTypeController;
 use App\Http\Controllers\Api\V1\Manufacturer\CertificationController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerCatalogController;
+use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerDashboardController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerProductController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerProfileController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerRfqController;
@@ -11,6 +12,8 @@ use App\Http\Controllers\Api\V1\Manufacturer\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('')->group(function () {
+
+    Route::get('/dashboard', [ManufacturerDashboardController::class, 'overview']);
 
     Route::prefix('subscriptions')->controller(SubscriptionController::class)->group(function () {
         Route::get('/', 'show');

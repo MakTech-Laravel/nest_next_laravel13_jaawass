@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\DashboardEventType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\PublicProductIndexRequest;
 use App\Http\Resources\Api\V1\ProductResource;
 use App\Models\Product;
 use App\Rules\EnabledCurrencyCode;
 use App\Services\Currency\PersistedListingCurrencyResolver;
+use App\Services\Dashboard\EventTrackerService;
 use App\Services\Product\ProductCatalogService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,6 +21,7 @@ class ProductController extends Controller
     public function __construct(
         private readonly PersistedListingCurrencyResolver $persistedListingCurrency,
         private readonly ProductCatalogService $productCatalogService,
+        private readonly EventTrackerService $eventTracker,
     ) {}
 
     /* ------------------------------------------------------------------
@@ -73,6 +76,21 @@ class ProductController extends Controller
         $product->load([
             ...$this->productCatalogService->eagerRelationsForPublicProduct(withReviews: true),
         ]);
+
+        $viewer = $request->user();
+        if ($viewer !== null) {
+            $this->eventTracker->trackOnceWithinWindow(
+                eventType: DashboardEventType::ProductViewed,
+                actor: $viewer,
+                entityType: 'product',
+                entityId: (int) $product->id,
+                counterparty: $product->user,
+                metadata: [
+                    'path' => $request->path(),
+                ],
+                windowMinutes: 30,
+            );
+        }
 
         return sendResponse(
             status: true,

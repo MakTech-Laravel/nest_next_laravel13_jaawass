@@ -2,23 +2,41 @@
 
 namespace App\Services\Buyer;
 
+use App\Enums\DashboardEventType;
 use App\Models\CompareProduct;
 use App\Models\Product;
 use App\Models\SaveProduct;
 use App\Models\User;
+use App\Services\Dashboard\EventTrackerService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 
 class BuyerProductListService
 {
+    public function __construct(
+        private readonly EventTrackerService $eventTracker,
+    ) {}
+
     public function save(User $buyer, int $productId): SaveProduct
     {
         $product = $this->resolveProductForBuyer($buyer, $productId);
 
-        return SaveProduct::query()->firstOrCreate([
+        $saved = SaveProduct::query()->firstOrCreate([
             'user_id' => $buyer->id,
             'product_id' => $product->id,
         ]);
+
+        $this->eventTracker->track(
+            eventType: DashboardEventType::ProductSaved,
+            actor: $buyer,
+            entityType: 'product',
+            entityId: (int) $product->id,
+            counterparty: $product->user,
+            metadata: ['saved_id' => (int) $saved->id],
+            occurredAt: $saved->created_at,
+        );
+
+        return $saved;
     }
 
     public function unsave(User $buyer, int $productId): void
@@ -33,16 +51,35 @@ class BuyerProductListService
                 'product_id' => [__('api.saved_product_not_found')],
             ]);
         }
+
+        $this->eventTracker->track(
+            eventType: DashboardEventType::ProductUnsaved,
+            actor: $buyer,
+            entityType: 'product',
+            entityId: $productId,
+        );
     }
 
     public function addToCompare(User $buyer, int $productId): CompareProduct
     {
         $product = $this->resolveProductForBuyer($buyer, $productId);
 
-        return CompareProduct::query()->firstOrCreate([
+        $compared = CompareProduct::query()->firstOrCreate([
             'user_id' => $buyer->id,
             'product_id' => $product->id,
         ]);
+
+        $this->eventTracker->track(
+            eventType: DashboardEventType::ProductCompared,
+            actor: $buyer,
+            entityType: 'product',
+            entityId: (int) $product->id,
+            counterparty: $product->user,
+            metadata: ['compare_id' => (int) $compared->id],
+            occurredAt: $compared->created_at,
+        );
+
+        return $compared;
     }
 
     public function removeFromCompare(User $buyer, int $productId): void
@@ -57,6 +94,13 @@ class BuyerProductListService
                 'product_id' => [__('api.compare_product_not_found')],
             ]);
         }
+
+        $this->eventTracker->track(
+            eventType: DashboardEventType::ProductCompareRemoved,
+            actor: $buyer,
+            entityType: 'product',
+            entityId: $productId,
+        );
     }
 
     /**

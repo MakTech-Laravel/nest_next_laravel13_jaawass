@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Buyer;
 
+use App\Enums\DashboardEventType;
 use App\Enums\RfqSubmissionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Buyer\RespondToRfqQuoteRequest;
@@ -10,6 +11,7 @@ use App\Http\Requests\Api\V1\Buyer\UpdateRfqStatusRequest;
 use App\Http\Resources\Api\V1\Buyer\RfqSubmissionResource;
 use App\Models\Product;
 use App\Models\RfqSubmission;
+use App\Services\Dashboard\EventTrackerService;
 use App\Services\Buyer\RfqSubmissionService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +23,7 @@ class BuyerRfqController extends Controller
 {
     public function __construct(
         private readonly RfqSubmissionService $rfqSubmissionService,
+        private readonly EventTrackerService $eventTracker,
     ) {}
 
     public function store(StoreRfqSubmissionRequest $request): JsonResponse
@@ -40,6 +43,19 @@ class BuyerRfqController extends Controller
         }
 
         $rfq = $this->rfqSubmissionService->submit($request->user(), $product, $validated);
+
+        $this->eventTracker->track(
+            eventType: DashboardEventType::RfqCreated,
+            actor: $request->user(),
+            entityType: 'rfq_submission',
+            entityId: (int) $rfq->id,
+            counterparty: $product->user,
+            metadata: [
+                'product_id' => (int) $product->id,
+                'manufacturer_id' => (int) $product->user_id,
+            ],
+            occurredAt: $rfq->created_at,
+        );
 
         return sendResponse(
             status: true,

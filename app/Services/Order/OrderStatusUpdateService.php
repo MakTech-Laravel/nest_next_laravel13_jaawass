@@ -2,18 +2,24 @@
 
 namespace App\Services\Order;
 
+use App\Enums\DashboardEventType;
 use App\Enums\OrderStatus;
 use App\Http\Requests\Api\V1\Manufacturer\Order\StoreOrderStatusUpdateRequest;
 use App\Models\Order;
 use App\Models\OrderStatusUpdate;
 use App\Models\OrderStatusUpdateAttachment;
 use App\Models\User;
+use App\Services\Dashboard\EventTrackerService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class OrderStatusUpdateService
 {
+    public function __construct(
+        private readonly EventTrackerService $eventTracker,
+    ) {}
+
     public function create(
         Order $order,
         User $user,
@@ -46,7 +52,31 @@ class OrderStatusUpdateService
             $this->storeAttachments($update, $request->file('photos', []), 'photo');
             $this->storeAttachments($update, $request->file('attachments', []), 'file');
 
-            $order->update(['status' => $status->value]);
+            $orderUpdates = ['status' => $status->value];
+            if ($status === OrderStatus::Completed && $order->delivered_at === null) {
+                $orderUpdates['delivered_at'] = now();
+            }
+
+            $order->update($orderUpdates);
+
+            if ($status === OrderStatus::Completed) {
+                $counterparty = (int) $user->id === (int) $order->manufacturer_id
+                    ? $order->buyer
+                    : $order->manufacturer;
+
+                $this->eventTracker->track(
+                    eventType: DashboardEventType::OrderDelivered,
+                    actor: $user,
+                    entityType: 'order',
+                    entityId: (int) $order->id,
+                    counterparty: $counterparty,
+                    metadata: [
+                        'status' => $status->value,
+                        'estimated_delivery_at' => $order->estimated_delivery_at?->toDateString(),
+                    ],
+                    occurredAt: $order->delivered_at ?? now(),
+                );
+            }
 
             return $this->loadOrderWithRelations($order->fresh());
         });

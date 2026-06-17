@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\Api\V1\CatalogStatusEnum;
+use App\Enums\DashboardEventType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\PublicProductIndexRequest;
 use App\Http\Requests\Api\V1\PublicSupplierIndexRequest;
@@ -14,6 +15,7 @@ use App\Http\Resources\Api\V1\PublicSupplierDetailResource;
 use App\Http\Resources\Api\V1\PublicSupplierResource;
 use App\Models\Review;
 use App\Models\User;
+use App\Services\Dashboard\EventTrackerService;
 use App\Services\Product\ProductCatalogService;
 use App\Services\Supplier\PublicSupplierCatalogService;
 use Illuminate\Http\JsonResponse;
@@ -25,6 +27,7 @@ class PublicSupplierController extends Controller
     public function __construct(
         private readonly PublicSupplierCatalogService $supplierCatalogService,
         private readonly ProductCatalogService $productCatalogService,
+        private readonly EventTrackerService $eventTracker,
     ) {}
 
     public function index(PublicSupplierIndexRequest $request): JsonResponse
@@ -55,6 +58,21 @@ class PublicSupplierController extends Controller
     public function show(Request $request, User $supplier): JsonResponse
     {
         $supplier->load($this->supplierCatalogService->eagerRelationsForDetail());
+
+        $viewer = $request->user();
+        if ($viewer !== null) {
+            $this->eventTracker->trackOnceWithinWindow(
+                eventType: DashboardEventType::SupplierViewed,
+                actor: $viewer,
+                entityType: 'supplier',
+                entityId: (int) $supplier->id,
+                counterparty: $supplier,
+                metadata: [
+                    'slug' => $supplier->company?->slug,
+                ],
+                windowMinutes: 30,
+            );
+        }
 
         return sendResponse(
             status: true,

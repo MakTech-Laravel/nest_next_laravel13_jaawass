@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\AdminCategoryAndSubCategoryController;
+use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\V1\Admin\ArticleCategoryController;
 use App\Http\Controllers\Api\V1\Admin\ArticleController;
 use App\Http\Controllers\Api\V1\Admin\CertificateTypeController;
@@ -23,6 +24,8 @@ use App\Http\Controllers\Api\V1\Admin\ShippinMethodController;
 use App\Http\Controllers\Api\V1\Admin\TicketAdminController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/dashboard', [AdminDashboardController::class, 'overview']);
 
 Route::controller(UserController::class)->prefix('users')->group(function (): void {
     Route::get('/', 'index');

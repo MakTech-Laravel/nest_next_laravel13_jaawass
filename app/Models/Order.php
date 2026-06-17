@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'total_amount',
     'currency_code',
     'estimated_delivery_at',
+    'delivered_at',
     'production_lead',
     'payment_terms',
     'shipping_terms',
@@ -39,6 +40,7 @@ class Order extends Model
             'quantity' => 'integer',
             'total_amount' => 'decimal:2',
             'estimated_delivery_at' => 'date',
+            'delivered_at' => 'datetime',
             'status' => OrderStatus::class,
         ];
     }

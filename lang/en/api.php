@@ -39,6 +39,10 @@ return [
     'supplier_reviews_fetched_successfully' => 'Supplier reviews fetched successfully.',
     'supplier_catalogs_fetched_successfully' => 'Supplier catalogs fetched successfully.',
     'supplier_certifications_fetched_successfully' => 'Supplier certifications fetched successfully.',
+
+    'buyer_dashboard_fetched_successfully' => 'Buyer dashboard fetched successfully.',
+    'manufacturer_dashboard_fetched_successfully' => 'Manufacturer dashboard fetched successfully.',
+    'admin_dashboard_fetched_successfully' => 'Admin dashboard fetched successfully.',
     'review_created_successfully' => 'Review submitted successfully.',
     'review_order_not_eligible' => 'You can review only completed purchases of this product.',
     'review_already_exists_for_order' => 'You already submitted a review for this order.',
