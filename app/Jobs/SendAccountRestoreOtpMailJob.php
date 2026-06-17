@@ -2,11 +2,14 @@
 
 namespace App\Jobs;
 
-use App\Mail\AccountRestoreOtpMail;
+use App\Enums\MailTemplate;
+use App\Services\Mailing\MailingService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Mail;
 
+/**
+ * @deprecated Use {@see MailingService::send()} instead.
+ */
 class SendAccountRestoreOtpMailJob implements ShouldQueue
 {
     use Queueable;
@@ -16,8 +19,10 @@ class SendAccountRestoreOtpMailJob implements ShouldQueue
         public string $otp
     ) {}
 
-    public function handle(): void
+    public function handle(MailingService $mailingService): void
     {
-        Mail::to($this->email)->send(new AccountRestoreOtpMail($this->otp));
+        $mailingService->send($this->email, MailTemplate::AccountRestoreOtp, [
+            'otp' => $this->otp,
+        ]);
     }
 }

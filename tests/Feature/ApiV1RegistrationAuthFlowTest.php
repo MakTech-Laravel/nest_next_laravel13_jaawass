@@ -3,8 +3,7 @@
 use App\Enums\UserManuFactureStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
-use App\Jobs\SendWelcomeMailJob;
-use App\Mail\PasswordResetOtpMail;
+use App\Jobs\SendMailJob;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -54,9 +53,10 @@ test('buyer can register and receives bearer token', function () {
 
     $user = User::query()->where('email', 'buyer@example.com')->firstOrFail();
 
-    Queue::assertPushed(SendWelcomeMailJob::class, function (SendWelcomeMailJob $job) use ($user): bool {
-        return $job->email === $user->email
-            && $job->firstName === $user->first_name;
+    Queue::assertPushed(SendMailJob::class, function (SendMailJob $job) use ($user): bool {
+        return $job->recipient === $user->email
+            && $job->template === 'welcome'
+            && $job->data['firstName'] === $user->first_name;
     });
 });
 
@@ -154,7 +154,7 @@ test('manufacturer registration requires business licence and city', function ()
 });
 
 test('forgot and reset password endpoints work', function () {
-    Mail::fake();
+    Queue::fake();
 
     $user = User::factory()->create([
         'email' => 'reset@example.com',
@@ -171,10 +171,11 @@ test('forgot and reset password endpoints work', function () {
         ->assertJsonPath('message', __('api.password_reset_otp_sent_generic'));
 
     $otp = null;
-    Mail::assertSent(PasswordResetOtpMail::class, function (PasswordResetOtpMail $mail) use (&$otp): bool {
-        $otp = $mail->otp;
+    Queue::assertPushed(SendMailJob::class, function (SendMailJob $job) use (&$otp, $user): bool {
+        $otp = $job->data['otp'] ?? null;
 
-        return true;
+        return $job->recipient === $user->email
+            && $job->template === 'password-reset-otp';
     });
     expect($otp)->toBeString()->toHaveLength(6);
 

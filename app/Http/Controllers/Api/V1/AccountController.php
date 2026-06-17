@@ -11,7 +11,8 @@ use App\Http\Requests\Api\V1\Account\ChangePasswordRequest;
 use App\Http\Requests\Api\V1\Account\RestoreDeleteOtpRequest;
 use App\Http\Requests\Api\V1\Account\RestoreDeleteVerifyRequest;
 use App\Http\Resources\Api\V1\UserLoginHistoryResource;
-use App\Jobs\SendAccountRestoreOtpMailJob;
+use App\Enums\MailTemplate;
+use App\Services\Mailing\MailingService;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -95,7 +96,7 @@ class AccountController extends Controller
         );
     }
 
-    public function requestRestoreOtp(RestoreDeleteOtpRequest $request): JsonResponse
+    public function requestRestoreOtp(RestoreDeleteOtpRequest $request, MailingService $mailingService): JsonResponse
     {
         $validated = $request->validated();
         $user = User::query()->where('email', $validated['email'])->first();
@@ -145,7 +146,7 @@ class AccountController extends Controller
         $cacheKey = $this->restoreOtpCacheKey($user->id);
         Cache::put($cacheKey, Hash::make($otp), now()->addMinutes(config('account.restore_otp_ttl_minutes')));
 
-        SendAccountRestoreOtpMailJob::dispatch($user->email, $otp);
+        $mailingService->send($user->email, MailTemplate::AccountRestoreOtp, ['otp' => $otp]);
 
         $resendSeconds = config('account.restore_otp_resend_seconds');
         $availableAt = now()->addSeconds($resendSeconds);

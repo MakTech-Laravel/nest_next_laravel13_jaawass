@@ -7,7 +7,8 @@ use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Http\Requests\Api\V1\Register\BuyerRegisterRequest;
 use App\Http\Requests\Api\V1\Register\ManufacturerRegisterRequest;
-use App\Jobs\SendWelcomeMailJob;
+use App\Enums\MailTemplate;
+use App\Services\Mailing\MailingService;
 use App\Models\Company;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -19,7 +20,8 @@ class RegisterUserAction
 {
     public function __construct(
         protected StoreManufacturerFilesAction $storeManufacturerFilesAction,
-        protected IssuePersonalAccessTokenAction $issuePersonalAccessTokenAction
+        protected IssuePersonalAccessTokenAction $issuePersonalAccessTokenAction,
+        protected MailingService $mailingService,
     ) {}
 
     public function handle(Request $request): array
@@ -62,7 +64,9 @@ class RegisterUserAction
             }
 
             $user = User::query()->create($userAttributes);
-            SendWelcomeMailJob::dispatch($user->email, $user->first_name)->afterCommit();
+            $this->mailingService->send($user->email, MailTemplate::Welcome, [
+                'firstName' => trim($user->first_name) !== '' ? trim($user->first_name) : 'there',
+            ]);
 
             $informationPayload = [
                 'user_id' => $user->id,

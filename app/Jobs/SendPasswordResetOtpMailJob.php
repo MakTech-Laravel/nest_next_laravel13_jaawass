@@ -2,12 +2,14 @@
 
 namespace App\Jobs;
 
-use App\Mail\PasswordResetOtpMail;
+use App\Enums\MailTemplate;
+use App\Services\Mailing\MailingService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
+/**
+ * @deprecated Use {@see MailingService::send()} instead.
+ */
 class SendPasswordResetOtpMailJob implements ShouldQueue
 {
     use Queueable;
@@ -17,9 +19,10 @@ class SendPasswordResetOtpMailJob implements ShouldQueue
         public string $otp
     ) {}
 
-    public function handle(): void
+    public function handle(MailingService $mailingService): void
     {
-        Log::info('Sending password reset OTP to email: ' . $this->email);
-        Mail::to($this->email)->send(new PasswordResetOtpMail($this->otp));
+        $mailingService->send($this->email, MailTemplate::PasswordResetOtp, [
+            'otp' => $this->otp,
+        ]);
     }
 }

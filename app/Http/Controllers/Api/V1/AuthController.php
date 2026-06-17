@@ -14,7 +14,8 @@ use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\ResetPasswordRequest;
 use App\Http\Requests\Api\V1\TwoFactor\TwoFactorChallengeRequest;
 use App\Http\Resources\Api\V1\UserResource;
-use App\Jobs\SendPasswordResetOtpMailJob;
+use App\Enums\MailTemplate;
+use App\Services\Mailing\MailingService;
 use App\Models\User;
 use App\Services\ManufacturerAccountGate;
 use Carbon\Carbon;
@@ -268,7 +269,7 @@ class AuthController extends Controller
         return sendResponse(status: true, message: __('api.logout_successful'), data: null, statusCode: HttpStatus::HTTP_OK);
     }
 
-    public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
+    public function forgotPassword(ForgotPasswordRequest $request, MailingService $mailingService): JsonResponse
     {
         $email = $request->validated('email');
         $genericMessage = __('api.password_reset_otp_sent_generic');
@@ -307,7 +308,7 @@ class AuthController extends Controller
         Cache::put($cacheKey, Hash::make($otp), now()->addMinutes(config('account.password_reset_otp_ttl_minutes')));
 
         Log::info('Sending password reset OTP to email: '.$user->email);
-        SendPasswordResetOtpMailJob::dispatch($user->email, $otp);
+        $mailingService->send($user->email, MailTemplate::PasswordResetOtp, ['otp' => $otp]);
 
         $resendSeconds = config('account.password_reset_otp_resend_seconds');
         $availableAt = now()->addSeconds($resendSeconds);

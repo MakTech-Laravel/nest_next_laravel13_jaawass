@@ -3,7 +3,8 @@
 namespace App\Actions\Fortify;
 
 use App\Enums\UserRole;
-use App\Jobs\SendWelcomeMailJob;
+use App\Enums\MailTemplate;
+use App\Services\Mailing\MailingService;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -14,6 +15,10 @@ use Laravel\Fortify\Contracts\CreatesNewUsers;
 class CreateNewUser implements CreatesNewUsers
 {
     use PasswordValidationRules;
+
+    public function __construct(
+        protected MailingService $mailingService,
+    ) {}
 
     /**
      * Validate and create a newly registered user.
@@ -47,7 +52,9 @@ class CreateNewUser implements CreatesNewUsers
             'agreed_to_terms' => true,
         ]);
 
-        SendWelcomeMailJob::dispatch($user->email, $user->first_name)->afterCommit();
+        $this->mailingService->send($user->email, MailTemplate::Welcome, [
+            'firstName' => trim($user->first_name) !== '' ? trim($user->first_name) : 'there',
+        ]);
 
         return $user;
     }
