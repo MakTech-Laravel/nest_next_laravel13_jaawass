@@ -94,6 +94,10 @@ test('public suppliers index supports search and slug filter fields', function (
     $this->getJson('/api/v1/suppliers?country=China')
         ->assertOk()
         ->assertJsonPath('data.0.id', $supplier->id);
+
+    $this->getJson('/api/v1/suppliers?country=cHiNa')
+        ->assertOk()
+        ->assertJsonPath('data.0.id', $supplier->id);
 });
 
 test('public suppliers index can fetch suppliers by ids for compare', function (): void {
@@ -105,6 +109,108 @@ test('public suppliers index can fetch suppliers by ids for compare', function (
     $response->assertOk();
 
     expect($response->json('data'))->toHaveCount(2);
+});
+
+test('public suppliers map endpoint returns predefined country list with supplier counts', function (): void {
+    seedPublicSupplier([
+        'company_name' => 'Map China Supplier',
+        'slug' => 'map-china-supplier',
+        'country' => 'China',
+    ]);
+
+    seedPublicSupplier([
+        'company_name' => 'Map Bangladesh Supplier',
+        'slug' => 'map-bangladesh-supplier',
+        'country' => 'Bangladesh',
+    ]);
+
+    $response = $this->getJson('/api/v1/suppliers/map?per_page=250');
+
+    $response->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('data.total_countries', 197);
+
+    $countries = collect($response->json('data.countries'));
+    $china = $countries->firstWhere('country_code', 'CN');
+    $bangladesh = $countries->firstWhere('country_code', 'BD');
+
+    expect($china)->not->toBeNull()
+        ->and($china['suppliers_count'])->toBeGreaterThan(0)
+        ->and($china['flag_icon'])->toBe('https://flagcdn.com/w40/cn.png')
+        ->and($bangladesh)->not->toBeNull()
+        ->and($bangladesh['suppliers_count'])->toBeGreaterThan(0)
+        ->and($bangladesh['flag_icon'])->toBe('https://flagcdn.com/w40/bd.png');
+});
+
+test('public suppliers map endpoint supports group filter and pagination', function (): void {
+    $response = $this->getJson('/api/v1/suppliers/map?group=Asia&per_page=10&page=1');
+
+    $response->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('data.filters.group', 'Asia')
+        ->assertJsonPath('data.pagination.current_page', 1)
+        ->assertJsonPath('data.pagination.per_page', 10)
+        ->assertJsonPath('data.pagination.total', 49);
+
+    $countries = collect($response->json('data.countries'));
+    expect($countries)->toHaveCount(10)
+        ->and($countries->every(fn (array $country) => $country['group'] === 'Asia'))->toBeTrue();
+});
+
+test('public suppliers map groups endpoint returns total groups and stats', function (): void {
+    seedPublicSupplier([
+        'company_name' => 'Map Group Supplier',
+        'slug' => 'map-group-supplier',
+        'country' => 'Bangladesh',
+    ]);
+
+    $response = $this->getJson('/api/v1/suppliers/map/groups');
+
+    $response->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('data.total_groups', 5);
+
+    $groups = collect($response->json('data.groups'));
+    $asia = $groups->firstWhere('group', 'Asia');
+
+    expect($asia)->not->toBeNull()
+        ->and($asia['country_count'])->toBe(49)
+        ->and($asia['suppliers_count'])->toBeGreaterThan(0);
+});
+
+test('public suppliers map top countries endpoint returns sorted manufacturers count with pagination', function (): void {
+    seedPublicSupplier([
+        'company_name' => 'China One',
+        'slug' => 'china-one',
+        'country' => 'China',
+    ]);
+    seedPublicSupplier([
+        'company_name' => 'China Two',
+        'slug' => 'china-two',
+        'country' => 'China',
+    ]);
+    seedPublicSupplier([
+        'company_name' => 'Bangladesh One',
+        'slug' => 'bangladesh-one',
+        'country' => 'Bangladesh',
+    ]);
+
+    $response = $this->getJson('/api/v1/suppliers/map/top-countries?per_page=10&page=1');
+
+    $response->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonPath('data.pagination.current_page', 1)
+        ->assertJsonPath('data.pagination.per_page', 10);
+
+    $countries = collect($response->json('data.countries'));
+    $china = $countries->firstWhere('country_code', 'CN');
+    $bangladesh = $countries->firstWhere('country_code', 'BD');
+
+    expect($china)->not->toBeNull()
+        ->and($bangladesh)->not->toBeNull()
+        ->and($china['manufacturers_count'])->toBeGreaterThanOrEqual($bangladesh['manufacturers_count'])
+        ->and($china['flag_icon'])->toBe('https://flagcdn.com/w40/cn.png')
+        ->and($china['flag'])->not->toBeNull();
 });
 
 test('public supplier show resolves by slug and numeric id', function (): void {
