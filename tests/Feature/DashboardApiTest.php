@@ -53,7 +53,7 @@ test('buyer dashboard overview returns stats and sections', function (): void {
 });
 
 test('manufacturer dashboard overview returns stats and sections', function (): void {
-    $manufacturer = User::query()->where('email', 'manufacturer@dev.com')->firstOrFail();
+    $manufacturer = createSubscribedManufacturer();
     Passport::actingAs($manufacturer);
 
     $response = $this->getJson('/api/v1/manufacturer/dashboard');
@@ -98,7 +98,7 @@ test('buyer cannot access manufacturer dashboard', function (): void {
 });
 
 test('manufacturer dashboard computes response time and on-time delivery dynamically', function (): void {
-    $manufacturer = User::query()->where('email', 'manufacturer@dev.com')->firstOrFail();
+    $manufacturer = createSubscribedManufacturer();
     $buyer = User::query()->where('email', 'user@dev.com')->firstOrFail();
     $product = createDashboardTestProduct($manufacturer);
     $conversation = createDashboardConversation($buyer, $manufacturer);

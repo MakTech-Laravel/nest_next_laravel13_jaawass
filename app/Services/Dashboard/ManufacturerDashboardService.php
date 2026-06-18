@@ -15,6 +15,8 @@ use App\Models\RfqSubmission;
 use App\Models\User;
 use App\Models\UserNotification;
 use App\Services\Manufacturer\ManufacturerProductStatsService;
+use App\Services\Subscription\PlanEntitlementResolver;
+use App\Services\Subscription\PlanEntitlementService;
 
 class ManufacturerDashboardService
 {
@@ -22,6 +24,7 @@ class ManufacturerDashboardService
 
     public function __construct(
         private readonly ManufacturerProductStatsService $productStatsService,
+        private readonly PlanEntitlementResolver $entitlementResolver,
     ) {}
 
     /**
@@ -31,7 +34,9 @@ class ManufacturerDashboardService
     {
         $manufacturer->loadMissing('company');
 
-        return [
+        $entitlements = $this->entitlementResolver->for($manufacturer);
+
+        $overview = [
             'profile_completeness' => $this->profileCompleteness($manufacturer->company),
             'stats' => $this->stats($manufacturer),
             'recent_inquiries' => $this->recentInquiries($manufacturer),
@@ -39,6 +44,33 @@ class ManufacturerDashboardService
             'quick_stats' => $this->quickStats($manufacturer),
             'recent_activity' => $this->recentActivity($manufacturer),
         ];
+
+        return $this->applyAnalyticsEntitlements($overview, $entitlements);
+    }
+
+    /**
+     * @param  array<string, mixed>  $overview
+     * @return array<string, mixed>
+     */
+    private function applyAnalyticsEntitlements(array $overview, PlanEntitlementService $entitlements): array
+    {
+        if (! $entitlements->hasAnyFeature('basic_analytics', 'advanced_analytics')) {
+            $overview['stats'] = [];
+            $overview['response_metrics'] = null;
+            $overview['recent_activity'] = [];
+
+            return $overview;
+        }
+
+        if (! $entitlements->hasFeature('advanced_analytics')) {
+            $overview['response_metrics'] = null;
+
+            if (isset($overview['stats']['quote_value_30d'])) {
+                unset($overview['stats']['quote_value_30d']);
+            }
+        }
+
+        return $overview;
     }
 
     /**

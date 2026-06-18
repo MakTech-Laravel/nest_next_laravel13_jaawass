@@ -3,7 +3,9 @@
 namespace App\Filters\Api\V1;
 
 use App\Http\Requests\Api\V1\PublicSupplierIndexRequest;
+use App\Support\Subscription\SupplierVisibilityScoreQuery;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class PublicSupplierFilter
 {
@@ -185,7 +187,9 @@ class PublicSupplierFilter
                 ->orderByDesc('public_product_count')
                 ->orderBy('users.id'),
             'newest' => $this->query->orderByDesc('users.created_at'),
-            default => $this->query->orderByDesc('users.id'),
+            default => $this->query
+                ->orderByDesc(DB::raw(SupplierVisibilityScoreQuery::selectExpression()))
+                ->orderByDesc('users.id'),
         };
 
         return $this;

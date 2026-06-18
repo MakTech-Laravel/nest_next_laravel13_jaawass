@@ -56,6 +56,7 @@ class PublicSupplierCatalogService
             ->isManufacturer()
             ->where('status', UserStatus::ACTIVE->value)
             ->where('manufacture_status', UserManuFactureStatus::APPROVED->value)
+            ->whereHas('subscription', fn (Builder $subscription) => $subscription->entitlementActive())
             ->whereHas('company', fn (Builder $company) => $company
                 ->whereNotNull('company_name')
                 ->where('company_name', '!=', ''));

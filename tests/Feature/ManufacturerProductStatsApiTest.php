@@ -43,7 +43,7 @@ test('manufacturer product stats returns aggregates and buyer-initiated conversa
         'sort_order' => 0,
     ]);
 
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $buyer = User::factory()->create();
 
     $baseProduct = [
@@ -62,7 +62,7 @@ test('manufacturer product stats returns aggregates and buyer-initiated conversa
     Product::query()->create([...$baseProduct, 'slug' => 'w-a-'.uniqid(), 'view_count' => 100]);
     Product::query()->create([...$baseProduct, 'slug' => 'w-b-'.uniqid(), 'view_count' => 200, 'status' => ProductStatusEnum::DRAFT->value]);
 
-    $otherManufacturer = User::factory()->manufacturerApproved()->create();
+    $otherManufacturer = manufacturerWithSubscription();
     Product::query()->create([
         'user_id' => $otherManufacturer->id,
         'name' => 'Other',

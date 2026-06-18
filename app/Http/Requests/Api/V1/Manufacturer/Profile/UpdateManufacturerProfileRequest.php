@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api\V1\Manufacturer\Profile;
 
+use App\Services\Subscription\PlanEntitlementResolver;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -86,5 +87,18 @@ class UpdateManufacturerProfileRequest extends FormRequest
 
             'remove_images.*' => 'integer',
         ];
+    }
+
+    protected function passedValidation(): void
+    {
+        $exportMarkets = $this->input('export_markets');
+
+        if (! is_array($exportMarkets) || $exportMarkets === []) {
+            return;
+        }
+
+        app(PlanEntitlementResolver::class)
+            ->for($this->user())
+            ->assertFeature('export_markets_section');
     }
 }

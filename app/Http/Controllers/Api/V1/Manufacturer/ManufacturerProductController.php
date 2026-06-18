@@ -12,6 +12,7 @@ use App\Http\Resources\Api\V1\Product\ProductResource;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Services\Manufacturer\ManufacturerProductStatsService;
+use App\Services\Subscription\PlanEntitlementResolver;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Arr;
@@ -23,6 +24,10 @@ use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
 class ManufacturerProductController extends Controller
 {
+    public function __construct(
+        private readonly PlanEntitlementResolver $entitlementResolver,
+    ) {}
+
     /**
      * Dashboard aggregates for the authenticated manufacturer's catalog.
      *
@@ -699,6 +704,10 @@ class ManufacturerProductController extends Controller
 
     public function duplicateToDraft(Request $request, $id)
     {
+        $this->entitlementResolver
+            ->for($request->user())
+            ->assertWithinLimit('product_limit', $request->user()->products()->count());
+
         $product = DB::transaction(function () use ($request, $id) {
 
             $product = Product::with([

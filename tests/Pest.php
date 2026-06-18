@@ -1,6 +1,12 @@
 <?php
 
+use App\Enums\Api\V1\SubscriptionStatus;
+use App\Enums\UserRole;
+use App\Models\Feature;
+use App\Models\Plan;
+use App\Models\PlanFeature;
 use App\Models\Product;
+use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Laravel\Passport\Passport;
@@ -114,12 +120,66 @@ function seedOrderSelectProduct(User $manufacturer, string $name = 'TWS Earbuds 
 }
 
 /**
+ * @return array{industry_id: int, sub_category_id: int, currency_id: int}
+ */
+function productTaxonomyIds(): array
+{
+    $currencyId = (int) (DB::table('currencies')->where('code', 'USD')->value('id') ?? 0);
+
+    if ($currencyId === 0) {
+        $currencyId = DB::table('currencies')->insertGetId([
+            'code' => 'USD',
+            'name' => 'US Dollar',
+            'symbol' => '$',
+            'decimal_places' => 2,
+            'is_active' => true,
+            'sort_order' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    $industryId = (int) (DB::table('industries')->where('slug', 'consumer-electronics')->value('id') ?? 0);
+
+    if ($industryId === 0) {
+        $industryId = DB::table('industries')->insertGetId([
+            'name' => 'Consumer Electronics',
+            'slug' => 'consumer-electronics',
+            'description' => 'Consumer electronics industry',
+            'featured' => false,
+            'sort_order' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    $subCategoryId = (int) (DB::table('sub_categories')->where('slug', 'wireless-earbuds')->value('id') ?? 0);
+
+    if ($subCategoryId === 0) {
+        $subCategoryId = DB::table('sub_categories')->insertGetId([
+            'industry_id' => $industryId,
+            'name' => 'Wireless Earbuds',
+            'slug' => 'wireless-earbuds',
+            'sort_order' => 1,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    return [
+        'industry_id' => $industryId,
+        'sub_category_id' => $subCategoryId,
+        'currency_id' => $currencyId,
+    ];
+}
+
+/**
  * @return array{buyer: User, manufacturer: User, product: Product}
  */
 function seedManufacturerOrderScenario(): array
 {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = createSubscribedManufacturer();
     $product = seedOrderSelectProduct($manufacturer);
 
     DB::table('companies')->insert([
@@ -152,4 +212,85 @@ function seedManufacturerOrderScenario(): array
         'manufacturer' => $manufacturer,
         'product' => $product,
     ];
+}
+
+/**
+ * @param  array<int, array{key: string, input_type: string, value: string}>  $features
+ * @param  array<string, mixed>  $subscriptionOverrides
+ */
+function attachActiveSubscription(User $manufacturer, array $features = [], array $subscriptionOverrides = []): void
+{
+    if ($manufacturer->subscription !== null) {
+        $manufacturer->subscription->delete();
+    }
+
+    $plan = Plan::query()->create([
+        'name' => 'Test Plan '.uniqid(),
+        'description' => 'Test plan',
+        'button_text' => 'Subscribe',
+        'monthly_price' => 299,
+        'yearly_price' => 2990,
+        'is_popular' => false,
+        'status' => true,
+    ]);
+
+    $defaultFeatures = $features !== [] ? $features : [
+        ['key' => 'product_limit', 'input_type' => 'text', 'value' => '100'],
+        ['key' => 'company_profile', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'catalog_upload', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'inquiry_rfq_inbox', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'basic_analytics', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'advanced_analytics', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'certifications_section', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'export_markets_section', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'internal_messaging', 'input_type' => 'boolean', 'value' => '1'],
+    ];
+
+    foreach ($defaultFeatures as $featureConfig) {
+        $feature = Feature::query()->firstOrCreate(
+            ['key' => $featureConfig['key']],
+            ['name' => ucfirst(str_replace('_', ' ', $featureConfig['key']))],
+        );
+
+        PlanFeature::query()->create([
+            'plan_id' => $plan->id,
+            'feature_id' => $feature->id,
+            'input_type' => $featureConfig['input_type'],
+            'value' => $featureConfig['value'],
+        ]);
+    }
+
+    Subscription::query()->create(array_merge([
+        'manufacturer_id' => $manufacturer->id,
+        'plan_id' => $plan->id,
+        'billing_interval' => 'month',
+        'status' => SubscriptionStatus::ACTIVE->value,
+        'starts_at' => now()->subDay(),
+        'ends_at' => now()->addMonth(),
+        'auto_renew' => true,
+    ], $subscriptionOverrides));
+}
+
+/**
+ * @param  array<string, mixed>  $userOverrides
+ * @param  array<int, array{key: string, input_type: string, value: string}>  $features
+ */
+function manufacturerWithSubscription(array $userOverrides = [], array $features = [], array $subscriptionOverrides = []): User
+{
+    $manufacturer = User::factory()->manufacturerApproved()->create($userOverrides);
+    attachActiveSubscription($manufacturer, $features, $subscriptionOverrides);
+
+    return $manufacturer->fresh();
+}
+
+/**
+ * @param  array<int, array{key: string, input_type: string, value: string}>  $features
+ * @param  array<string, mixed>  $subscriptionOverrides
+ */
+function createSubscribedManufacturer(array $features = [], array $subscriptionOverrides = []): User
+{
+    $manufacturer = User::factory()->create(['role' => UserRole::MANUFACTURER->value]);
+    attachActiveSubscription($manufacturer, $features, $subscriptionOverrides);
+
+    return $manufacturer->fresh();
 }

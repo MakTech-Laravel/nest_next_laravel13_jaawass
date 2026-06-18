@@ -45,7 +45,9 @@ function seedPublicSupplier(array $overrides = []): User
         $manufacturer->load('company')->company->industries()->attach($overrides['industry']->id);
     }
 
-    return $manufacturer->fresh(['company']);
+    attachActiveSubscription($manufacturer, $overrides['features'] ?? []);
+
+    return $manufacturer->fresh(['company', 'subscription']);
 }
 
 test('public suppliers index returns approved manufacturers only', function (): void {
@@ -351,9 +353,7 @@ test('public supplier certifications endpoint merges profile and valid uploads',
 });
 
 test('company slug is generated on manufacturer profile update', function (): void {
-    $manufacturer = User::factory()->manufacturerApproved()->create([
-        'status' => UserStatus::ACTIVE,
-    ]);
+    $manufacturer = manufacturerWithSubscription();
 
   Company::query()->create([
         'user_id' => $manufacturer->id,

@@ -34,15 +34,18 @@ Route::controller(UserNotificationController::class)->group(function () {
     Route::post('/me/notifications/test-broadcast', 'storeTest')->middleware('throttle:12,1');
 });
 
-Route::apiResource('conversations', ConversationController::class)->only(['index', 'show', 'store']);
-Route::patch('conversations/{conversation}', [ConversationController::class, 'update'])
-    ->name('conversations.update');
-Route::post('conversations/{conversation}/participants', [ConversationController::class, 'addParticipants'])
-    ->name('conversations.participants.store');
-Route::get('conversations/{conversation}/messages', [MessageController::class, 'index'])
-    ->name('conversations.messages.index');
-Route::post('conversations/{conversation}/messages', [MessageController::class, 'store'])
-    ->name('conversations.messages.store');
+Route::middleware('manufacturer.plan.feature:internal_messaging')->group(function (): void {
+    Route::get('conversations', [ConversationController::class, 'index'])->name('conversations.index');
+    Route::post('conversations', [ConversationController::class, 'store'])->name('conversations.store');
+    Route::get('conversations/{conversation}', [ConversationController::class, 'show'])->name('conversations.show');
+    Route::patch('conversations/{conversation}', [ConversationController::class, 'update'])->name('conversations.update');
+    Route::post('conversations/{conversation}/participants', [ConversationController::class, 'addParticipants'])
+        ->name('conversations.participants.store');
+    Route::get('conversations/{conversation}/messages', [MessageController::class, 'index'])
+        ->name('conversations.messages.index');
+    Route::post('conversations/{conversation}/messages', [MessageController::class, 'store'])
+        ->name('conversations.messages.store');
+});
 
 Route::patch('/me/preferences', [UserPreferencesController::class, 'update']);
 Route::patch('/me/currency-preference', [UserPreferencesController::class, 'update']);

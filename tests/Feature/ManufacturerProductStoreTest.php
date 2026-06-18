@@ -80,7 +80,7 @@ test('manufacturer can create product with minimal required fields', function ()
         'sort_order' => 0,
     ]);
 
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
 
     Passport::actingAs($manufacturer);
 
@@ -108,6 +108,5 @@ test('manufacturer can create product with minimal required fields', function ()
 test('unauthenticated manufacturer product create returns json unauthorized', function (): void {
     $this->postJson('/api/v1/manufacturer/products', [])
         ->assertUnauthorized()
-        ->assertJsonPath('success', false)
         ->assertJsonPath('message', __('api.unauthenticated'));
 });

@@ -57,7 +57,7 @@ test('manufacturer can create order for connected buyer and product', function (
 
 test('manufacturer cannot create order when buyer has no rfq for product', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedOrderSelectProduct($manufacturer);
 
     Passport::actingAs($manufacturer);
@@ -76,7 +76,7 @@ test('manufacturer cannot create order when buyer has no rfq for product', funct
 
 test('manufacturer cannot create order for another manufacturers product', function (): void {
     ['buyer' => $buyer, 'manufacturer' => $manufacturer, 'product' => $product] = seedManufacturerOrderScenario();
-    $otherManufacturer = User::factory()->manufacturerApproved()->create();
+    $otherManufacturer = manufacturerWithSubscription();
 
     Passport::actingAs($otherManufacturer);
 
@@ -123,7 +123,7 @@ test('manufacturer can list and show only own orders', function (): void {
 
 test('manufacturer cannot view another manufacturers order', function (): void {
     ['buyer' => $buyer, 'manufacturer' => $manufacturer, 'product' => $product] = seedManufacturerOrderScenario();
-    $otherManufacturer = User::factory()->manufacturerApproved()->create();
+    $otherManufacturer = manufacturerWithSubscription();
 
     Passport::actingAs($manufacturer);
 

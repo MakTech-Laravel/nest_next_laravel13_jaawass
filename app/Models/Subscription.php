@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Api\V1\SubscriptionStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -49,5 +50,19 @@ class Subscription extends Model
     public function logs(): HasMany
     {
         return $this->hasMany(SubscriptionLog::class, 'manufacturer_id', 'manufacturer_id');
+    }
+
+    public function scopeEntitlementActive(Builder $query): Builder
+    {
+        return $query
+            ->whereIn('status', [
+                SubscriptionStatus::ACTIVE->value,
+                SubscriptionStatus::TRIALING->value,
+            ])
+            ->where(function (Builder $builder): void {
+                $builder
+                    ->whereNull('ends_at')
+                    ->orWhere('ends_at', '>', now());
+            });
     }
 }
