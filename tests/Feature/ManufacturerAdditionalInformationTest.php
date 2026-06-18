@@ -266,3 +266,107 @@ test('admin manufacturer show includes pending and submitted additional informat
     expect($messages)->toContain('Pending request')
         ->toContain('Submitted request');
 });
+
+test('admin can list all additional information requests globally', function () {
+    $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    $manufacturer = User::factory()->create(['role' => UserRole::MANUFACTURER->value]);
+
+    ManufacturerAdditionalInformationRequest::query()->create([
+        'user_id' => $manufacturer->id,
+        'requested_by' => $admin->id,
+        'token' => 'global-token',
+        'message' => 'Global list request',
+        'allowed_types' => ['text'],
+        'status' => 'pending',
+        'expires_at' => now()->addDays(5),
+    ]);
+
+    Passport::actingAs($admin);
+
+    /** @var TestCase $this */
+    $response = $this->getJson('/api/v1/admin/manufacturer-additional-information?status=pending');
+
+    $response->assertOk()
+        ->assertJsonPath('data.0.message', 'Global list request')
+        ->assertJsonPath('data.0.manufacturer.id', $manufacturer->id);
+});
+
+test('pending manufacturer can list and submit additional information requests', function () {
+    Storage::fake('public');
+
+    $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    $manufacturer = User::factory()->manufacturer()->create([
+        'manufacture_status' => UserManuFactureStatus::PENDING,
+    ]);
+
+    $request = ManufacturerAdditionalInformationRequest::query()->create([
+        'user_id' => $manufacturer->id,
+        'requested_by' => $admin->id,
+        'token' => 'auth-submit-token',
+        'message' => 'Please upload your license.',
+        'allowed_types' => ['text', 'image'],
+        'status' => 'pending',
+        'expires_at' => now()->addDays(3),
+    ]);
+
+    Passport::actingAs($manufacturer);
+
+    /** @var TestCase $this */
+    $list = $this->getJson('/api/v1/manufacturer/additional-information-requests');
+    $list->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.message', 'Please upload your license.');
+
+    $file = UploadedFile::fake()->image('license.jpg');
+
+    $submit = $this->post("/api/v1/manufacturer/additional-information-requests/{$request->id}/submit", [
+        'responses' => [
+            ['type' => 'text', 'message' => 'Updated license attached.'],
+            ['type' => 'image', 'file' => $file],
+        ],
+    ]);
+
+    $submit->assertOk()
+        ->assertJsonPath('data.status', 'submitted');
+
+    expect($request->fresh()->status->value)->toBe('submitted');
+});
+
+test('approved manufacturer can list and submit additional information requests', function () {
+    Storage::fake('public');
+
+    $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    $manufacturer = User::factory()->manufacturerApproved()->create();
+
+    $request = ManufacturerAdditionalInformationRequest::query()->create([
+        'user_id' => $manufacturer->id,
+        'requested_by' => $admin->id,
+        'token' => 'auth-submit-token',
+        'message' => 'Please upload your license.',
+        'allowed_types' => ['text', 'image'],
+        'status' => 'pending',
+        'expires_at' => now()->addDays(3),
+    ]);
+
+    Passport::actingAs($manufacturer);
+
+    /** @var TestCase $this */
+    $list = $this->getJson('/api/v1/manufacturer/additional-information-requests');
+    $list->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.message', 'Please upload your license.');
+
+    $file = UploadedFile::fake()->image('license.jpg');
+
+    $submit = $this->post("/api/v1/manufacturer/additional-information-requests/{$request->id}/submit", [
+        'responses' => [
+            ['type' => 'text', 'message' => 'Updated license attached.'],
+            ['type' => 'image', 'file' => $file],
+        ],
+    ]);
+
+    $submit->assertOk()
+        ->assertJsonPath('data.status', 'submitted');
+
+    expect($request->fresh()->status->value)->toBe('submitted');
+});
