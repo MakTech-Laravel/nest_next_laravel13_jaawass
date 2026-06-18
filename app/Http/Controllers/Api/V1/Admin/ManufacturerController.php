@@ -22,7 +22,15 @@ class ManufacturerController extends Controller
 
     public function index()
     {
-        $query = User::isManufacturer()->with(['company.industries', 'manufacturerReviews', 'factoryImages', 'preferredCurrency', 'subscription','subscriptionLogs']);
+        $query = User::isManufacturer()->with([
+            'company.industries',
+            'manufacturerReviews',
+            'factoryImages',
+            'preferredCurrency',
+            'subscription.plan',
+            'subscriptionLogs.fromPlan',
+            'subscriptionLogs.toPlan',
+        ]);
         if(request()->has('search')) {
             $query->where('first_name', 'like', '%' . request()->input('search') . '%')
                 ->orWhere('last_name', 'like', '%' . request()->input('search') . '%')
@@ -144,7 +152,17 @@ class ManufacturerController extends Controller
         }
 
 
-        $manufacturer->load(['company.industries', 'manufacturerReviews', 'factoryImages', 'preferredCurrency', 'additionalInformationRequests.responses', 'additionalInformationRequests.requestedBy']);
+        $manufacturer->load([
+            'company.industries',
+            'manufacturerReviews',
+            'factoryImages',
+            'preferredCurrency',
+            'subscription.plan',
+            'subscriptionLogs.fromPlan',
+            'subscriptionLogs.toPlan',
+            'additionalInformationRequests.responses',
+            'additionalInformationRequests.requestedBy',
+        ]);
 
         return sendResponse(
             status: true,
