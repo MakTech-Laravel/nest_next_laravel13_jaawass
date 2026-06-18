@@ -15,7 +15,6 @@ class ManufacturerAdditionalInformationRequestResource extends JsonResource
     {
         $data =  [
             'id' => $this->id,
-            'user_id' => $this->user_id,
             'token' => $this->when($request->user()?->role?->isAdmin(), $this->token),
             'message' => $this->message,
             'allowed_types' => $this->allowed_types,
@@ -38,22 +37,10 @@ class ManufacturerAdditionalInformationRequestResource extends JsonResource
             'responses' => ManufacturerAdditionalInformationResponseResource::collection(
                 $this->whenLoaded('responses')
             ),
-            'manufacturer' => $this->whenLoaded('manufacturer', function () {
-                $name = trim($this->manufacturer->first_name.' '.$this->manufacturer->last_name);
-
-                return [
-                    'id' => $this->manufacturer->id,
-                    'email' => $this->manufacturer->email,
-                    'name' => $name !== '' ? $name : null,
-                    'company_name' => $this->manufacturer->company?->company_name,
-                    'manufacture_status' => $this->manufacturer->manufacture_status?->value,
-                    'manufacture_status_label' => $this->manufacturer->manufacture_status?->label(),
-                ];
-            }),
         ];
 
         if(env('APP_ENV') === 'local') {
-           $data['test_url'] = config('app.frontend_url').'/review?token='.$this->token;
+           $data['test_url'] = config('app.frontend_url').'/manufacturer-additional-information-request/'.$this->token;
         }
 
         return $data;

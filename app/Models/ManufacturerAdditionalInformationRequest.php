@@ -45,30 +45,6 @@ class ManufacturerAdditionalInformationRequest extends Model
         return $this->hasMany(ManufacturerAdditionalInformationResponse::class, 'request_id');
     }
 
-    public function scopeForManufacturer($query, User $manufacturer)
-    {
-        return $query->where('user_id', $manufacturer->id);
-    }
-
-    public function scopeStatusFilter($query, ?string $status)
-    {
-        if ($status !== null && $status !== '') {
-            $query->where('status', $status);
-        }
-
-        return $query;
-    }
-
-    public function markExpiredIfNeeded(): self
-    {
-        if ($this->isExpired() && $this->status === AdditionalInformationRequestStatus::Pending) {
-            $this->update(['status' => AdditionalInformationRequestStatus::Expired]);
-            $this->refresh();
-        }
-
-        return $this;
-    }
-
     public function isExpired(): bool
     {
         return $this->expires_at->isPast();

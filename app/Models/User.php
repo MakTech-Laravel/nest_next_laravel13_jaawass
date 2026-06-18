@@ -123,11 +123,6 @@ class User extends Authenticatable implements OAuthenticatable
         return $this->hasMany(ManufacturerAdditionalInformationRequest::class, 'user_id', 'id')->latest();
     }
 
-    public function requestedAdditionalInformationRequests(): HasMany
-    {
-        return $this->hasMany(ManufacturerAdditionalInformationRequest::class, 'requested_by', 'id')->latest();
-    }
-
     public function loginHistories(): HasMany
     {
         return $this->hasMany(UserLoginHistory::class, 'user_id', 'id')->orderByDesc('logged_in_at');

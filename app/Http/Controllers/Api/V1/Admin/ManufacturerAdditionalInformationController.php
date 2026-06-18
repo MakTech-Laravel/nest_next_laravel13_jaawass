@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\V1\Admin\IndexManufacturerAdditionalInformationRequest;
 use App\Http\Requests\Api\V1\Admin\StoreManufacturerAdditionalInformationRequest;
 use App\Http\Resources\Api\V1\ManufacturerAdditionalInformationRequestResource;
+use App\Models\ManufacturerAdditionalInformationRequest;
 use App\Models\User;
 use App\Services\Manufacturer\ManufacturerAdditionalInformationService;
-use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
 class ManufacturerAdditionalInformationController extends Controller
@@ -17,26 +16,12 @@ class ManufacturerAdditionalInformationController extends Controller
         private readonly ManufacturerAdditionalInformationService $service,
     ) {}
 
-    public function globalIndex(IndexManufacturerAdditionalInformationRequest $request): JsonResponse
+    public function index(int $manufacturer)
     {
-        $validated = $request->validated();
-
-        $records = $this->service->paginateForAdmin(
-            $validated['status'] ?? null,
-            (int) ($validated['per_page'] ?? 10),
-        );
-
-        return sendResponse(
-            status: true,
-            message: __('common.success'),
-            data: ManufacturerAdditionalInformationRequestResource::collection($records),
-            statusCode: HttpStatus::HTTP_OK,
-        );
-    }
-
-    public function index(int $manufacturer): JsonResponse
-    {
-        $user = $this->findManufacturerOrNotFound($manufacturer);
+        $user = User::query()
+            ->where('id', $manufacturer)
+            ->where('role', 'manufacturer')
+            ->first();
 
         if ($user === null) {
             return sendResponse(
@@ -47,7 +32,11 @@ class ManufacturerAdditionalInformationController extends Controller
             );
         }
 
-        $requests = $this->service->listForManufacturerAdmin($user);
+        $requests = ManufacturerAdditionalInformationRequest::query()
+            ->with(['requestedBy', 'responses'])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
 
         return sendResponse(
             status: true,
@@ -60,8 +49,12 @@ class ManufacturerAdditionalInformationController extends Controller
     public function store(
         StoreManufacturerAdditionalInformationRequest $request,
         int $manufacturer,
-    ): JsonResponse {
-        $manufacturerUser = $this->findManufacturerOrNotFound($manufacturer, loadCompany: true);
+    ) {
+        $manufacturerUser = User::query()
+            ->where('id', $manufacturer)
+            ->where('role', 'manufacturer')
+            ->with('company')
+            ->first();
 
         if ($manufacturerUser === null) {
             return sendResponse(
@@ -81,6 +74,8 @@ class ManufacturerAdditionalInformationController extends Controller
             allowedTypes: $validated['allowed_types'],
         );
 
+
+      
         return sendResponse(
             status: true,
             message: __('manufacturer_additional_information.request_sent'),
@@ -89,11 +84,13 @@ class ManufacturerAdditionalInformationController extends Controller
         );
     }
 
-    public function show(int $informationRequest): JsonResponse
+    public function show(int $informationRequest)
     {
-        try {
-            $record = $this->service->findForAdmin($informationRequest);
-        } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException) {
+        $record = ManufacturerAdditionalInformationRequest::query()
+            ->with(['requestedBy', 'responses', 'manufacturer.company'])
+            ->find($informationRequest);
+
+        if ($record === null) {
             return sendResponse(
                 status: false,
                 message: __('common.not_found'),
@@ -108,18 +105,5 @@ class ManufacturerAdditionalInformationController extends Controller
             data: new ManufacturerAdditionalInformationRequestResource($record),
             statusCode: HttpStatus::HTTP_OK,
         );
-    }
-
-    private function findManufacturerOrNotFound(int $manufacturerId, bool $loadCompany = false): ?User
-    {
-        $query = User::query()
-            ->where('id', $manufacturerId)
-            ->where('role', 'manufacturer');
-
-        if ($loadCompany) {
-            $query->with('company');
-        }
-
-        return $query->first();
     }
 }
