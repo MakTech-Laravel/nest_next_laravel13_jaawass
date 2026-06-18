@@ -122,3 +122,51 @@ test('admin can list additional information requests for manufacturer', function
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.message', 'Need more docs');
 });
+
+test('admin manufacturer show includes pending and submitted additional information requests', function () {
+    $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    $manufacturer = User::factory()->create(['role' => UserRole::MANUFACTURER->value]);
+
+    ManufacturerAdditionalInformationRequest::query()->create([
+        'user_id' => $manufacturer->id,
+        'requested_by' => $admin->id,
+        'token' => 'show-pending-token',
+        'message' => 'Pending request',
+        'allowed_types' => ['text'],
+        'status' => 'pending',
+        'expires_at' => now()->addDays(5),
+    ]);
+
+    ManufacturerAdditionalInformationRequest::query()->create([
+        'user_id' => $manufacturer->id,
+        'requested_by' => $admin->id,
+        'token' => 'show-submitted-token',
+        'message' => 'Submitted request',
+        'allowed_types' => ['document'],
+        'status' => 'submitted',
+        'expires_at' => now()->addDays(5),
+        'submitted_at' => now(),
+    ]);
+
+    ManufacturerAdditionalInformationRequest::query()->create([
+        'user_id' => $manufacturer->id,
+        'requested_by' => $admin->id,
+        'token' => 'show-expired-token',
+        'message' => 'Expired request',
+        'allowed_types' => ['text'],
+        'status' => 'expired',
+        'expires_at' => now()->subDay(),
+    ]);
+
+    Passport::actingAs($admin);
+
+    /** @var TestCase $this */
+    $response = $this->getJson("/api/v1/admin/manufacturer/{$manufacturer->id}");
+
+    $response->assertOk()
+        ->assertJsonCount(2, 'data.additional_information_requests');
+
+    $messages = collect($response->json('data.additional_information_requests'))->pluck('message')->all();
+    expect($messages)->toContain('Pending request')
+        ->toContain('Submitted request');
+});
