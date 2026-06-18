@@ -99,6 +99,102 @@ test('manufacturer can submit additional information via public token', function
     Storage::disk('public')->assertExists($request->responses->firstWhere('type', AdditionalInformationType::Image)->file_path);
 });
 
+test('admin can request video uploads in additional information request', function () {
+    Queue::fake();
+
+    $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    $manufacturer = User::factory()->create([
+        'role' => UserRole::MANUFACTURER->value,
+        'status' => UserStatus::PENDING,
+        'manufacture_status' => UserManuFactureStatus::PENDING,
+    ]);
+
+    Passport::actingAs($admin);
+
+    /** @var TestCase $this */
+    $response = $this->postJson("/api/v1/admin/manufacturer/{$manufacturer->id}/additional-information", [
+        'message' => 'Please upload a factory walkthrough video.',
+        'allowed_types' => ['video'],
+    ]);
+
+    $response->assertCreated()
+        ->assertJsonPath('data.allowed_types', ['video'])
+        ->assertJsonPath('data.allowed_type_labels', ['Video']);
+});
+
+test('manufacturer can submit video via public token using file field', function () {
+    Storage::fake('public');
+
+    $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    $manufacturer = User::factory()->create([
+        'role' => UserRole::MANUFACTURER->value,
+        'status' => UserStatus::PENDING,
+        'manufacture_status' => UserManuFactureStatus::PENDING,
+    ]);
+
+    $request = ManufacturerAdditionalInformationRequest::query()->create([
+        'user_id' => $manufacturer->id,
+        'requested_by' => $admin->id,
+        'token' => 'video-token-file',
+        'message' => 'Send a factory video.',
+        'allowed_types' => ['video'],
+        'status' => 'pending',
+        'expires_at' => now()->addDays(3),
+    ]);
+
+    $file = UploadedFile::fake()->create('factory-tour.mp4', 500, 'video/mp4');
+
+    /** @var TestCase $this */
+    $response = $this->post("/api/v1/manufacturer/additional-information/{$request->token}", [
+        'responses' => [
+            ['type' => 'video', 'file' => $file],
+        ],
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.status', 'submitted')
+        ->assertJsonPath('data.responses.0.type', 'video')
+        ->assertJsonPath('data.responses.0.is_video', true);
+
+    $videoResponse = $request->fresh('responses')->responses->first();
+
+    expect($videoResponse?->file_path)->toStartWith('manufacturer/additional-information/videos/');
+    Storage::disk('public')->assertExists($videoResponse->file_path);
+});
+
+test('manufacturer can submit video via dedicated video field', function () {
+    Storage::fake('public');
+
+    $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    $manufacturer = User::factory()->create([
+        'role' => UserRole::MANUFACTURER->value,
+        'status' => UserStatus::PENDING,
+        'manufacture_status' => UserManuFactureStatus::PENDING,
+    ]);
+
+    $request = ManufacturerAdditionalInformationRequest::query()->create([
+        'user_id' => $manufacturer->id,
+        'requested_by' => $admin->id,
+        'token' => 'video-token-dedicated',
+        'message' => 'Send a factory video.',
+        'allowed_types' => ['video'],
+        'status' => 'pending',
+        'expires_at' => now()->addDays(3),
+    ]);
+
+    $file = UploadedFile::fake()->create('walkthrough.webm', 500, 'video/webm');
+
+    /** @var TestCase $this */
+    $response = $this->post("/api/v1/manufacturer/additional-information/{$request->token}", [
+        'responses' => [
+            ['type' => 'video', 'video' => $file],
+        ],
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.responses.0.video_url', fn ($url) => is_string($url) && $url !== '');
+});
+
 test('admin can list additional information requests for manufacturer', function () {
     $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
     $manufacturer = User::factory()->create(['role' => UserRole::MANUFACTURER->value]);

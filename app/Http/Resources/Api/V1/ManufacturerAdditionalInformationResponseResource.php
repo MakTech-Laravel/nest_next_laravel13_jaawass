@@ -14,13 +14,17 @@ class ManufacturerAdditionalInformationResponseResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $fileUrl = $this->file_path ? storage_url($this->file_path) : null;
+
         return [
             'id' => $this->id,
             'type' => $this->type->value,
             'type_label' => $this->type->label(),
             'message' => $this->message,
             'file_path' => $this->file_path,
-            'file_url' => $this->file_path ? storage_url($this->file_path) : null,
+            'file_url' => $fileUrl,
+            'video_url' => $this->type === AdditionalInformationType::Video ? $fileUrl : null,
+            'is_video' => $this->type === AdditionalInformationType::Video,
             'original_name' => $this->original_name,
             'mime_type' => $this->mime_type,
             'file_size' => $this->file_size,
