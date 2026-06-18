@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureActiveSubscription;
 use App\Http\Middleware\EnsureAdmin;
+use App\Http\Middleware\EnsureApprovedManufacturer;
 use App\Http\Middleware\EnsureBuyer;
 use App\Http\Middleware\EnsureManufacturer;
 use App\Http\Middleware\EnsureManufacturerPlanFeature;
@@ -44,6 +45,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role.buyer' => EnsureBuyer::class,
             'role.manufacturer' => EnsureManufacturer::class,
             'role.admin' => EnsureAdmin::class,
+            'manufacturer.approved' => EnsureApprovedManufacturer::class,
             'subscription.active' => EnsureActiveSubscription::class,
             'plan.feature' => EnsurePlanFeature::class,
             'manufacturer.plan.feature' => EnsureManufacturerPlanFeature::class,
