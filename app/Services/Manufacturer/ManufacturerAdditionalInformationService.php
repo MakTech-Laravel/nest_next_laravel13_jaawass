@@ -9,8 +9,6 @@ use App\Models\ManufacturerAdditionalInformationRequest;
 use App\Models\ManufacturerAdditionalInformationResponse;
 use App\Models\User;
 use App\Services\Mailing\MailingService;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -62,63 +60,6 @@ class ManufacturerAdditionalInformationService
         return $request->load(['requestedBy', 'responses']);
     }
 
-    /**
-     * @return Collection<int, ManufacturerAdditionalInformationRequest>
-     */
-    public function listForManufacturer(User $manufacturer, ?string $status = null): Collection
-    {
-        return $manufacturer
-            ->additionalInformationRequests()
-            ->with(['requestedBy', 'responses'])
-            ->statusFilter($status)
-            ->get()
-            ->each(fn (ManufacturerAdditionalInformationRequest $request) => $request->markExpiredIfNeeded());
-    }
-
-    /**
-     * @return Collection<int, ManufacturerAdditionalInformationRequest>
-     */
-    public function listForManufacturerAdmin(User $manufacturer): Collection
-    {
-        return $manufacturer
-            ->additionalInformationRequests()
-            ->with(['requestedBy', 'responses'])
-            ->get()
-            ->each(fn (ManufacturerAdditionalInformationRequest $request) => $request->markExpiredIfNeeded());
-    }
-
-    public function paginateForAdmin(?string $status, int $perPage = 10): LengthAwarePaginator
-    {
-        return ManufacturerAdditionalInformationRequest::query()
-            ->with(['requestedBy', 'responses', 'manufacturer.company'])
-            ->statusFilter($status)
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
-    }
-
-    public function findForAdmin(int $requestId): ManufacturerAdditionalInformationRequest
-    {
-        $request = ManufacturerAdditionalInformationRequest::query()
-            ->with(['requestedBy', 'responses', 'manufacturer.company'])
-            ->find($requestId);
-
-        if ($request === null) {
-            throw new NotFoundHttpException(__('common.not_found'));
-        }
-
-        return $request->markExpiredIfNeeded();
-    }
-
-    public function countPendingForManufacturer(User $manufacturer): int
-    {
-        return $manufacturer
-            ->additionalInformationRequests()
-            ->where('status', AdditionalInformationRequestStatus::Pending)
-            ->where('expires_at', '>', now())
-            ->count();
-    }
-
     public function findByToken(string $token): ManufacturerAdditionalInformationRequest
     {
         $request = ManufacturerAdditionalInformationRequest::query()
@@ -130,60 +71,27 @@ class ManufacturerAdditionalInformationService
             throw new NotFoundHttpException(__('manufacturer_additional_information.invalid_token'));
         }
 
-        return $request->markExpiredIfNeeded();
+        if ($request->isExpired() && $request->status === AdditionalInformationRequestStatus::Pending) {
+            $request->update(['status' => AdditionalInformationRequestStatus::Expired]);
+            $request->refresh();
+        }
+
+        return $request;
     }
 
     public function findSubmittableByToken(string $token): ManufacturerAdditionalInformationRequest
     {
-        return $this->findSubmittableRequest($this->findByToken($token), 'token');
-    }
+        $request = $this->findByToken($token);
 
-    public function findOwnedRequest(User $manufacturer, int $requestId): ManufacturerAdditionalInformationRequest
-    {
-        $request = $manufacturer
-            ->additionalInformationRequests()
-            ->with(['manufacturer.company', 'requestedBy', 'responses'])
-            ->whereKey($requestId)
-            ->first();
-
-        if ($request === null) {
-            throw new NotFoundHttpException(__('common.not_found'));
-        }
-
-        return $request->markExpiredIfNeeded();
-    }
-
-    public function findSubmittableOwnedRequest(User $manufacturer, int $requestId): ManufacturerAdditionalInformationRequest
-    {
-        return $this->findSubmittableRequest($this->findOwnedRequest($manufacturer, $requestId));
-    }
-
-    /**
-     * @param  array<int, array{type: string, message?: string|null, file?: UploadedFile|null}>  $items
-     */
-    public function submitOwnedRequest(
-        User $manufacturer,
-        int $requestId,
-        array $items,
-    ): ManufacturerAdditionalInformationRequest {
-        $request = $this->findSubmittableOwnedRequest($manufacturer, $requestId);
-
-        return $this->submitResponses($request, $items);
-    }
-
-    private function findSubmittableRequest(
-        ManufacturerAdditionalInformationRequest $request,
-        string $errorKey = 'request',
-    ): ManufacturerAdditionalInformationRequest {
         if ($request->status === AdditionalInformationRequestStatus::Submitted) {
             throw ValidationException::withMessages([
-                $errorKey => [__('manufacturer_additional_information.already_submitted')],
+                'token' => [__('manufacturer_additional_information.already_submitted')],
             ]);
         }
 
         if ($request->status === AdditionalInformationRequestStatus::Expired || $request->isExpired()) {
             throw ValidationException::withMessages([
-                $errorKey => [__('manufacturer_additional_information.expired')],
+                'token' => [__('manufacturer_additional_information.expired')],
             ]);
         }
 
@@ -351,6 +259,6 @@ class ManufacturerAdditionalInformationService
     {
         $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
 
-        return "{$frontendUrl}/review?token={$token}";
+        return "{$frontendUrl}/manufacturer/submit-information?token={$token}";
     }
 }

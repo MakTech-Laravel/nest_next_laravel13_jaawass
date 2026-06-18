@@ -18,6 +18,10 @@ class ManufacturerAccountGate
 
         $status = UserManuFactureStatus::normalizedForManufacturer($user->manufacture_status);
 
+        if ($status->allowsApiLogin()) {
+            return ['allowed' => true];
+        }
+
         if ($status->isRejected()) {
             return [
                 'allowed' => false,
@@ -26,8 +30,10 @@ class ManufacturerAccountGate
             ];
         }
 
-        // Pending and approved manufacturers may log in.
-        // Pending accounts are limited to review routes via EnsureApprovedManufacturer middleware.
-        return ['allowed' => true];
+        return [
+            'allowed' => false,
+            'message' => __('auth.manufacturer.login-pending'),
+            'rejection_reason' => null,
+        ];
     }
 }
