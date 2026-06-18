@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
             FaqSeeder::class,
             FeatureSeeder::class,
             PlanSeeder::class,
+            PlanFeatureSeeder::class,
             PromotionSeeder::class,
             HelpCenterCategorySeeder::class,
             HelpCenterArticleSeeder::class,

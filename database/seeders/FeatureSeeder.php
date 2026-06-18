@@ -14,28 +14,34 @@ class FeatureSeeder extends Seeder
     public function run(): void
     {
         $features = [
-            ['name' => 'Product Limits', 'key' => 'product_limits'],
+            ['name' => 'Product Limit', 'key' => 'product_limit'],
             ['name' => 'Company Profile', 'key' => 'company_profile'],
-            ['name' => 'Intnernal Messaging', 'key' => 'internal_messaging'],
-            ['name' => 'Intnernal Inbox & RFQ reception', 'key' => 'inqury_rfq_inbox'],
+            ['name' => 'Internal Messaging', 'key' => 'internal_messaging'],
+            ['name' => 'Inquiry Inbox & RFQ Reception', 'key' => 'inquiry_rfq_inbox'],
+            ['name' => 'Catalog Upload', 'key' => 'catalog_upload'],
+        
             ['name' => 'Basic Analytics', 'key' => 'basic_analytics'],
             ['name' => 'Advanced Analytics', 'key' => 'advanced_analytics'],
-            ['name' => 'Catalog Upload', 'key'=>'catalog_upload'],
-            ['name' => 'Certification section', 'key'=>'certification_section'],
-            ['name' => 'Export markets Section', 'key'=>'export_market_section'],
-            ['name' => 'Limited Visiblity', 'key'=>'limited_visiblity'],
-            ['name' => 'Priority Serach Visiblity', 'key'=>'priority_search_visiblity'],
-            ['name' => 'Featured Supplier Badge', 'key'=>'featured_supplier_badge'],
-            ['name' => 'Multiple team users', 'key'=>'multiple_team_user'],
-            ['name' => 'Enhanced Visiblity Buyers', 'key'=>'enhanced_visiblity_buyers'],
-            ['name' => 'Higher Changes to Recievef RFQ', 'key'=>'higher_chances_to_receive_rfq'],
-            ['name' => 'Unlimited Products', 'key'=>'unlimted_products'],
-            ['name' => 'Everything in Growth +', 'key'=>'growth_plus'],
-            ['name' => 'Permium (top) Search Placement', 'key'=>'premium_search_placement'],
-            ['name' => 'Maximum Visiblity', 'key'=>'maximum_visiblity'],
-            ['name' => 'Higher Priority in Buyer inquiries', 'key'=>'higher_priority_buyer_inquiries'],
-            ['name' => 'Unlimted team users', 'key'=>'unlimted_team_users'],
-            ['name' => 'Priority Support', 'key'=>'priority_support'],
+        
+            ['name' => 'Certifications Section', 'key' => 'certifications_section'],
+            ['name' => 'Export Markets Section', 'key' => 'export_markets_section'],
+        
+            ['name' => 'Limited Buyer Visibility', 'key' => 'limited_buyer_visibility'],
+            ['name' => 'Enhanced Buyer Visibility', 'key' => 'enhanced_buyer_visibility'],
+            ['name' => 'Maximum Buyer Visibility', 'key' => 'maximum_buyer_visibility'],
+        
+            ['name' => 'Priority Search Visibility', 'key' => 'priority_search_visibility'],
+            ['name' => 'Premium Search Placement', 'key' => 'premium_search_placement'],
+        
+            ['name' => 'Featured Supplier Badge', 'key' => 'featured_supplier_badge'],
+        
+            ['name' => 'Team Users Limit', 'key' => 'team_users_limit'],
+            ['name' => 'Unlimited Team Users', 'key' => 'unlimited_team_users'],
+        
+            ['name' => 'Higher Chance to Receive RFQs', 'key' => 'higher_chance_receive_rfq'],
+            ['name' => 'Higher Priority in Buyer Inquiries', 'key' => 'higher_priority_buyer_inquiries'],
+        
+            ['name' => 'Priority Support', 'key' => 'priority_support'],
         ];
 
         Feature::insert($features);

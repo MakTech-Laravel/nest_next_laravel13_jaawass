@@ -14,7 +14,6 @@ use App\Models\Subscription;
 use App\Models\SubscriptionLog;
 use App\Models\User;
 use App\Services\Company\CompanySlugService;
-use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -36,11 +35,12 @@ class ManufacturerSubscriptionSeeder extends Seeder
             return;
         }
 
-        $professional = $plans->get('Professional') ?? $plans->values()->get(1);
+        $starter = $plans->get('Starter') ?? $plans->values()->first();
+        $growth = $plans->get('Growth') ?? $plans->values()->get(1);
         $enterprise = $plans->get('Enterprise') ?? $plans->values()->last();
 
-        if ($professional === null || $enterprise === null) {
-            $this->command->error('Expected at least Professional and Enterprise plans.');
+        if ($starter === null || $growth === null || $enterprise === null) {
+            $this->command->error('Expected Starter, Growth, and Enterprise plans.');
 
             return;
         }
@@ -53,16 +53,16 @@ class ManufacturerSubscriptionSeeder extends Seeder
                 'first_name' => 'Alex',
                 'last_name' => 'Chen',
                 'company_name' => 'Pacific Components Ltd.',
-                'plan' => $professional,
+                'plan' => $starter,
                 'billing_interval' => BillingInterval::MONTH,
                 'status' => SubscriptionStatus::ACTIVE,
                 'auto_renew' => true,
                 'started_days_ago' => 10,
                 'payments' => [
-                    ['suffix' => 'initial', 'amount' => $professional->monthly_price, 'days_ago' => 10],
+                    ['suffix' => 'initial', 'amount' => $starter->monthly_price, 'days_ago' => 10],
                 ],
                 'logs' => [
-                    ['event' => SubscriptionEventType::SUBSCRIPTION_CREATED, 'from' => null, 'to' => $professional, 'days_ago' => 10],
+                    ['event' => SubscriptionEventType::SUBSCRIPTION_CREATED, 'from' => null, 'to' => $starter, 'days_ago' => 10],
                 ],
             ],
             [
@@ -76,12 +76,12 @@ class ManufacturerSubscriptionSeeder extends Seeder
                 'auto_renew' => true,
                 'started_days_ago' => 45,
                 'payments' => [
-                    ['suffix' => 'initial', 'amount' => $professional->monthly_price, 'days_ago' => 60],
+                    ['suffix' => 'initial', 'amount' => $growth->monthly_price, 'days_ago' => 60],
                     ['suffix' => 'upgrade', 'amount' => $enterprise->yearly_price, 'days_ago' => 45],
                 ],
                 'logs' => [
-                    ['event' => SubscriptionEventType::SUBSCRIPTION_CREATED, 'from' => null, 'to' => $professional, 'days_ago' => 60],
-                    ['event' => SubscriptionEventType::SUBSCRIPTION_UPGRADED, 'from' => $professional, 'to' => $enterprise, 'days_ago' => 45],
+                    ['event' => SubscriptionEventType::SUBSCRIPTION_CREATED, 'from' => null, 'to' => $growth, 'days_ago' => 60],
+                    ['event' => SubscriptionEventType::SUBSCRIPTION_UPGRADED, 'from' => $growth, 'to' => $enterprise, 'days_ago' => 45],
                 ],
             ],
             [
@@ -89,17 +89,17 @@ class ManufacturerSubscriptionSeeder extends Seeder
                 'first_name' => 'Marco',
                 'last_name' => 'Rossi',
                 'company_name' => 'EuroSteel Fabrication SRL',
-                'plan' => $professional,
+                'plan' => $growth,
                 'billing_interval' => BillingInterval::MONTH,
                 'status' => SubscriptionStatus::ACTIVE,
                 'auto_renew' => false,
                 'started_days_ago' => 20,
                 'payments' => [
-                    ['suffix' => 'initial', 'amount' => $professional->monthly_price, 'days_ago' => 20],
+                    ['suffix' => 'initial', 'amount' => $growth->monthly_price, 'days_ago' => 20],
                 ],
                 'logs' => [
-                    ['event' => SubscriptionEventType::SUBSCRIPTION_CREATED, 'from' => null, 'to' => $professional, 'days_ago' => 20],
-                    ['event' => SubscriptionEventType::SUBSCRIPTION_CANCELLED, 'from' => $professional, 'to' => $professional, 'days_ago' => 5, 'paid_amount' => null],
+                    ['event' => SubscriptionEventType::SUBSCRIPTION_CREATED, 'from' => null, 'to' => $growth, 'days_ago' => 20],
+                    ['event' => SubscriptionEventType::SUBSCRIPTION_CANCELLED, 'from' => $growth, 'to' => $growth, 'days_ago' => 5, 'paid_amount' => null],
                 ],
             ],
             [
@@ -123,21 +123,21 @@ class ManufacturerSubscriptionSeeder extends Seeder
                 'first_name' => 'Emily',
                 'last_name' => 'Johnson',
                 'company_name' => 'Summit Home Goods LLC',
-                'plan' => $professional,
+                'plan' => $growth,
                 'billing_interval' => BillingInterval::MONTH,
                 'status' => SubscriptionStatus::CANCELED,
                 'auto_renew' => false,
                 'started_days_ago' => 90,
                 'ended_days_ago' => 5,
                 'payments' => [
-                    ['suffix' => 'initial', 'amount' => $professional->monthly_price, 'days_ago' => 90],
-                    ['suffix' => 'renewal', 'amount' => $professional->monthly_price, 'days_ago' => 60],
+                    ['suffix' => 'initial', 'amount' => $growth->monthly_price, 'days_ago' => 90],
+                    ['suffix' => 'renewal', 'amount' => $growth->monthly_price, 'days_ago' => 60],
                 ],
                 'logs' => [
-                    ['event' => SubscriptionEventType::SUBSCRIPTION_CREATED, 'from' => null, 'to' => $professional, 'days_ago' => 90],
-                    ['event' => SubscriptionEventType::SUBSCRIPTION_RENEWED, 'from' => $professional, 'to' => $professional, 'days_ago' => 60],
-                    ['event' => SubscriptionEventType::SUBSCRIPTION_CANCELLED, 'from' => $professional, 'to' => $professional, 'days_ago' => 30, 'paid_amount' => null],
-                    ['event' => SubscriptionEventType::SUBSCRIPTION_EXPIRED, 'from' => $professional, 'to' => $professional, 'days_ago' => 5, 'paid_amount' => null],
+                    ['event' => SubscriptionEventType::SUBSCRIPTION_CREATED, 'from' => null, 'to' => $growth, 'days_ago' => 90],
+                    ['event' => SubscriptionEventType::SUBSCRIPTION_RENEWED, 'from' => $growth, 'to' => $growth, 'days_ago' => 60],
+                    ['event' => SubscriptionEventType::SUBSCRIPTION_CANCELLED, 'from' => $growth, 'to' => $growth, 'days_ago' => 30, 'paid_amount' => null],
+                    ['event' => SubscriptionEventType::SUBSCRIPTION_EXPIRED, 'from' => $growth, 'to' => $growth, 'days_ago' => 5, 'paid_amount' => null],
                 ],
             ],
         ];
@@ -147,7 +147,7 @@ class ManufacturerSubscriptionSeeder extends Seeder
             $this->seedSubscriptionData($manufacturer, $scenario);
         }
 
-        $this->seedExistingManufacturers($professional, $enterprise);
+        $this->seedExistingManufacturers($growth, $enterprise);
 
         $this->command->info('Manufacturer subscription demo data seeded.');
         $this->command->line('Login passwords match email (e.g. sub-manufacturer-1@dev.com).');
@@ -281,16 +281,16 @@ class ManufacturerSubscriptionSeeder extends Seeder
         $this->command->info("Seeded subscription for {$manufacturer->email} ({$plan->name}, {$scenario['status']->value}).");
     }
 
-    private function seedExistingManufacturers(Plan $professional, Plan $enterprise): void
+    private function seedExistingManufacturers(Plan $growth, Plan $enterprise): void
     {
         $existing = [
             'manufacturer@dev.com' => [
-                'plan' => $professional,
+                'plan' => $growth,
                 'billing_interval' => BillingInterval::MONTH,
                 'status' => SubscriptionStatus::ACTIVE,
                 'auto_renew' => true,
                 'started_days_ago' => 7,
-                'amount' => $professional->monthly_price,
+                'amount' => $growth->monthly_price,
             ],
             'meheduvau@gmail.com' => [
                 'plan' => $enterprise,
