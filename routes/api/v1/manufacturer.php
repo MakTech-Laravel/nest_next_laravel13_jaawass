@@ -13,8 +13,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('')->group(function () {
 
-    Route::get('/dashboard', [ManufacturerDashboardController::class, 'overview']);
-
     Route::prefix('subscriptions')->controller(SubscriptionController::class)->group(function () {
         Route::get('/', 'show');
         Route::post('/subscribe', 'subscribe');
@@ -22,70 +20,72 @@ Route::prefix('')->group(function () {
         Route::post('/upgrade', 'upgrade');
     });
 
-    Route::prefix('/profile')->controller(ManufacturerProfileController::class)->group(function () {
-        Route::get('/', 'index');
-        // For Compnay profile
-        Route::put('/update', 'update');
-        // Basic Account Profile
-        Route::put('/basic-profile', 'updateProfile');
+    Route::middleware(['subscription.active'])->group(function () {
 
-        Route::put('/change/password', 'changePassword');
-        Route::patch('/toggle-status', 'toggleStatus');
-        Route::put('/notification-preferences', 'updateNotificationPreferences');
-    });
+        Route::get('/dashboard', [ManufacturerDashboardController::class, 'overview'])
+            ->middleware('plan.feature:basic_analytics|advanced_analytics');
 
-    // Products Route
+        Route::prefix('/profile')->controller(ManufacturerProfileController::class)->group(function () {
+            Route::get('/', 'index');
+            Route::put('/basic-profile', 'updateProfile');
+            Route::put('/change/password', 'changePassword');
+            Route::patch('/toggle-status', 'toggleStatus');
+            Route::put('/notification-preferences', 'updateNotificationPreferences');
+            Route::put('/update', 'update')->middleware('plan.feature:company_profile');
+        });
 
-    Route::controller(ManufacturerProductController::class)->prefix('products')->group(function () {
-        Route::get('/stats', 'stats');
-        Route::get('/', 'index');
-        Route::post('/', 'store');
-        Route::get('/{product_id}', 'show');
-        Route::put('/{product_id}', 'update');
-        Route::delete('/{product_id}', 'destroy');
-        Route::patch('/{product_id}/change-status', 'changeStatus');
-        Route::patch('/{product_id}/duplicate-to-draft', 'duplicateToDraft');
-    });
+        Route::controller(ManufacturerProductController::class)->prefix('products')->group(function () {
+            Route::get('/stats', 'stats')->middleware('plan.feature:basic_analytics|advanced_analytics');
+            Route::get('/', 'index');
+            Route::post('/', 'store')->middleware('plan.feature:product_limit');
+            Route::get('/{product_id}', 'show');
+            Route::put('/{product_id}', 'update');
+            Route::delete('/{product_id}', 'destroy');
+            Route::patch('/{product_id}/change-status', 'changeStatus');
+            Route::patch('/{product_id}/duplicate-to-draft', 'duplicateToDraft')
+                ->middleware('plan.feature:product_limit');
+        });
 
-    Route::controller(ManufacturerCatalogController::class)->prefix('catalogs')->group(function () {
-        Route::get('/', 'index');
-        Route::post('/', 'store');
-        Route::get('/stats', 'stats');
-        Route::get('/{catalog_id}', 'show');
-        Route::put('/{catalog_id}', 'update');
-        Route::patch('/{catalog_id}/change-status', 'changeStatus');
-        Route::delete('/{catalog_id}', 'destroy');
-    });
+        Route::controller(ManufacturerCatalogController::class)->prefix('catalogs')->group(function () {
+            Route::get('/', 'index');
+            Route::post('/', 'store')->middleware('plan.feature:catalog_upload');
+            Route::get('/stats', 'stats');
+            Route::get('/{catalog_id}', 'show');
+            Route::put('/{catalog_id}', 'update')->middleware('plan.feature:catalog_upload');
+            Route::patch('/{catalog_id}/change-status', 'changeStatus')->middleware('plan.feature:catalog_upload');
+            Route::delete('/{catalog_id}', 'destroy')->middleware('plan.feature:catalog_upload');
+        });
 
-    Route::controller(ManufacturerRfqController::class)->prefix('rfqs')->name('rfqs.')->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::get('/counts', 'counts')->name('counts');
-        Route::get('/{rfq}', 'show')->name('show');
-        Route::post('/{rfq}/reply', 'reply')->name('reply');
-        Route::post('/{rfq}/quote', 'sendQuote')->name('send-quote');
-    });
+        Route::controller(ManufacturerRfqController::class)->prefix('rfqs')->name('rfqs.')->middleware('plan.feature:inquiry_rfq_inbox')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::get('/counts', 'counts')->name('counts');
+            Route::get('/{rfq}', 'show')->name('show');
+            Route::post('/{rfq}/reply', 'reply')->name('reply');
+            Route::post('/{rfq}/quote', 'sendQuote')->name('send-quote');
+        });
 
-    Route::controller(OrderController::class)->prefix('orders')->group(function (): void {
-        Route::get('/select/products', 'selectProducts');
-        Route::get('/select/buyers', 'selectBuyers');
-        Route::get('/status-options', 'statusOptions');
-        Route::get('/stats', 'stats');
-        Route::get('/', 'index');
-        Route::post('/create', 'store');
-        Route::post('/{order}/status-updates', 'storeStatusUpdate');
-        Route::get('/{order}', 'show');
-    });
+        Route::controller(OrderController::class)->prefix('orders')->group(function (): void {
+            Route::get('/select/products', 'selectProducts');
+            Route::get('/select/buyers', 'selectBuyers');
+            Route::get('/status-options', 'statusOptions');
+            Route::get('/stats', 'stats');
+            Route::get('/', 'index');
+            Route::post('/create', 'store');
+            Route::post('/{order}/status-updates', 'storeStatusUpdate');
+            Route::get('/{order}', 'show');
+        });
 
-    Route::controller(CertificateTypeController::class)->prefix('certificate/types')->group(function () {
-        Route::get('/', 'index');
-    });
-    Route::controller(CertificationController::class)->prefix('certificate')->group(function () {
-        Route::get('/stats', 'stats');
-        Route::get('/', 'index');
-        Route::post('/create', 'store');
-        Route::get('/{certificatId}', 'show');
-        Route::put('/{certificatId}', 'update');
-        Route::delete('/{certificateId}', 'destroy');
+        Route::controller(CertificateTypeController::class)->prefix('certificate/types')->middleware('plan.feature:certifications_section')->group(function () {
+            Route::get('/', 'index');
+        });
 
+        Route::controller(CertificationController::class)->prefix('certificate')->middleware('plan.feature:certifications_section')->group(function () {
+            Route::get('/stats', 'stats');
+            Route::get('/', 'index');
+            Route::post('/create', 'store');
+            Route::get('/{certificatId}', 'show');
+            Route::put('/{certificatId}', 'update');
+            Route::delete('/{certificateId}', 'destroy');
+        });
     });
 });

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api\V1\Manufacturer;
 
 use App\Enums\Api\V1\ProductStatusEnum;
+use App\Services\Subscription\PlanEntitlementResolver;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -90,5 +91,12 @@ class ManufacturerStoreProductRequest extends FormRequest
 
             'product_broschure' => 'nullable|file|mimes:pdf,doc,docx|max:10240',
         ];
+    }
+
+    protected function passedValidation(): void
+    {
+        app(PlanEntitlementResolver::class)
+            ->for($this->user())
+            ->assertWithinLimit('product_limit', $this->user()->products()->count());
     }
 }

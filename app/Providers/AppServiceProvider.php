@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Contracts\Currency\CurrencyContextInterface;
 use App\Services\Currency\CurrencyContext;
 use App\Services\Currency\CurrencyDisplayResolver;
+use App\Services\Subscription\PlanEntitlementResolver;
 use App\Services\Supplier\PublicSupplierCatalogService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -26,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(CurrencyContextInterface::class, function ($app) {
             return new CurrencyContext($app->make(CurrencyDisplayResolver::class));
         });
+
+        $this->app->singleton(PlanEntitlementResolver::class);
     }
 
     /**

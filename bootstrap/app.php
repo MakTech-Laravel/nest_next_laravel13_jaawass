@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Middleware\EnsureActiveSubscription;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureBuyer;
 use App\Http\Middleware\EnsureManufacturer;
+use App\Http\Middleware\EnsureManufacturerPlanFeature;
+use App\Http\Middleware\EnsurePlanFeature;
 use App\Http\Middleware\SetLocale;
-use Illuminate\Auth\AuthenticationException;
+use App\Exceptions\Subscription\PlanEntitlementException;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
@@ -41,9 +44,25 @@ return Application::configure(basePath: dirname(__DIR__))
             'role.buyer' => EnsureBuyer::class,
             'role.manufacturer' => EnsureManufacturer::class,
             'role.admin' => EnsureAdmin::class,
+            'subscription.active' => EnsureActiveSubscription::class,
+            'plan.feature' => EnsurePlanFeature::class,
+            'manufacturer.plan.feature' => EnsureManufacturerPlanFeature::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (PlanEntitlementException $exception, Request $request) {
+            if (! $request->is('api/*') && ! $request->expectsJson()) {
+                return null;
+            }
+
+            return sendResponse(
+                status: false,
+                message: $exception->getMessage(),
+                data: $exception->payload(),
+                statusCode: $exception->statusCode,
+            );
+        });
+
         $exceptions->render(function (AuthenticationException $exception, Request $request) {
             if (! $request->is('api/*') && ! $request->expectsJson()) {
                 return null;

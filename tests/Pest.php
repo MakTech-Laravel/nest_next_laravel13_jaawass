@@ -1,6 +1,12 @@
 <?php
 
+use App\Enums\Api\V1\SubscriptionStatus;
+use App\Enums\UserRole;
+use App\Models\Feature;
+use App\Models\Plan;
+use App\Models\PlanFeature;
 use App\Models\Product;
+use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Laravel\Passport\Passport;
@@ -119,7 +125,7 @@ function seedOrderSelectProduct(User $manufacturer, string $name = 'TWS Earbuds 
 function seedManufacturerOrderScenario(): array
 {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = createSubscribedManufacturer();
     $product = seedOrderSelectProduct($manufacturer);
 
     DB::table('companies')->insert([
@@ -152,4 +158,60 @@ function seedManufacturerOrderScenario(): array
         'manufacturer' => $manufacturer,
         'product' => $product,
     ];
+}
+
+/**
+ * @param  array<int, array{key: string, input_type: string, value: string}>  $features
+ */
+function createSubscribedManufacturer(array $features = []): User
+{
+    $manufacturer = User::factory()->create(['role' => UserRole::MANUFACTURER->value]);
+
+    $plan = Plan::query()->create([
+        'name' => 'Test Growth',
+        'description' => 'Test plan',
+        'button_text' => 'Subscribe',
+        'monthly_price' => 299,
+        'yearly_price' => 2990,
+        'is_popular' => true,
+        'status' => true,
+    ]);
+
+    $defaultFeatures = $features !== [] ? $features : [
+        ['key' => 'product_limit', 'input_type' => 'text', 'value' => '2'],
+        ['key' => 'company_profile', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'catalog_upload', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'inquiry_rfq_inbox', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'basic_analytics', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'advanced_analytics', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'certifications_section', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'export_markets_section', 'input_type' => 'boolean', 'value' => '1'],
+        ['key' => 'internal_messaging', 'input_type' => 'boolean', 'value' => '1'],
+    ];
+
+    foreach ($defaultFeatures as $featureConfig) {
+        $feature = Feature::query()->firstOrCreate(
+            ['key' => $featureConfig['key']],
+            ['name' => ucfirst(str_replace('_', ' ', $featureConfig['key']))],
+        );
+
+        PlanFeature::query()->create([
+            'plan_id' => $plan->id,
+            'feature_id' => $feature->id,
+            'input_type' => $featureConfig['input_type'],
+            'value' => $featureConfig['value'],
+        ]);
+    }
+
+    Subscription::query()->create([
+        'manufacturer_id' => $manufacturer->id,
+        'plan_id' => $plan->id,
+        'billing_interval' => 'month',
+        'status' => SubscriptionStatus::ACTIVE->value,
+        'starts_at' => now()->subDay(),
+        'ends_at' => now()->addMonth(),
+        'auto_renew' => true,
+    ]);
+
+    return $manufacturer->fresh();
 }

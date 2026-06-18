@@ -34,7 +34,6 @@ class ManufacturerProfileController extends Controller
 
         $user = $request->user();
 
-
         $validated = $request->validated();
 
         $remove_images = $validated['remove_images'] ?? [];

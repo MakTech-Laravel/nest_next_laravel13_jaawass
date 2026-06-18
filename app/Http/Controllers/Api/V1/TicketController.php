@@ -7,12 +7,14 @@ namespace App\Http\Controllers\Api\V1;
 use App\Enums\TicketDepartmentType;
 use App\Enums\TicketPriority;
 use App\Enums\TicketStatus;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\IndexTicketRequest;
 use App\Http\Requests\Api\V1\StoreTicketMessageRequest;
 use App\Http\Requests\Api\V1\StoreTicketRequest;
 use App\Http\Resources\Api\V1\TicketResource;
 use App\Models\Ticket;
+use App\Services\Subscription\PlanEntitlementResolver;
 use App\Services\TicketMessageService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -23,6 +25,7 @@ class TicketController extends Controller
 {
     public function __construct(
         private readonly TicketMessageService $ticketMessageService,
+        private readonly PlanEntitlementResolver $entitlementResolver,
     ) {}
 
     public function options(): JsonResponse
@@ -59,13 +62,19 @@ class TicketController extends Controller
     {
         $validated = $request->validated();
         $user = $request->user();
+        $priority = $validated['priority'] ?? TicketPriority::Medium->value;
 
-        $ticket = DB::transaction(function () use ($validated, $request, $user): Ticket {
+        if ($user->role === UserRole::MANUFACTURER
+            && $this->entitlementResolver->for($user)->hasFeature('priority_support')) {
+            $priority = TicketPriority::High->value;
+        }
+
+        $ticket = DB::transaction(function () use ($validated, $request, $user, $priority): Ticket {
             $ticket = Ticket::query()->create([
                 'user_id' => $user->id,
                 'subject' => $validated['subject'],
                 'department_type' => $validated['department_type'],
-                'priority' => $validated['priority'] ?? TicketPriority::Medium->value,
+                'priority' => $priority,
                 'status' => TicketStatus::Open->value,
             ]);
 
