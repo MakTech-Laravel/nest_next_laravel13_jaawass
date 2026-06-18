@@ -50,7 +50,7 @@ function seedManufacturerOrderWithStatus(): array
 }
 
 test('manufacturer can fetch order status options', function (): void {
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
 
     Passport::actingAs($manufacturer);
 
@@ -107,7 +107,7 @@ test('manufacturer cannot post progress update without notes or attachments', fu
 
 test('manufacturer cannot post progress update for another manufacturers order', function (): void {
     ['order' => $order] = seedManufacturerOrderWithStatus();
-    $otherManufacturer = User::factory()->manufacturerApproved()->create();
+    $otherManufacturer = manufacturerWithSubscription();
 
     Passport::actingAs($otherManufacturer);
 

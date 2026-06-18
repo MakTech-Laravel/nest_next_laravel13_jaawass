@@ -78,7 +78,7 @@ function seedProductForManufacturer(User $manufacturer): Product
 
 test('buyer can submit rfq and product inquiry count increments', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedProductForManufacturer($manufacturer);
 
     DB::table('companies')->insert([
@@ -121,7 +121,7 @@ test('buyer can submit rfq and product inquiry count increments', function (): v
 test('buyer dashboard rfq api shows own rfqs with conversation id', function (): void {
     $buyer = User::factory()->create();
     $otherBuyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedProductForManufacturer($manufacturer);
 
     Passport::actingAs($buyer);
@@ -159,7 +159,7 @@ test('buyer dashboard rfq api shows own rfqs with conversation id', function ():
 
 test('buyer can update own rfq status', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedProductForManufacturer($manufacturer);
 
     Passport::actingAs($buyer);
@@ -184,7 +184,7 @@ test('buyer can update own rfq status', function (): void {
 
 test('buyer rfq counts api returns dashboard counters', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedProductForManufacturer($manufacturer);
 
     Passport::actingAs($buyer);
@@ -225,7 +225,7 @@ test('buyer rfq counts api returns dashboard counters', function (): void {
 
 test('buyer can search rfqs and filter by status', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedProductForManufacturer($manufacturer);
 
     DB::table('companies')->insert([
@@ -266,7 +266,7 @@ test('buyer can search rfqs and filter by status', function (): void {
 test('buyer can show own rfq details', function (): void {
     $buyer = User::factory()->create();
     $otherBuyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedProductForManufacturer($manufacturer);
 
     Passport::actingAs($buyer);
@@ -291,7 +291,7 @@ test('buyer can show own rfq details', function (): void {
 test('admin can list and show rfqs', function (): void {
     $admin = User::factory()->admin()->create();
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedProductForManufacturer($manufacturer);
 
     DB::table('companies')->insert([
@@ -330,7 +330,7 @@ test('admin can list and show rfqs', function (): void {
 
 test('manufacturer can reply and send quote then buyer can accept quote', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedProductForManufacturer($manufacturer);
 
     Passport::actingAs($buyer);
@@ -370,7 +370,7 @@ test('manufacturer can reply and send quote then buyer can accept quote', functi
 
 test('buyer can cancel quoted rfq and quoted rfq becomes expired after validity date', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedProductForManufacturer($manufacturer);
 
     Passport::actingAs($buyer);

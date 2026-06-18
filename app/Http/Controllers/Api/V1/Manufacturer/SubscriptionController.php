@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\Subscription\Manufacturer\SubcriptionUpdgradeRquest
 use App\Http\Requests\Api\V1\Subscription\Manufacturer\SubscriptionStoreRequest;
 use App\Http\Resources\Api\V1\SubscriptionResource;
 use App\Models\Payment;
+use App\Services\Subscription\PlanEntitlementResolver;
 use App\Services\Subscription\SubscriptionPurchaseService;
 use App\Services\Subscription\SubscriptionService;
 use Illuminate\Http\Request;
@@ -19,6 +20,7 @@ class SubscriptionController extends Controller
     public function __construct(
         private readonly SubscriptionPurchaseService $purchaseService,
         private readonly SubscriptionService $subscriptionService,
+        private readonly PlanEntitlementResolver $entitlementResolver,
     ) {}
 
     public function subscribe(SubscriptionStoreRequest $request)
@@ -70,6 +72,8 @@ class SubscriptionController extends Controller
             throw $exception;
         }
 
+        $this->entitlementResolver->forget($manufacturer);
+
         return sendResponse(
             status: true,
             message: $result['created']
@@ -111,6 +115,8 @@ class SubscriptionController extends Controller
             throw $exception;
         }
 
+        $this->entitlementResolver->forget($request->user());
+
         return sendResponse(
             status: true,
             message: __('common.cancel_subscription'),
@@ -136,6 +142,8 @@ class SubscriptionController extends Controller
         } catch (ValidationException $exception) {
             throw $exception;
         }
+
+        $this->entitlementResolver->forget($request->user());
 
         return sendResponse(
             status: true,

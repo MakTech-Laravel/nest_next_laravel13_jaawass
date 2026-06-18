@@ -45,7 +45,7 @@ test('authenticated user lists only conversations they participate in', function
 
 test('authenticated user can create a conversation when they are a participant', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
 
     Passport::actingAs($buyer);
 
@@ -63,7 +63,7 @@ test('authenticated user can create a conversation when they are a participant',
 
 test('user cannot create a conversation when they omit themselves from participants', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
 
     Passport::actingAs($buyer);
 
@@ -76,7 +76,7 @@ test('participant can send a message and message sent event is dispatched', func
     Event::fake([MessageSent::class]);
 
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $conversation = Conversation::factory()->create();
     $conversation->participants()->attach([$buyer->id, $manufacturer->id]);
 
@@ -99,7 +99,7 @@ test('participant can send a message and message sent event is dispatched', func
 
 test('non participant cannot send a message', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $outsider = User::factory()->create();
 
     $conversation = Conversation::factory()->create();
@@ -116,7 +116,7 @@ test('non participant cannot send a message', function (): void {
 
 test('non participant cannot view a conversation', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $outsider = User::factory()->create();
 
     $conversation = Conversation::factory()->create();
@@ -130,7 +130,7 @@ test('non participant cannot view a conversation', function (): void {
 
 test('participant is authorized for private chat room channel', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
 
     $conversation = Conversation::factory()->create();
     $conversation->participants()->attach([$buyer->id, $manufacturer->id]);
@@ -145,7 +145,7 @@ test('participant is authorized for private chat room channel', function (): voi
 
 test('outsider is denied for private chat room channel', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $outsider = User::factory()->create();
 
     $conversation = Conversation::factory()->create();

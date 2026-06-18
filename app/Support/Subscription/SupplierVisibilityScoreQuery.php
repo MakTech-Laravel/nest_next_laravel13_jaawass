@@ -33,7 +33,7 @@ class SupplierVisibilityScoreQuery
             INNER JOIN features ON features.id = plan_feature.feature_id
             WHERE subscriptions.manufacturer_id = {$userIdColumn}
               AND subscriptions.status IN ('active', 'trialing')
-              AND (subscriptions.ends_at IS NULL OR subscriptions.ends_at > NOW())
+              AND (subscriptions.ends_at IS NULL OR subscriptions.ends_at > CURRENT_TIMESTAMP)
               AND (
                     (plan_feature.input_type = 'boolean' AND plan_feature.value = '1')
                     OR (plan_feature.input_type = 'text' AND plan_feature.value <> '')

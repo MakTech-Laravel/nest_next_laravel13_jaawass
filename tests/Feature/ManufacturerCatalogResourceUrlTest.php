@@ -18,7 +18,7 @@ beforeEach(function (): void {
 });
 
 test('manufacturer catalog show returns absolute public file URL', function (): void {
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
 
     $catalog = Catalog::query()->create([
         'user_id' => $manufacturer->id,
@@ -38,7 +38,7 @@ test('manufacturer catalog show returns absolute public file URL', function (): 
 });
 
 test('manufacturer can update catalog metadata without uploading a new file', function (): void {
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
 
     $catalog = Catalog::query()->create([
         'user_id' => $manufacturer->id,

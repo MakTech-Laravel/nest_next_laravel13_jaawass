@@ -17,5 +17,6 @@ class PlanEntitlementResolver
     public function forget(User $user): void
     {
         unset($this->cache[$user->id]);
+        $user->unsetRelation('subscription');
     }
 }

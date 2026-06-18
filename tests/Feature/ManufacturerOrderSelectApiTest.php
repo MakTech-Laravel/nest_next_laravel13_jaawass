@@ -19,8 +19,8 @@ beforeEach(function (): void {
 });
 
 test('manufacturer can fetch own order product select options', function (): void {
-    $manufacturer = User::factory()->manufacturerApproved()->create();
-    $otherManufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
+    $otherManufacturer = manufacturerWithSubscription();
 
     DB::table('companies')->insert([
         [
@@ -63,7 +63,7 @@ test('manufacturer can fetch own order product select options', function (): voi
 test('manufacturer can fetch order buyer select options for product rfqs', function (): void {
     $buyer = User::factory()->create();
     $otherBuyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedOrderSelectProduct($manufacturer);
 
     DB::table('companies')->insert([
@@ -116,7 +116,7 @@ test('manufacturer can fetch order buyer select options for product rfqs', funct
 
 test('manufacturer order buyer select excludes buyers without rfq for product', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedOrderSelectProduct($manufacturer);
     $otherProduct = seedOrderSelectProduct($manufacturer, 'Another Product');
 
@@ -147,7 +147,7 @@ test('manufacturer order buyer select excludes buyers without rfq for product', 
 
 test('manufacturer order select endpoints require manufacturer role', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedOrderSelectProduct($manufacturer);
 
     Passport::actingAs($buyer);
@@ -157,7 +157,7 @@ test('manufacturer order select endpoints require manufacturer role', function (
 });
 
 test('manufacturer order buyer select requires product id', function (): void {
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
 
     Passport::actingAs($manufacturer);
 

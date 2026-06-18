@@ -24,7 +24,7 @@ beforeEach(function (): void {
 
 test('manufacturer can send extended quote with certifications and attachments', function (): void {
     $buyer = User::factory()->create();
-    $manufacturer = User::factory()->manufacturerApproved()->create();
+    $manufacturer = manufacturerWithSubscription();
     $product = seedOrderSelectProduct($manufacturer);
 
     Passport::actingAs($buyer);
