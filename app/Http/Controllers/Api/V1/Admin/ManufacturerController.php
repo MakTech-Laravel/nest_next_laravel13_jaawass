@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Enums\AdditionalInformationRequestStatus;
 use App\Enums\DashboardEventType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Admin\StoreManufacturerRequest;
@@ -30,6 +31,9 @@ class ManufacturerController extends Controller
             'subscription.plan',
             'subscriptionLogs.fromPlan',
             'subscriptionLogs.toPlan',
+            ...$this->manufacturerRelations(),
+            'subscription',
+            'subscriptionLogs',
         ]);
         if(request()->has('search')) {
             $query->where('first_name', 'like', '%' . request()->input('search') . '%')
@@ -163,6 +167,7 @@ class ManufacturerController extends Controller
             'additionalInformationRequests.responses',
             'additionalInformationRequests.requestedBy',
         ]);
+        $manufacturer->load($this->manufacturerRelations());
 
         return sendResponse(
             status: true,
@@ -326,6 +331,28 @@ class ManufacturerController extends Controller
             data: new UserResource($manufacturer->fresh()),
             statusCode: HttpStatus::HTTP_OK
         );
+    }
+
+    /**
+     * @return array<int|string, mixed>
+     */
+    private function manufacturerRelations(): array
+    {
+        return [
+            'company.industries',
+            'manufacturerReviews',
+            'factoryImages',
+            'preferredCurrency',
+            'additionalInformationRequests' => function ($query): void {
+                $query
+                    ->whereIn('status', [
+                        AdditionalInformationRequestStatus::Pending->value,
+                        AdditionalInformationRequestStatus::Submitted->value,
+                    ])
+                    ->latest()
+                    ->with(['responses', 'requestedBy']);
+            },
+        ];
     }
 }
 
