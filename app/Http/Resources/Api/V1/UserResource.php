@@ -109,6 +109,9 @@ class UserResource extends JsonResource
                 return new UserInformationResource($this->company);
             });
             $resource['factory_images'] = UserFactoryImageResource::collection($this->whenLoaded('factoryImages'));
+            $resource['additional_information_requests'] = ManufacturerAdditionalInformationRequestResource::collection(
+                $this->whenLoaded('additionalInformationRequests')
+            );
         }
 
         return $resource;

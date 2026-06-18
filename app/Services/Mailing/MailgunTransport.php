@@ -3,6 +3,7 @@
 namespace App\Services\Mailing;
 
 use Illuminate\Support\Facades\Log;
+use Mailgun\Exception\HttpClientException;
 use Mailgun\Mailgun;
 use RuntimeException;
 
@@ -46,6 +47,18 @@ class MailgunTransport
             $payload['text'] = $text;
         }
 
-        $this->client->messages()->send($domain, $payload);
+        try {
+            $this->client->messages()->send($domain, $payload);
+        } catch (HttpClientException $exception) {
+            Log::error('Mailgun API request failed.', [
+                'recipient' => $recipient,
+                'domain' => $domain,
+                'status' => $exception->getResponseCode(),
+                'response' => $exception->getResponseBody(),
+                'error' => $exception->getMessage(),
+            ]);
+
+            throw $exception;
+        }
     }
 }

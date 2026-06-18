@@ -21,4 +21,16 @@ return [
         'preheader' => 'Your SourceNest account is ready. Start exploring suppliers today.',
     ],
 
+    'manufacturer_additional_information' => [
+        'subject' => 'Additional information requested for your application',
+        'preheader' => 'SourceNest needs more details to continue reviewing your manufacturer application.',
+        'greeting' => 'Hello :name,',
+        'intro' => 'Our review team needs additional information to continue processing your manufacturer application for :company.',
+        'admin_message_heading' => 'What we need from you',
+        'allowed_types_heading' => 'You can submit the following',
+        'cta' => 'Submit information',
+        'expires' => 'This link expires on :date.',
+        'footer' => 'If you did not apply to SourceNest, you can safely ignore this email.',
+    ],
+
 ];

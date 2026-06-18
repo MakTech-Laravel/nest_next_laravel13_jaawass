@@ -118,6 +118,11 @@ class User extends Authenticatable implements OAuthenticatable
         return $this->hasMany(UserFactoryImage::class, 'user_id', 'id')->orderBy('created_at', 'desc');
     }
 
+    public function additionalInformationRequests(): HasMany
+    {
+        return $this->hasMany(ManufacturerAdditionalInformationRequest::class, 'user_id', 'id')->latest();
+    }
+
     public function loginHistories(): HasMany
     {
         return $this->hasMany(UserLoginHistory::class, 'user_id', 'id')->orderByDesc('logged_in_at');

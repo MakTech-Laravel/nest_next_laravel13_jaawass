@@ -49,7 +49,19 @@ Route::controller(ManufacturerController::class)->prefix('manufacturer')->group(
     // Route::patch('/{manufacturer}/edit', 'edit');
     Route::patch('/{manufacturer}/change/status', 'updateStatus');
     Route::patch('/{manufacturer}/suspend', 'suspend');
+
+    Route::controller(\App\Http\Controllers\Api\V1\Admin\ManufacturerAdditionalInformationController::class)
+        ->prefix('{manufacturer}/additional-information')
+        ->group(function (): void {
+            Route::get('/', 'index');
+            Route::post('/', 'store');
+        });
 });
+
+Route::get(
+    '/manufacturer-additional-information/{informationRequest}',
+    [\App\Http\Controllers\Api\V1\Admin\ManufacturerAdditionalInformationController::class, 'show']
+);
 
 // Category & Subscategory Managment
 

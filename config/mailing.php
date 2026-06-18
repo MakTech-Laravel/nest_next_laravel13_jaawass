@@ -50,6 +50,11 @@ return [
       'subject' => 'mail.account_restore_otp.subject',
       'markdown' => true,
     ],
+    'manufacturer-additional-information' => [
+      'view' => 'mail.manufacturer-additional-information',
+      'subject' => 'mail.manufacturer_additional_information.subject',
+      'markdown' => false,
+    ],
   ],
 
 ];

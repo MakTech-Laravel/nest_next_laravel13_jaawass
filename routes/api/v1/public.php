@@ -61,6 +61,13 @@ Route::controller(AccountController::class)->prefix('account')->group(function (
     Route::post('/restore-delete/verify', 'verifyRestoreOtp')->middleware(['throttle:account-restore-otp-verify']);
 });
 
+Route::controller(\App\Http\Controllers\Api\V1\ManufacturerAdditionalInformationController::class)
+    ->prefix('manufacturer/additional-information')
+    ->group(function (): void {
+        Route::get('/{token}', 'show');
+        Route::post('/{token}', 'submit');
+    });
+
 Route::get('/currencies', [CurrencyController::class, 'index']);
 
 Route::get('/quick-filters', [QuickFilterController::class, 'index']);

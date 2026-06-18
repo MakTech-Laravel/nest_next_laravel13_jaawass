@@ -56,3 +56,14 @@ test('send mail job renders template and sends through transport', function () {
 test('mail template renderer throws for unknown template', function () {
     app(MailTemplateRenderer::class)->render('does-not-exist', []);
 })->throws(\App\Exceptions\Mailing\UnknownMailTemplateException::class);
+
+test('mail template renderer subject ignores non-scalar replacement values', function () {
+    $renderer = app(MailTemplateRenderer::class);
+
+    $subject = $renderer->subject(MailTemplate::ManufacturerAdditionalInformation->value, [
+        'manufacturerName' => 'Jane',
+        'allowedTypes' => ['Text message', 'Image'],
+    ]);
+
+    expect($subject)->toBe(__('mail.manufacturer_additional_information.subject'));
+});

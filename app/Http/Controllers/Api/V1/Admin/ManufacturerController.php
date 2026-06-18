@@ -144,7 +144,7 @@ class ManufacturerController extends Controller
         }
 
 
-        $manufacturer->load(['company.industries', 'manufacturerReviews', 'factoryImages', 'preferredCurrency']);
+        $manufacturer->load(['company.industries', 'manufacturerReviews', 'factoryImages', 'preferredCurrency', 'additionalInformationRequests.responses', 'additionalInformationRequests.requestedBy']);
 
         return sendResponse(
             status: true,
