@@ -24,6 +24,13 @@ class ManufacturerController extends Controller
     public function index()
     {
         $query = User::isManufacturer()->with([
+            'company.industries',
+            'manufacturerReviews',
+            'factoryImages',
+            'preferredCurrency',
+            'subscription.plan',
+            'subscriptionLogs.fromPlan',
+            'subscriptionLogs.toPlan',
             ...$this->manufacturerRelations(),
             'subscription',
             'subscriptionLogs',
@@ -149,6 +156,17 @@ class ManufacturerController extends Controller
         }
 
 
+        $manufacturer->load([
+            'company.industries',
+            'manufacturerReviews',
+            'factoryImages',
+            'preferredCurrency',
+            'subscription.plan',
+            'subscriptionLogs.fromPlan',
+            'subscriptionLogs.toPlan',
+            'additionalInformationRequests.responses',
+            'additionalInformationRequests.requestedBy',
+        ]);
         $manufacturer->load($this->manufacturerRelations());
 
         return sendResponse(

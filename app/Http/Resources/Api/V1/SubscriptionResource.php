@@ -25,7 +25,8 @@ class SubscriptionResource extends JsonResource
             }),
 
             'billing_interval' => $this->billing_interval,
-            'status' => $this->status,
+            'status' => $this->status?->value ?? $this->status,
+            'status_label' => $this->status?->label(),
             'starts_at' => $this->starts_at,
             'ends_at' => $this->ends_at,
             'trial_ends_at' => $this->trial_ends_at,

@@ -1,57 +1,31 @@
-<?php 
+<?php
 
 namespace App\Services\Payment;
 
+use App\Contracts\Payment\PaymentVerifierInterface;
+use App\DTO\Payment\VerifiedPaymentDTO;
 use App\Enums\Api\V1\Payment\RegisterPaymentManager;
-use Stripe\Stripe;
-use Stripe\PaymentIntent;
+use App\Exceptions\Payment\PaymentVerificationException;
 
 class PaymentCheckService
 {
-
-    protected $paymentClass;
- 
-    public function checkPayment(string $paymentMethod, array $paymentData)
+    /**
+     * @param  array<string, mixed>  $paymentData
+     */
+    public function verify(string $paymentMethod, array $paymentData): VerifiedPaymentDTO
     {
+        $method = strtolower($paymentMethod);
+        $verifier = $this->resolveVerifier($method);
 
-  
-       $paymentClass = $this->supportPaymentMethod();
-
-       $paymentMethod = strtolower($paymentMethod);
-
-       if(!array_key_exists($paymentMethod, $paymentClass)) {
-          
-         sendResponse(
-            status: false,
-            message: __('commmon.payment_method_not_supported'),
-            data: null
-         );
-       }
-       
-       $this->paymentClass = new $paymentClass[$paymentMethod]($paymentData);
-
-         
-     $payment = $this->paymentClass->checkPayment();
-    
-        if(!$payment) {
-            return sendResponse(
-                status: false,
-                message: __('commmon.payment_not_found'),
-                data: null
-            );
-        }
-
-
-        $this->paymentClass->handleFraudCheck($payment);
-
+        return $verifier->verify($paymentData);
     }
 
-
-    public function supportPaymentMethod(): array|null
+    private function resolveVerifier(string $paymentMethod): PaymentVerifierInterface
     {
-      return [
-        RegisterPaymentManager::STRIPE->value => StripePayment::class,  
-        RegisterPaymentManager::PAYPAL->value => PaypalPayment::class,
-      ];
+        return match ($paymentMethod) {
+            RegisterPaymentManager::PAYPAL->value => app(PaypalPaymentVerifier::class),
+            RegisterPaymentManager::STRIPE->value => app(StripePaymentVerifier::class),
+            default => throw new PaymentVerificationException(__('subscription.payment_method_not_supported')),
+        };
     }
 }

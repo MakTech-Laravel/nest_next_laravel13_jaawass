@@ -163,6 +163,14 @@ Route::controller(QuickFilterAdminController::class)->prefix('quick-filters')->g
     Route::patch('/options/{quickFilterOption}/sort', 'sort');
 });
 
+Route::controller(\App\Http\Controllers\Api\V1\Admin\AdminSubscriptionController::class)->group(function (): void {
+    Route::get('/subscriptions/stats', 'stats');
+    Route::get('/subscriptions', 'index');
+    Route::get('/subscriptions/{subscription}', 'show');
+    Route::get('/payments', 'payments');
+    Route::get('/subscription-logs', 'logs');
+});
+
 Route::prefix('plans')->group(function (): void {
 
     Route::controller(FeatureController::class)->prefix('features')->group(function (): void {

@@ -109,6 +109,12 @@ class UserResource extends JsonResource
                 return new UserInformationResource($this->company);
             });
             $resource['factory_images'] = UserFactoryImageResource::collection($this->whenLoaded('factoryImages'));
+            $resource['subscription'] = $this->whenLoaded('subscription', fn () => $this->subscription
+                ? new SubscriptionResource($this->subscription)
+                : null);
+            $resource['subscription_logs'] = $this->whenLoaded('subscriptionLogs', function () {
+                return \App\Http\Resources\Api\V1\Admin\SubscriptionLogResource::collection($this->subscriptionLogs);
+            });
             $resource['additional_information_requests'] = ManufacturerAdditionalInformationRequestResource::collection(
                 $this->whenLoaded('additionalInformationRequests')
             );
