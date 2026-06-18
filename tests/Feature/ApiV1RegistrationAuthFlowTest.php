@@ -205,7 +205,7 @@ test('forgot password returns same generic message for unknown email', function 
     Mail::assertNothingSent();
 });
 
-test('manufacturer login is forbidden while pending', function () {
+test('manufacturer login succeeds while pending for review center access', function () {
     $password = 'password';
     $user = User::factory()->manufacturer()->create([
         'password' => $password,
@@ -218,8 +218,24 @@ test('manufacturer login is forbidden while pending', function () {
         'password' => $password,
         'role' => UserRole::MANUFACTURER->value,
         'device_name' => 'tests',
-    ])->assertForbidden()
-        ->assertJsonPath('message', __('auth.manufacturer.login-pending'));
+    ])->assertOk()
+        ->assertJsonPath('data.user.manufacture_status', UserManuFactureStatus::PENDING->value);
+});
+
+test('pending manufacturer cannot access subscriptions but can access additional information', function () {
+    $manufacturer = User::factory()->manufacturer()->create([
+        'manufacture_status' => UserManuFactureStatus::PENDING,
+    ]);
+
+    Passport::actingAs($manufacturer);
+
+    /** @var TestCase $this */
+    $this->getJson('/api/v1/manufacturer/subscriptions')
+        ->assertForbidden()
+        ->assertJsonPath('data.code', 'manufacturer_pending_approval');
+
+    $this->getJson('/api/v1/manufacturer/additional-information-requests')
+        ->assertOk();
 });
 
 test('manufacturer login succeeds when approved', function () {

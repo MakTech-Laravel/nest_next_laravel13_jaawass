@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\Admin\CertificateTypeController;
 use App\Http\Controllers\Api\V1\Manufacturer\CertificationController;
+use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerAdditionalInformationController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerCatalogController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerDashboardController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerProductController;
@@ -13,14 +14,25 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('')->group(function () {
 
-    Route::prefix('subscriptions')->controller(SubscriptionController::class)->group(function () {
+    Route::controller(ManufacturerAdditionalInformationController::class)
+        ->prefix('additional-information-requests')
+        ->group(function (): void {
+            Route::get('/', 'index');
+            Route::get('/pending-count', 'pendingCount');
+            Route::get('/{informationRequest}', 'show');
+            Route::post('/{informationRequest}/submit', 'submit');
+        });
+
+    Route::prefix('subscriptions')->controller(SubscriptionController::class)
+        ->middleware(['manufacturer.approved'])
+        ->group(function () {
         Route::get('/', 'show');
         Route::post('/subscribe', 'subscribe');
         Route::post('/cancel', 'cancel');
         Route::post('/upgrade', 'upgrade');
     });
 
-    Route::middleware(['subscription.active'])->group(function () {
+    Route::middleware(['manufacturer.approved', 'subscription.active'])->group(function () {
 
         Route::get('/dashboard', [ManufacturerDashboardController::class, 'overview'])
             ->middleware('plan.feature:basic_analytics|advanced_analytics');

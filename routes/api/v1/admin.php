@@ -59,6 +59,11 @@ Route::controller(ManufacturerController::class)->prefix('manufacturer')->group(
 });
 
 Route::get(
+    '/manufacturer-additional-information',
+    [\App\Http\Controllers\Api\V1\Admin\ManufacturerAdditionalInformationController::class, 'globalIndex']
+);
+
+Route::get(
     '/manufacturer-additional-information/{informationRequest}',
     [\App\Http\Controllers\Api\V1\Admin\ManufacturerAdditionalInformationController::class, 'show']
 );
