@@ -29,7 +29,12 @@ class MailTemplateRenderer
     {
         $definition = $this->definition($template);
 
-        return __($definition['subject'], $data);
+        $replacements = array_filter(
+            $data,
+            fn (mixed $value): bool => is_scalar($value) || $value === null,
+        );
+
+        return __($definition['subject'], $replacements);
     }
 
     /**
