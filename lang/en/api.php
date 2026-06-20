@@ -45,7 +45,12 @@ return [
 
     'buyer_dashboard_fetched_successfully' => 'Buyer dashboard fetched successfully.',
     'manufacturer_dashboard_fetched_successfully' => 'Manufacturer dashboard fetched successfully.',
+    'manufacturer_review_center_fetched_successfully' => 'Manufacturer review center fetched successfully.',
     'admin_dashboard_fetched_successfully' => 'Admin dashboard fetched successfully.',
+    'admin_analytics_metrics_fetched_successfully' => 'Admin analytics metrics fetched successfully.',
+    'admin_analytics_growth_fetched_successfully' => 'Admin analytics growth data fetched successfully.',
+    'admin_analytics_countries_fetched_successfully' => 'Admin analytics country distribution fetched successfully.',
+    'admin_analytics_industries_fetched_successfully' => 'Admin analytics industries fetched successfully.',
     'review_created_successfully' => 'Review submitted successfully.',
     'review_order_not_eligible' => 'You can review only completed purchases of this product.',
     'review_already_exists_for_order' => 'You already submitted a review for this order.',

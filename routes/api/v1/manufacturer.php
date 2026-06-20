@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerCatalogController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerDashboardController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerProductController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerProfileController;
+use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerReviewCenterController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerRfqController;
 use App\Http\Controllers\Api\V1\Manufacturer\OrderController;
 use App\Http\Controllers\Api\V1\Manufacturer\SubscriptionController;
@@ -19,6 +20,8 @@ Route::prefix('')->group(function () {
         Route::post('/cancel', 'cancel');
         Route::post('/upgrade', 'upgrade');
     });
+
+    Route::get('/review-center', [ManufacturerReviewCenterController::class, 'show']);
 
     Route::middleware(['subscription.active'])->group(function () {
 
