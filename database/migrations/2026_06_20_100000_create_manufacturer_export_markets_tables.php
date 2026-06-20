@@ -20,14 +20,17 @@ return new class extends Migration
 
         Schema::create('manufacturer_export_market_countries', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('manufacturer_export_market_id')
-                ->constrained('manufacturer_export_markets')
-                ->cascadeOnDelete();
+            $table->unsignedBigInteger('manufacturer_export_market_id');
             $table->string('country_code', 8);
             $table->string('country_name', 120);
             $table->timestamps();
 
-            $table->unique(['manufacturer_export_market_id', 'country_code'], 'manufacturer_export_market_countries_unique');
+            $table->foreign('manufacturer_export_market_id', 'mem_countries_market_id_fk')
+                ->references('id')
+                ->on('manufacturer_export_markets')
+                ->cascadeOnDelete();
+
+            $table->unique(['manufacturer_export_market_id', 'country_code'], 'mem_countries_market_code_unique');
         });
     }
 
