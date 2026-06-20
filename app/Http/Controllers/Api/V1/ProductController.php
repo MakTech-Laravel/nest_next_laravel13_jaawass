@@ -11,6 +11,8 @@ use App\Rules\EnabledCurrencyCode;
 use App\Services\Currency\PersistedListingCurrencyResolver;
 use App\Services\Dashboard\EventTrackerService;
 use App\Services\Product\ProductCatalogService;
+use App\Support\Countries\ViewerCountryResolver;
+use App\Support\ExportMarkets\ManufacturerExportMarketVisibility;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -22,6 +24,8 @@ class ProductController extends Controller
         private readonly PersistedListingCurrencyResolver $persistedListingCurrency,
         private readonly ProductCatalogService $productCatalogService,
         private readonly EventTrackerService $eventTracker,
+        private readonly ViewerCountryResolver $viewerCountryResolver,
+        private readonly ManufacturerExportMarketVisibility $exportMarketVisibility,
     ) {}
 
     /* ------------------------------------------------------------------
@@ -73,6 +77,12 @@ class ProductController extends Controller
 
     public function show(Request $request, Product $product): JsonResponse
     {
+        $viewerCountryCode = $this->viewerCountryResolver->resolveFromRequest($request);
+
+        if (! $this->exportMarketVisibility->supplierVisibleToCountry((int) $product->user_id, $viewerCountryCode)) {
+            abort(HttpStatus::HTTP_NOT_FOUND);
+        }
+
         $product->load([
             ...$this->productCatalogService->eagerRelationsForPublicProduct(withReviews: true),
         ]);

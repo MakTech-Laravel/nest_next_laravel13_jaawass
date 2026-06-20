@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Http\Requests\Api\V1\Concerns\InteractsWithViewerCountry;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class PublicProductIndexRequest extends FormRequest
 {
+    use InteractsWithViewerCountry;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -44,6 +47,7 @@ class PublicProductIndexRequest extends FormRequest
             'supplier_id' => ['sometimes', 'nullable', 'integer', 'exists:users,id'],
             'supplier' => ['sometimes', 'nullable', 'string', 'max:255'],
             'country' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'viewer_country_code' => ['sometimes', 'nullable', 'string', 'size:2'],
             'city' => ['sometimes', 'nullable', 'string', 'max:255'],
             'min_price' => ['sometimes', 'nullable', 'numeric', 'min:0'],
             'max_price' => ['sometimes', 'nullable', 'numeric', 'min:0'],
@@ -129,9 +133,7 @@ class PublicProductIndexRequest extends FormRequest
 
     public function country(): ?string
     {
-        $country = $this->input('country');
-
-        return is_string($country) && $country !== '' ? $country : null;
+        return $this->supplierLocationCountry();
     }
 
     public function city(): ?string

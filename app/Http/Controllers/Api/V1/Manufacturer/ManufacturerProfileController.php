@@ -8,6 +8,7 @@ use App\Http\Resources\Api\V1\UserResource;
 use App\Models\User;
 use App\Models\UserFactoryImage;
 use App\Services\Company\CompanySlugService;
+use App\Services\Manufacturer\ManufacturerExportMarketService;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -110,8 +111,13 @@ class ManufacturerProfileController extends Controller
             $validated['certifications'] = json_encode($validated['certifications']);
         }
 
-        if (isset($validated['export_markets']) && !empty($validated['export_markets'])) {
-            $validated['export_markets'] = json_encode($validated['export_markets']);
+        $profileExportMarkets = null;
+
+        if (array_key_exists('export_markets', $validated)) {
+            $profileExportMarkets = is_array($validated['export_markets'])
+                ? $validated['export_markets']
+                : [];
+            $validated['export_markets'] = json_encode($profileExportMarkets);
         }
 
         if (isset($validated['language_spoken']) && !empty($validated['language_spoken'])) {
@@ -197,7 +203,9 @@ class ManufacturerProfileController extends Controller
             $company->industries()->sync($industries_id);
         }
 
-
+        if ($profileExportMarkets !== null) {
+            app(ManufacturerExportMarketService::class)->syncFromProfileRegions($user, $profileExportMarkets);
+        }
 
         $user->load(['company.industries', 'factoryImages',]);
     }
