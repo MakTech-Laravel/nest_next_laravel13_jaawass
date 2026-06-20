@@ -14,32 +14,42 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
-
         $this->call([
+            // ── Foundation (locales & currencies) ───────────────────────────
             LanguageSeeder::class,
             CurrencySeeder::class,
-            CurrencyRateSeeder::class,
-            UserSeeder::class,
-            ManufacturerCompanySeeder::class,
-            UserNotificationSeeder::class,
+            CurrencyRateSeeder::class, // requires currencies
+
+            // ── Catalog structure ───────────────────────────────────────────
             IndustrySeeder::class,
-            SubCategorySeeder::class,
+            SubCategorySeeder::class, // requires industries
             ShippingMethodSeeder::class,
-            ProductSeeder::class,
+
+            // ── FAQ ─────────────────────────────────────────────────────────
             FaqCategorySeeder::class,
-            FaqSeeder::class,
+            FaqSeeder::class, // requires faq categories
+
+            // ── Subscription plans ──────────────────────────────────────────
             FeatureSeeder::class,
-            PlanSeeder::class,
-            PlanFeatureSeeder::class,
-            PromotionSeeder::class,
+            PlanSeeder::class, // requires currencies
+            PlanFeatureSeeder::class, // requires features & plans
+            PromotionSeeder::class, // requires plans
+
+            // ── Users & manufacturer profiles ───────────────────────────────
+            UserSeeder::class,
+            UserNotificationSeeder::class, // requires users
+            ManufacturerCompanySeeder::class, // requires users & industries
+            ManufacturerSubscriptionSeeder::class, // requires plans (demo manufacturers + subscriptions)
+
+            // ── Products ──────────────────────────────────────────────────
+            ProductSeeder::class, // requires users, industries & sub-categories
+
+            // ── Help center ─────────────────────────────────────────────────
             HelpCenterCategorySeeder::class,
-            HelpCenterArticleSeeder::class,
+            HelpCenterArticleSeeder::class, // requires help center categories
+
+            // ── Derived / backfill data ─────────────────────────────────────
+            DashboardEventBackfillSeeder::class, // backfills events from existing RFQs, orders, etc.
         ]);
     }
 }

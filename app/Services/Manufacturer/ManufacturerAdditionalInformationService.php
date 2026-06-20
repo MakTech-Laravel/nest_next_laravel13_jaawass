@@ -126,7 +126,7 @@ class ManufacturerAdditionalInformationService
                 }
 
                 $message = isset($item['message']) ? trim((string) $item['message']) : null;
-                $file = $item['file'] ?? null;
+                $file = $this->resolveUploadedFile($type, $item);
 
                 if ($type === AdditionalInformationType::Text) {
                     if ($message === null || $message === '') {
@@ -149,7 +149,7 @@ class ManufacturerAdditionalInformationService
 
                 if ($file instanceof UploadedFile) {
                     $storedPath = $file->store(
-                        config('manufacturer_additional_information.submission_path'),
+                        $this->storagePathForType($type),
                         'public',
                     );
                     $originalName = $file->getClientOriginalName();
@@ -200,6 +200,34 @@ class ManufacturerAdditionalInformationService
         }
 
         return $normalized;
+    }
+
+    /**
+     * @param  array{type: string, message?: string|null, file?: UploadedFile|null, video?: UploadedFile|null}  $item
+     */
+    private function resolveUploadedFile(AdditionalInformationType $type, array $item): ?UploadedFile
+    {
+        $file = $item['file'] ?? null;
+
+        if ($file instanceof UploadedFile) {
+            return $file;
+        }
+
+        if ($type === AdditionalInformationType::Video) {
+            $video = $item['video'] ?? null;
+
+            return $video instanceof UploadedFile ? $video : null;
+        }
+
+        return null;
+    }
+
+    private function storagePathForType(AdditionalInformationType $type): string
+    {
+        return (string) config(
+            "manufacturer_additional_information.storage_paths.{$type->value}",
+            config('manufacturer_additional_information.submission_path'),
+        );
     }
 
     private function validateUploadedFile(AdditionalInformationType $type, UploadedFile $file, int $index): void
