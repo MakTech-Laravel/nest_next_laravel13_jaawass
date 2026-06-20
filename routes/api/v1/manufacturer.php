@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\Admin\CertificateTypeController;
 use App\Http\Controllers\Api\V1\Manufacturer\CertificationController;
+use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerAnalyticsController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerCatalogController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerDashboardController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerProductController;
@@ -27,6 +28,14 @@ Route::prefix('')->group(function () {
 
         Route::get('/dashboard', [ManufacturerDashboardController::class, 'overview'])
             ->middleware('plan.feature:basic_analytics|advanced_analytics');
+
+        Route::prefix('analytics')->controller(ManufacturerAnalyticsController::class)->group(function (): void {
+            Route::get('/metrics', 'metrics')->middleware('plan.feature:basic_analytics|advanced_analytics');
+            Route::get('/products', 'products')->middleware('plan.feature:basic_analytics|advanced_analytics');
+            Route::get('/performance', 'performance')->middleware('plan.feature:advanced_analytics');
+            Route::get('/countries', 'countries')->middleware('plan.feature:advanced_analytics');
+            Route::get('/funnel', 'funnel')->middleware('plan.feature:advanced_analytics');
+        });
 
         Route::prefix('/profile')->controller(ManufacturerProfileController::class)->group(function () {
             Route::get('/', 'index');
