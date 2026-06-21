@@ -50,6 +50,7 @@ class DatabaseSeeder extends Seeder
 
             // ── Derived / backfill data ─────────────────────────────────────
             DashboardEventBackfillSeeder::class, // backfills events from existing RFQs, orders, etc.
+            ManufacturerAnalyticsDemoSeeder::class, // product views + RFQs for analytics/products API
         ]);
     }
 }
