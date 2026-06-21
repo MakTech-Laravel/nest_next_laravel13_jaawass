@@ -43,14 +43,15 @@ class PlanResource extends JsonResource
             'status' => $this->status,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
-            'features' => $this->whenLoaded('planFeatures', function () {
-                return $this->planFeatures->map(function ($feature) {
+            'features' => $this->whenLoaded('planFeatures', function () use ($locale) {
+                return $this->planFeatures->map(function ($planFeature) use ($locale) {
                     return [
-                        'id' => $feature->id,
-                        'features' => new FeatureResource($feature->feature),
+                        'id' => $planFeature->id,
+                        'label' => $planFeature->displayLabel($locale),
+                        'features' => new FeatureResource($planFeature->feature),
 
-                        'input_type' => $feature->input_type,
-                        'value' => $feature->value,
+                        'input_type' => $planFeature->input_type,
+                        'value' => $planFeature->value,
 
                     ];
                 });

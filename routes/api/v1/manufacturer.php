@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerProfileController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerReviewCenterController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerRfqController;
 use App\Http\Controllers\Api\V1\Manufacturer\OrderController;
+use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerPromotionController;
 use App\Http\Controllers\Api\V1\Manufacturer\SubscriptionController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,12 @@ Route::prefix('')->group(function () {
     });
 
     Route::get('/review-center', [ManufacturerReviewCenterController::class, 'show']);
+
+    Route::prefix('promotions')->controller(ManufacturerPromotionController::class)->group(function (): void {
+        Route::get('/active', 'active');
+        Route::get('/my-application', 'myApplication');
+        Route::post('/apply', 'apply');
+    });
 
     Route::middleware(['subscription.active'])->group(function () {
 

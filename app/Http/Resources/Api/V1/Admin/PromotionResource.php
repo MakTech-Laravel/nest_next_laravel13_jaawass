@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources\Api\V1\Admin;
 
+use App\Http\Resources\Api\V1\Admin\PlanResource;
+use App\Services\Promotion\PromotionService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -15,6 +17,8 @@ class PromotionResource extends JsonResource
         $locale = $request->query('locale') ?? app()->getLocale();
         $localized = $this->resource->localizedData($locale);
         $stats = $this->resolveStats();
+        $billingPeriodValue = (int) ($this->duration_months ?? PromotionService::DEFAULT_DURATION_MONTHS);
+        $billingPeriodUnit = $this->billing_period_unit ?? 'month';
 
         return [
             'id' => $this->id,
@@ -23,8 +27,17 @@ class PromotionResource extends JsonResource
             'button_text' => $localized['button_text'],
             'cta_button_text' => $localized['cta_button_text'],
             'highlight_text' => $localized['highlight_text'],
+            'disclaimer_text' => $this->disclaimer_text ?? PromotionService::DEFAULT_DISCLAIMER,
             'slots' => $this->slots,
-            'duration_months' => $this->duration_months,
+            'duration_months' => $billingPeriodValue,
+            'promotional_price' => number_format((float) ($this->promotional_price ?? 0), 2, '.', ''),
+            'requires_payment' => (bool) ($this->requires_payment ?? false),
+            'billing_period_unit' => $billingPeriodUnit,
+            'billing_period' => [
+                'value' => $billingPeriodValue,
+                'unit' => $billingPeriodUnit,
+                'label' => app(PromotionService::class)->billingPeriodLabel($this->resource),
+            ],
             'expires_at' => $this->expires_at,
             'status' => $this->status,
             'created_at' => $this->created_at,

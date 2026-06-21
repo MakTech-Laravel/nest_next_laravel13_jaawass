@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Api\V1\SubscriptionSource;
 use App\Enums\Api\V1\SubscriptionStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,8 @@ class Subscription extends Model
         'ends_at',
         'trial_ends_at',
         'auto_renew',
+        'source',
+        'promotion_id',
     ];
 
     protected function casts(): array
@@ -29,7 +32,28 @@ class Subscription extends Model
             'ends_at' => 'datetime',
             'trial_ends_at' => 'datetime',
             'auto_renew' => 'boolean',
+            'source' => SubscriptionSource::class,
         ];
+    }
+
+    public function isEntitlementActive(): bool
+    {
+        $status = $this->status instanceof SubscriptionStatus
+            ? $this->status->value
+            : (string) $this->status;
+
+        if (! in_array($status, [
+            SubscriptionStatus::ACTIVE->value,
+            SubscriptionStatus::TRIALING->value,
+        ], true)) {
+            return false;
+        }
+
+        if ($this->ends_at !== null && $this->ends_at->isPast()) {
+            return false;
+        }
+
+        return true;
     }
 
     public function manufacturer(): BelongsTo
@@ -40,6 +64,11 @@ class Subscription extends Model
     public function plan(): BelongsTo
     {
         return $this->belongsTo(Plan::class, 'plan_id');
+    }
+
+    public function promotion(): BelongsTo
+    {
+        return $this->belongsTo(Promotion::class, 'promotion_id');
     }
 
     public function payments(): HasMany

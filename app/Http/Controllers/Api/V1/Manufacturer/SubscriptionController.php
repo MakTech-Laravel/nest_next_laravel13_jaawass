@@ -47,7 +47,9 @@ class SubscriptionController extends Controller
 
         $manufacturer->load('subscription');
 
-        if ($manufacturer->subscription) {
+        $entitlements = $this->entitlementResolver->for($manufacturer);
+
+        if ($entitlements->hasActiveSubscription()) {
             return sendResponse(
                 status: false,
                 message: __('subscription.already_subscribed'),
@@ -56,11 +58,12 @@ class SubscriptionController extends Controller
             );
         }
 
+        $isRenewal = $manufacturer->subscription !== null;
+
         try {
-            $result = $this->purchaseService->confirmPurchase(
-                $manufacturer,
-                $validated,
-            );
+            $result = $isRenewal
+                ? $this->purchaseService->renewPurchase($manufacturer, $validated)
+                : $this->purchaseService->confirmPurchase($manufacturer, $validated);
         } catch (PaymentVerificationException $exception) {
             return sendResponse(
                 status: false,
@@ -77,7 +80,9 @@ class SubscriptionController extends Controller
         return sendResponse(
             status: true,
             message: $result['created']
-                ? __('subscription.subscription_created')
+                ? ($isRenewal
+                    ? __('subscription.subscription_renewed')
+                    : __('subscription.subscription_created'))
                 : __('subscription.subscription_already_recorded'),
             data: new SubscriptionResource($result['subscription']),
             statusCode: $result['created'] ? HttpStatus::HTTP_CREATED : HttpStatus::HTTP_OK,

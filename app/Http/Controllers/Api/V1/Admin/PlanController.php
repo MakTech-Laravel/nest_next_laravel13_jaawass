@@ -69,6 +69,7 @@ class PlanController extends Controller
                 'feature_id' => $feature['id'],
                 'input_type' => $feature['input_type'],
                 'value' => $feature['value'],
+                'label' => filled($feature['label'] ?? null) ? $feature['label'] : null,
             ]);
         }
 
@@ -156,6 +157,7 @@ class PlanController extends Controller
                 'feature_id' => $feature['id'],
                 'input_type' => $feature['input_type'],
                 'value' => $feature['value'],
+                'label' => filled($feature['label'] ?? null) ? $feature['label'] : null,
             ]);
         }
 

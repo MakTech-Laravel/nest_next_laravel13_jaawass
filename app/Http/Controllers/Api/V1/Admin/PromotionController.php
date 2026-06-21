@@ -107,6 +107,14 @@ class PromotionController extends Controller
         $locale = $validated['locale'] ?? $request->query('locale') ?? app()->getLocale();
         unset($validated['locale']);
 
+        if (isset($validated['billing_period_unit'])) {
+            $validated['billing_period_unit'] = match (strtolower((string) $validated['billing_period_unit'])) {
+                'monthly', 'month' => 'month',
+                'yearly', 'year' => 'year',
+                default => $validated['billing_period_unit'],
+            };
+        }
+
         $promotion->update($validated);
 
         if ($request->boolean('status')) {
