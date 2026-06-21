@@ -36,6 +36,7 @@ class StorePlanRequest extends FormRequest
             'features.*.id' => 'required|exists:features,id',
             'features.*.input_type' => 'required|in:text,boolean',
             'features.*.value' => 'required|string',
+            'features.*.label' => 'nullable|string|max:255',
         ];
     }
 }

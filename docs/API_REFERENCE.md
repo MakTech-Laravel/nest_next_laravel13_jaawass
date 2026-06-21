@@ -328,13 +328,22 @@ Public subscription plans listing.
 {
   "id": 1,
   "name": "Pro",
-  "slug": "pro",
-  "price_monthly": 99,
-  "price_yearly": 990,
+  "monthly_price": "99.00",
+  "yearly_price": "990.00",
   "is_popular": true,
-  "features": [ { "key": "product_limit", "value": "50" } ]
+  "features": [
+    {
+      "id": 12,
+      "label": "Up to 50 product listings",
+      "input_type": "text",
+      "value": "50",
+      "features": { "id": 1, "name": "Product Limit", "key": "product_limit" }
+    }
+  ]
 }
 ```
+
+Each plan feature includes a **`label`** for display on that plan. If no custom label was set when the feature was assigned, `label` falls back to the global feature catalog name (`features.name`).
 
 ---
 
@@ -1325,6 +1334,17 @@ Manufacturer approval / additional-info status.
 | DELETE | `/plans/{plan}` |
 | PATCH | `/plans/{plan}/toggle-popular` |
 | PATCH | `/plans/{plan}/toggle-status` |
+
+**POST `/plans/create` and PUT `/plans/{plan}` — feature items:**
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `features[].id` | yes | Feature catalog id |
+| `features[].input_type` | yes | `text` or `boolean` |
+| `features[].value` | yes | Feature value |
+| `features[].label` | no | Plan-specific display label; omitted or empty → API uses catalog feature name |
+
+**Plan feature in responses:** `label` (resolved display text), `input_type`, `value`, nested `features` (catalog id, name, key). Use **`label`** for UI copy on that plan.
 
 ---
 
