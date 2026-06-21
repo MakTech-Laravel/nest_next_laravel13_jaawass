@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\UserFactoryImage;
 use App\Services\Company\CompanySlugService;
 use App\Services\Manufacturer\ManufacturerExportMarketService;
+use App\Support\Manufacturer\ManufacturerProfileRelations;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -19,11 +20,11 @@ class ManufacturerProfileController extends Controller
 {
     public function index(Request $request)
     {
-        $user = $request->user()->load(['company.industries', 'manufacturerReviews', 'factoryImages']);
+        $user = ManufacturerProfileRelations::load($request->user());
 
         return sendResponse(
             status: true,
-            data: new UserResource($request->user()),
+            data: new UserResource($user),
             message: __('common.success'),
             statusCode: HttpStatus::HTTP_OK
         );
@@ -207,7 +208,14 @@ class ManufacturerProfileController extends Controller
             app(ManufacturerExportMarketService::class)->syncFromProfileRegions($user, $profileExportMarkets);
         }
 
-        $user->load(['company.industries', 'factoryImages',]);
+        ManufacturerProfileRelations::load($user);
+
+        return sendResponse(
+            status: true,
+            message: __('common.updated'),
+            data: new UserResource($user),
+            statusCode: HttpStatus::HTTP_OK
+        );
     }
 
     public function changePassword(Request $request)
@@ -254,6 +262,8 @@ class ManufacturerProfileController extends Controller
 
         $user->update($validated);
 
+        ManufacturerProfileRelations::load($user);
+
         return sendResponse(
             status: true,
             message: __('common.updated'),
@@ -291,6 +301,8 @@ class ManufacturerProfileController extends Controller
                 'deleted_reason' => null,
             ]);
         }
+
+        ManufacturerProfileRelations::load($user);
 
         return sendResponse(
             status: true,
@@ -343,6 +355,8 @@ class ManufacturerProfileController extends Controller
         
 
        
+        ManufacturerProfileRelations::load($user);
+
         return sendResponse(
             status: true,
             message: __('common.updated'),

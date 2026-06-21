@@ -4,6 +4,7 @@ namespace App\Services\Manufacturer;
 
 use App\Enums\UserManuFactureStatus;
 use App\Models\User;
+use App\Support\Manufacturer\ManufacturerProfileRelations;
 use App\Support\Time\TimezoneFormatter;
 
 class ManufacturerReviewCenterService
@@ -15,9 +16,8 @@ class ManufacturerReviewCenterService
     {
         $manufacturer->load([
             'company',
-            'additionalInformationRequests.responses',
-            'additionalInformationRequests.requestedBy',
         ]);
+        ManufacturerProfileRelations::load($manufacturer);
 
         $normalizedStatus = UserManuFactureStatus::normalizedForManufacturer($manufacturer->manufacture_status);
 
