@@ -259,6 +259,6 @@ class ManufacturerAdditionalInformationService
     {
         $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
 
-        return "{$frontendUrl}/review?token={$token}";
+        return "{$frontendUrl}/manufacturer/submit-information?token={$token}";
     }
 }

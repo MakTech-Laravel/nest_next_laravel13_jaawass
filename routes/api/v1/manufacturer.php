@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\V1\Admin\CertificateTypeController;
 use App\Http\Controllers\Api\V1\Manufacturer\CertificationController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerAnalyticsController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerCatalogController;
+use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerDashboardController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerExportMarketsController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerProductController;
 use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerProfileController;

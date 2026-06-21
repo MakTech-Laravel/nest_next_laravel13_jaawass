@@ -42,7 +42,7 @@ class ManufacturerAdditionalInformationRequestResource extends JsonResource
                 $request->user()?->role?->isManufacturer()
                     && $this->status === AdditionalInformationRequestStatus::Pending,
                 fn () => rtrim((string) config('app.frontend_url'), '/')
-                    ."/manufacturer-additional-information-request/{$this->token}"
+                    ."/review?token={$this->token}"
             ),
         ];
 
