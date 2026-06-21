@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['plan_id', 'slots', 'duration_months', 'promotion_title', 'short_description', 'button_text', 'cta_button_text', 'highlight_text', 'expires_at', 'status'])]
+#[Fillable(['plan_id', 'slots', 'duration_months', 'promotional_price', 'requires_payment', 'billing_period_unit', 'promotion_title', 'short_description', 'button_text', 'cta_button_text', 'highlight_text', 'disclaimer_text', 'expires_at', 'status'])]
 #[Hidden(['plan_id'])]
 class Promotion extends Model
 {
@@ -27,6 +27,8 @@ class Promotion extends Model
         'status' => 'boolean',
         'slots' => 'integer',
         'duration_months' => 'integer',
+        'promotional_price' => 'decimal:2',
+        'requires_payment' => 'boolean',
     ];
 
     public function users(): BelongsToMany

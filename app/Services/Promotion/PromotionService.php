@@ -2,6 +2,7 @@
 
 namespace App\Services\Promotion;
 
+use App\Enums\Api\V1\BillingInterval;
 use App\Enums\PromotionUserStatus;
 use App\Enums\UserRole;
 use App\Models\Plan;
@@ -16,6 +17,10 @@ class PromotionService
     public const DEFAULT_SLOTS = 300;
 
     public const DEFAULT_DURATION_MONTHS = 6;
+
+    public const DEFAULT_PROMOTIONAL_PRICE = 0;
+
+    public const DEFAULT_DISCLAIMER = 'Subject to admin review and approval.';
 
     /**
      * @return array{
@@ -95,12 +100,16 @@ class PromotionService
                 'plan_id' => $planId,
                 'slots' => self::DEFAULT_SLOTS,
                 'duration_months' => self::DEFAULT_DURATION_MONTHS,
+                'promotional_price' => $previous?->promotional_price ?? self::DEFAULT_PROMOTIONAL_PRICE,
+                'requires_payment' => $previous?->requires_payment ?? false,
+                'billing_period_unit' => $previous?->billing_period_unit ?? BillingInterval::MONTH->value,
                 'status' => true,
                 'promotion_title' => $previous?->promotion_title ?? 'Founding Manufacturer',
                 'short_description' => $previous?->short_description ?? 'Early Supplier Program - Get 6 months free access to the Growth plan.',
                 'button_text' => $previous?->button_text ?? 'First 300 Only',
-                'cta_button_text' => $previous?->cta_button_text ?? 'Apply as Founding Member',
+                'cta_button_text' => $previous?->cta_button_text ?? 'Apply as Founding Manufacturer',
                 'highlight_text' => $previous?->highlight_text ?? 'Get full Growth plan features free for 6 months.',
+                'disclaimer_text' => $previous?->disclaimer_text ?? self::DEFAULT_DISCLAIMER,
                 'expires_at' => null,
             ]);
 
@@ -131,6 +140,10 @@ class PromotionService
             'participated_at' => now(),
             'trial_ends_at' => $trialEndsAt,
         ]);
+
+        if ($status === PromotionUserStatus::ACCEPTED) {
+            app(PromotionSubscriptionService::class)->syncOnParticipantAccepted($promotion, $user);
+        }
     }
 
     public function updateParticipantStatus(
@@ -164,6 +177,10 @@ class PromotionService
             'status' => $status->value,
             'trial_ends_at' => $trialEndsAt,
         ]);
+
+        if ($status === PromotionUserStatus::ACCEPTED) {
+            app(PromotionSubscriptionService::class)->syncOnParticipantAccepted($promotion, $user);
+        }
     }
 
     public function syncTranslations(Promotion $promotion, ?string $locale = null): void
@@ -188,8 +205,27 @@ class PromotionService
         }
     }
 
-    private function trialEndsAt(Promotion $promotion): Carbon
+    public function trialEndsAt(Promotion $promotion): Carbon
     {
-        return now()->addMonths((int) ($promotion->duration_months ?: self::DEFAULT_DURATION_MONTHS));
+        $value = (int) ($promotion->duration_months ?: self::DEFAULT_DURATION_MONTHS);
+        $unit = strtolower((string) ($promotion->billing_period_unit ?? BillingInterval::MONTH->value));
+
+        if ($unit === BillingInterval::YEAR->value) {
+            return now()->addYears($value);
+        }
+
+        return now()->addMonths($value);
+    }
+
+    public function billingPeriodLabel(Promotion $promotion): string
+    {
+        $value = (int) ($promotion->duration_months ?: self::DEFAULT_DURATION_MONTHS);
+        $unit = strtolower((string) ($promotion->billing_period_unit ?? BillingInterval::MONTH->value));
+
+        if ($unit === BillingInterval::YEAR->value) {
+            return $value === 1 ? '1 year' : "{$value} years";
+        }
+
+        return $value === 1 ? '1 month' : "{$value} months";
     }
 }
