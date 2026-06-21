@@ -20,6 +20,7 @@ class Subscription extends Model
         'ends_at',
         'trial_ends_at',
         'auto_renew',
+        'expiry_reminder_sent_at',
         'source',
         'promotion_id',
     ];
@@ -32,6 +33,7 @@ class Subscription extends Model
             'ends_at' => 'datetime',
             'trial_ends_at' => 'datetime',
             'auto_renew' => 'boolean',
+            'expiry_reminder_sent_at' => 'datetime',
             'source' => SubscriptionSource::class,
         ];
     }

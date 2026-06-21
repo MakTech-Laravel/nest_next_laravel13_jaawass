@@ -55,6 +55,26 @@ return [
       'subject' => 'mail.manufacturer_additional_information.subject',
       'markdown' => false,
     ],
+    'subscription-expiry-reminder' => [
+      'view' => 'mail.subscription-expiry-reminder',
+      'subject' => 'mail.subscription_expiry_reminder.subject',
+      'markdown' => false,
+    ],
+    'subscription-expired' => [
+      'view' => 'mail.subscription-expired',
+      'subject' => 'mail.subscription_expired.subject',
+      'markdown' => false,
+    ],
+    'subscription-created' => [
+      'view' => 'mail.subscription-created',
+      'subject' => 'mail.subscription_created.subject',
+      'markdown' => false,
+    ],
+    'subscription-renewed' => [
+      'view' => 'mail.subscription-renewed',
+      'subject' => 'mail.subscription_renewed.subject',
+      'markdown' => false,
+    ],
   ],
 
 ];

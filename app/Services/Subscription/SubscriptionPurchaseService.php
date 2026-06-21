@@ -23,6 +23,7 @@ class SubscriptionPurchaseService
         private readonly PaymentCheckService $paymentCheckService,
         private readonly SubscriptionService $subscriptionService,
         private readonly SubscriptionLogService $subscriptionLogService,
+        private readonly SubscriptionNotificationService $notificationService,
     ) {}
 
     /**
@@ -70,6 +71,8 @@ class SubscriptionPurchaseService
 
             return $subscription->load(['manufacturer', 'plan']);
         });
+
+        $this->notificationService->sendSubscriptionCreated($subscription, (float) $verified->amount);
 
         return ['subscription' => $subscription, 'created' => true];
     }
@@ -135,6 +138,8 @@ class SubscriptionPurchaseService
 
             return $updated->load(['manufacturer', 'plan']);
         });
+
+        $this->notificationService->sendSubscriptionRenewed($subscription, (float) $verified->amount);
 
         return ['subscription' => $subscription, 'created' => true];
     }
@@ -281,6 +286,7 @@ class SubscriptionPurchaseService
             'ends_at' => $endsAt,
             'trial_ends_at' => null,
             'auto_renew' => (bool) $payload['auto_renew'],
+            'expiry_reminder_sent_at' => null,
             'source' => SubscriptionSource::PURCHASE->value,
             'promotion_id' => null,
         ];

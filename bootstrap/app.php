@@ -30,6 +30,14 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('users:finalize-scheduled-deletions')->dailyAt('00:00');
 
+        $schedule->command('subscriptions:process-expired')
+            ->hourly()
+            ->timezone(config('app.timezone'));
+
+        $schedule->command('subscriptions:send-expiry-reminders')
+            ->dailyAt('09:00')
+            ->timezone(config('app.timezone'));
+
         if (config('currency.fx_sync.enabled', false)) {
             $schedule->command('currency:sync-rates')
                 ->dailyAt('00:00')

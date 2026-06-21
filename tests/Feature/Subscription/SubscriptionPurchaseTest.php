@@ -1,12 +1,15 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Jobs\SendMailJob;
+use App\Jobs\Subscription\SendSubscriptionInAppNotificationJob;
 use App\Models\Payment;
 use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
@@ -14,6 +17,8 @@ use Tests\TestCase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    Queue::fake([SendMailJob::class, SendSubscriptionInAppNotificationJob::class]);
+
     app(ClientRepository::class)->createPersonalAccessGrantClient(
         name: 'Test Personal Access Client',
         provider: config('auth.guards.api.provider')

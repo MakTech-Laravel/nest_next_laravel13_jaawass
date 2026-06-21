@@ -23,6 +23,7 @@ return [
     'payment_already_used' => 'This payment has already been used by another account',
     'payment_without_subscription' => 'Payment was recorded but no subscription was found',
     'invalid_billing_interval' => 'Billing interval must be month or year',
+    'plan' => 'your plan',
 
     'features' => [
         'product_limit' => 'Product listings',
