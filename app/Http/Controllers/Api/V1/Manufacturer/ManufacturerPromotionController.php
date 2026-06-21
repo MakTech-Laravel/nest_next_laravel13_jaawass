@@ -8,6 +8,7 @@ use App\Http\Resources\Api\V1\Admin\PromotionParticipantResource;
 use App\Http\Resources\Api\V1\Admin\PromotionResource;
 use App\Models\Promotion;
 use App\Services\Promotion\PromotionService;
+use App\Services\Subscription\PlanEntitlementResolver;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use InvalidArgumentException;
@@ -17,6 +18,7 @@ class ManufacturerPromotionController extends Controller
 {
     public function __construct(
         private readonly PromotionService $promotionService,
+        private readonly PlanEntitlementResolver $entitlementResolver,
     ) {}
 
     public function active(): JsonResponse
@@ -101,6 +103,15 @@ class ManufacturerPromotionController extends Controller
             return sendResponse(
                 status: false,
                 message: __('promotion.full'),
+                data: null,
+                statusCode: HttpStatus::HTTP_UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        if ($this->entitlementResolver->for($request->user())->hasActiveSubscription()) {
+            return sendResponse(
+                status: false,
+                message: __('promotion.already_has_subscription'),
                 data: null,
                 statusCode: HttpStatus::HTTP_UNPROCESSABLE_ENTITY,
             );

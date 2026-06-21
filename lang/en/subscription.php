@@ -10,6 +10,7 @@ return [
     'feature_not_available' => 'Your current plan does not include :feature.',
     'limit_exceeded' => 'You have reached the :feature limit of :limit for your current plan.',
     'subscription_updated' => 'Subscription upgraded successfully',
+    'subscription_renewed' => 'Subscription renewed successfully',
     'same_plan' => 'You cannot upgrade to the same plan',
     'payment_id_required' => 'Payment ID is required',
     'payment_method_not_supported' => 'Payment method is not supported',

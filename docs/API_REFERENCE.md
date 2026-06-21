@@ -825,14 +825,48 @@ Detail (`GET /products/{product}`) includes relations: images, specifications, s
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/subscriptions` | Current subscription |
-| POST | `/subscriptions/subscribe` | Subscribe to plan |
-| POST | `/subscriptions/cancel` | Cancel subscription |
-| POST | `/subscriptions/upgrade` | Upgrade plan |
+| GET | `/subscriptions` | Current subscription row (may be expired) |
+| POST | `/subscriptions/subscribe` | Subscribe or **renew** after expired trial |
+| POST | `/subscriptions/cancel` | Cancel auto-renew (access until `ends_at`) |
+| POST | `/subscriptions/upgrade` | Change plan, or renew same plan when inactive |
 
-**POST subscribe body:** `{ "plan_id": 1, "billing_interval": "monthly" | "yearly" }`
+**POST subscribe body:** `{ "plan_id": 1, "billing_interval": "month" | "year", "payment_method": "paypal", "payment_id": "...", "auto_renew": true, "paid_amount": 99.00 }`
+
+**Subscribe / renew rules:**
+
+| Manufacturer state | POST `/subscribe` |
+|--------------------|-------------------|
+| No subscription row | Creates new paid subscription (`source: purchase`) |
+| Active subscription | **409** `already_subscribed` |
+| Expired / inactive row (e.g. promotion trial ended) | **Renews** existing row → `status: active`, clears `promotion_id` |
+
+**POST upgrade:** Same-plan upgrade is allowed when the current subscription is **not** entitlement-active (converts expired trial to paid). Active same-plan upgrade returns validation error `same_plan`.
+
+**GET `/subscriptions` response** includes `is_active` (whether routes gated by `subscription.active` would pass), `source` (`purchase` | `promotion`), `promotion_id`, and `days_remaining`.
 
 **Response:** `SubscriptionResource` (§7.5).
+
+---
+
+### 5.1.1 Promotions (no active subscription required)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/promotions/active` | Active founding promotion |
+| GET | `/promotions/my-application` | Manufacturer application status |
+| POST | `/promotions/apply` | Apply (creates `pending` pivot row) |
+
+**Apply guard:** Returns **422** if manufacturer already has an **active** subscription (`promotion.already_has_subscription`).
+
+**Promotion → subscription lifecycle:**
+
+1. **Apply** → `promotion_user.status = pending`, no subscription, no trial.
+2. **Admin accept** → pivot `accepted` + `trial_ends_at`; if no active subscription, creates or reactivates `subscriptions` row with `status: trialing`, `source: promotion`, `promotion_id`.
+3. **Admin accept + active paid subscription** → pivot updated only; paid subscription unchanged.
+4. **Trial expires** (`ends_at` in past) → `is_active: false`; gated routes return **403**; public supplier listing excludes manufacturer.
+5. **Renew** → `POST /subscriptions/subscribe` with payment reactivates the row as paid (`source: purchase`).
+
+Entitlements always come from `subscriptions`, not from `promotion_user` pivot status.
 
 ---
 
@@ -1463,16 +1497,27 @@ See §2.6.
 ```json
 {
   "id": 1,
-  "billing_interval": "monthly",
-  "status": "active",
-  "status_label": "Active",
-  "starts_at": "2026-01-01",
-  "ends_at": "2026-02-01",
-  "trial_ends_at": null,
-  "auto_renew": true,
-  "plan": { "id": 1, "name": "Pro", "features": [] }
+  "billing_interval": "month",
+  "status": "trialing",
+  "status_label": "Trialing",
+  "starts_at": "2026-01-01T00:00:00.000000Z",
+  "ends_at": "2026-07-01T00:00:00.000000Z",
+  "trial_ends_at": "2026-07-01T00:00:00.000000Z",
+  "auto_renew": false,
+  "is_active": true,
+  "source": "promotion",
+  "promotion_id": 3,
+  "days_remaining": 42,
+  "plan": { "id": 2, "name": "Growth", "features": [] }
 }
 ```
+
+| Field | Description |
+|-------|-------------|
+| `is_active` | `true` when status is `active` or `trialing` and `ends_at` is not past |
+| `source` | `purchase` (paid) or `promotion` (founding trial) |
+| `promotion_id` | Linked promotion when `source` is `promotion`; `null` after paid renewal |
+| `days_remaining` | Days until `ends_at`; `null` if no end date or already expired |
 
 ---
 

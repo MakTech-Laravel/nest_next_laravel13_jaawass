@@ -135,15 +135,25 @@ class PromotionService
             ? $this->trialEndsAt($promotion)
             : null;
 
+        if ($status === PromotionUserStatus::ACCEPTED) {
+            DB::transaction(function () use ($promotion, $user, $status, $trialEndsAt): void {
+                $promotion->users()->attach($user->id, [
+                    'status' => $status->value,
+                    'participated_at' => now(),
+                    'trial_ends_at' => $trialEndsAt,
+                ]);
+
+                app(PromotionSubscriptionService::class)->syncOnParticipantAccepted($promotion, $user);
+            });
+
+            return;
+        }
+
         $promotion->users()->attach($user->id, [
             'status' => $status->value,
             'participated_at' => now(),
             'trial_ends_at' => $trialEndsAt,
         ]);
-
-        if ($status === PromotionUserStatus::ACCEPTED) {
-            app(PromotionSubscriptionService::class)->syncOnParticipantAccepted($promotion, $user);
-        }
     }
 
     public function updateParticipantStatus(
@@ -173,14 +183,23 @@ class PromotionService
             ? $this->trialEndsAt($promotion)
             : null;
 
+        if ($status === PromotionUserStatus::ACCEPTED) {
+            DB::transaction(function () use ($promotion, $user, $status, $trialEndsAt): void {
+                $promotion->users()->updateExistingPivot($user->id, [
+                    'status' => $status->value,
+                    'trial_ends_at' => $trialEndsAt,
+                ]);
+
+                app(PromotionSubscriptionService::class)->syncOnParticipantAccepted($promotion, $user);
+            });
+
+            return;
+        }
+
         $promotion->users()->updateExistingPivot($user->id, [
             'status' => $status->value,
             'trial_ends_at' => $trialEndsAt,
         ]);
-
-        if ($status === PromotionUserStatus::ACCEPTED) {
-            app(PromotionSubscriptionService::class)->syncOnParticipantAccepted($promotion, $user);
-        }
     }
 
     public function syncTranslations(Promotion $promotion, ?string $locale = null): void

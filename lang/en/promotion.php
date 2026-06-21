@@ -9,4 +9,5 @@ return [
     'no_active_promotion' => 'No active promotion found.',
     'not_applied' => 'You have not applied to this promotion yet.',
     'application_submitted' => 'Your founding manufacturer application was submitted and is pending admin review.',
+    'already_has_subscription' => 'You already have an active subscription and cannot apply for a promotion trial.',
 ];

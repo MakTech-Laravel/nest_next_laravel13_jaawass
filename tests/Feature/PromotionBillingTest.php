@@ -143,6 +143,8 @@ test('accepting promotion participant grants trialing subscription without payme
         'plan_id' => $growthPlanId,
         'status' => SubscriptionStatus::TRIALING->value,
         'billing_interval' => 'month',
+        'source' => 'promotion',
+        'promotion_id' => $promotion->id,
     ]);
 
     $manufacturer->refresh()->load('subscription');

@@ -4,6 +4,7 @@ namespace App\Services\Subscription;
 
 use App\Enums\Api\V1\BillingInterval;
 use App\Enums\Api\V1\SubscriptionEventType;
+use App\Enums\Api\V1\SubscriptionSource;
 use App\Enums\Api\V1\SubscriptionStatus;
 use App\Exceptions\Payment\PaymentVerificationException;
 use App\Models\Payment;
@@ -46,7 +47,7 @@ class SubscriptionPurchaseService
         $plan = Plan::query()->findOrFail($payload['plan_id']);
         $subscriptionData = $this->buildSubscriptionData($manufacturer->id, $payload);
 
-        $subscription = DB::transaction(function () use ($manufacturer, $payload, $verified, $plan, $subscriptionData): Subscription {
+        $subscription = DB::transaction(function () use ($manufacturer, $verified, $plan, $subscriptionData): Subscription {
             $subscription = $this->subscriptionService->createSubscription($subscriptionData);
 
             $payment = Payment::query()->create([
@@ -75,6 +76,71 @@ class SubscriptionPurchaseService
 
     /**
      * @param  array<string, mixed>  $payload
+     * @return array{subscription: Subscription, created: bool}
+     */
+    public function renewPurchase(User $manufacturer, array $payload): array
+    {
+        $subscription = $manufacturer->subscription;
+
+        if ($subscription === null) {
+            throw ValidationException::withMessages([
+                'subscription' => [__('subscription.no_subscripiton_found')],
+            ]);
+        }
+
+        if ($subscription->isEntitlementActive()) {
+            throw ValidationException::withMessages([
+                'subscription' => [__('subscription.already_subscribed')],
+            ]);
+        }
+
+        $existingPayment = Payment::query()
+            ->where('payment_id', $payload['payment_id'])
+            ->first();
+
+        if ($existingPayment !== null) {
+            return $this->handleIdempotentPayment($manufacturer, $existingPayment);
+        }
+
+        $verified = $this->paymentCheckService->verify(
+            (string) $payload['payment_method'],
+            $payload,
+        );
+
+        $plan = Plan::query()->findOrFail($payload['plan_id']);
+        $fromPlanId = $subscription->plan_id;
+        $subscriptionData = $this->buildSubscriptionData($manufacturer->id, $payload);
+
+        $subscription = DB::transaction(function () use ($manufacturer, $subscription, $verified, $plan, $fromPlanId, $subscriptionData): Subscription {
+            $updated = $this->subscriptionService->updateSubscription($subscription->id, $subscriptionData);
+
+            $payment = Payment::query()->create([
+                'payment_id' => $verified->externalId,
+                'payment_method' => $verified->paymentMethod,
+                'amount' => $verified->amount,
+                'status' => 'paid',
+                'source_id' => $plan->id,
+                'source_type' => Plan::class,
+                'user_id' => $manufacturer->id,
+                'subscription_id' => $updated->id,
+            ]);
+
+            $this->subscriptionLogService->createSubscriptionLog([
+                'manufacturer_id' => $manufacturer->id,
+                'from_plan_id' => $fromPlanId,
+                'to_plan_id' => $plan->id,
+                'paid_amount' => $payment->amount,
+                'event_type' => SubscriptionEventType::SUBSCRIPTION_RENEWED->value,
+            ]);
+
+            return $updated->load(['manufacturer', 'plan']);
+        });
+
+        return ['subscription' => $subscription, 'created' => true];
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
      */
     public function upgradePurchase(User $manufacturer, array $payload): Subscription
     {
@@ -87,9 +153,15 @@ class SubscriptionPurchaseService
         }
 
         if ((int) $subscription->plan_id === (int) $payload['plan_id']) {
-            throw ValidationException::withMessages([
-                'plan_id' => [__('subscription.same_plan')],
-            ]);
+            if ($subscription->isEntitlementActive()) {
+                throw ValidationException::withMessages([
+                    'plan_id' => [__('subscription.same_plan')],
+                ]);
+            }
+
+            ['subscription' => $renewed] = $this->renewPurchase($manufacturer, $payload);
+
+            return $renewed;
         }
 
         $existingPayment = Payment::query()
@@ -111,7 +183,7 @@ class SubscriptionPurchaseService
         $newPlan = Plan::query()->findOrFail($payload['plan_id']);
         $subscriptionData = $this->buildSubscriptionData($manufacturer->id, $payload);
 
-        return DB::transaction(function () use ($manufacturer, $subscription, $payload, $verified, $oldPlan, $newPlan, $subscriptionData): Subscription {
+        return DB::transaction(function () use ($manufacturer, $subscription, $verified, $oldPlan, $newPlan, $subscriptionData): Subscription {
             $updated = $this->subscriptionService->updateSubscription($subscription->id, $subscriptionData);
 
             Payment::query()->create([
@@ -207,8 +279,10 @@ class SubscriptionPurchaseService
             'status' => SubscriptionStatus::ACTIVE->value,
             'starts_at' => $startsAt,
             'ends_at' => $endsAt,
-            'trial_ends_at' => isset($payload['trial_ends_at']) ? Carbon::parse($payload['trial_ends_at']) : null,
+            'trial_ends_at' => null,
             'auto_renew' => (bool) $payload['auto_renew'],
+            'source' => SubscriptionSource::PURCHASE->value,
+            'promotion_id' => null,
         ];
     }
 
