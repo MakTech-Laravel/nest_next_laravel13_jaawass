@@ -8,6 +8,10 @@ enum MailTemplate: string
     case PasswordResetOtp = 'password-reset-otp';
     case AccountRestoreOtp = 'account-restore-otp';
     case ManufacturerAdditionalInformation = 'manufacturer-additional-information';
+    case SubscriptionExpiryReminder = 'subscription-expiry-reminder';
+    case SubscriptionExpired = 'subscription-expired';
+    case SubscriptionCreated = 'subscription-created';
+    case SubscriptionRenewed = 'subscription-renewed';
 
     public static function tryFromName(string $template): ?self
     {
