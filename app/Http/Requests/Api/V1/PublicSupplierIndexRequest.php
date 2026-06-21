@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests\Api\V1;
 
+use App\Http\Requests\Api\V1\Concerns\InteractsWithViewerCountry;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 class PublicSupplierIndexRequest extends FormRequest
 {
+    use InteractsWithViewerCountry;
+
     public function authorize(): bool
     {
         return true;
@@ -33,6 +36,7 @@ class PublicSupplierIndexRequest extends FormRequest
             'category_id' => ['sometimes', 'nullable', 'integer', 'exists:industries,id'],
             'category_slug' => ['sometimes', 'nullable', 'string', 'max:255'],
             'country' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'viewer_country_code' => ['sometimes', 'nullable', 'string', 'size:2'],
             'certification' => ['sometimes', 'nullable', 'string', 'max:100'],
             'export_market' => ['sometimes', 'nullable', 'string', 'max:100'],
             'moq_range' => ['sometimes', 'nullable', 'string', Rule::in([
@@ -97,9 +101,7 @@ class PublicSupplierIndexRequest extends FormRequest
 
     public function country(): ?string
     {
-        $country = $this->input('country');
-
-        return is_string($country) && $country !== '' ? $country : null;
+        return $this->supplierLocationCountry();
     }
 
     public function certification(): ?string

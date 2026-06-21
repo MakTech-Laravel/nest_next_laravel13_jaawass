@@ -1,0 +1,24 @@
+﻿
+Warning: Module "openssl" is already loaded in Unknown on line 0
+
+   ReflectionException 
+
+  Class "ManufacturerDashboardController" does not exist
+
+  at vendor\laravel\framework\src\Illuminate\Foundation\Console\RouteListCommand.php:272
+    268Γûò             if ($this->isFrameworkController($route)) {
+    269Γûò                 return false;
+    270Γûò             }
+    271Γûò 
+  Γ₧£ 272Γûò             $path = (new ReflectionClass($route->getControllerClass()))
+    273Γûò                 ->getFileName();
+    274Γûò         } else {
+    275Γûò             return false;
+    276Γûò         }
+
+  1   vendor\laravel\framework\src\Illuminate\Foundation\Console\RouteListCommand.php:272
+      ReflectionClass::__construct("ManufacturerDashboardController")
+
+  2   vendor\laravel\framework\src\Illuminate\Foundation\Console\RouteListCommand.php:150
+      Illuminate\Foundation\Console\RouteListCommand::isVendorRoute(Object(Illuminate\Routing\Route))
+

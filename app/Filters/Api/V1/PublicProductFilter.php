@@ -3,6 +3,7 @@
 namespace App\Filters\Api\V1;
 
 use App\Http\Requests\Api\V1\PublicProductIndexRequest;
+use App\Support\ExportMarkets\ManufacturerExportMarketVisibility;
 use Illuminate\Database\Eloquent\Builder;
 
 class PublicProductFilter
@@ -29,6 +30,7 @@ class PublicProductFilter
             ->withMoqRange($request->minMoq(), $request->maxMoq())
             ->withCertification($request->certification())
             ->withExportMarket($request->exportMarket())
+            ->withViewerCountryVisibility($request->viewerCountryCode())
             ->withSort($request->sort())
             ->query;
     }
@@ -196,6 +198,18 @@ class PublicProductFilter
 
         $this->query->whereHas('user.company', fn (Builder $company) => $company
             ->where('export_markets', 'like', $like));
+
+        return $this;
+    }
+
+    private function withViewerCountryVisibility(?string $viewerCountryCode): self
+    {
+        if ($viewerCountryCode === null) {
+            return $this;
+        }
+
+        app(ManufacturerExportMarketVisibility::class)
+            ->applyToProductQuery($this->query, $viewerCountryCode);
 
         return $this;
     }

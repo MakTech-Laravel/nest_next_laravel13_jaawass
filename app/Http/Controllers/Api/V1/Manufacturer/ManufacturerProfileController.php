@@ -8,6 +8,8 @@ use App\Http\Resources\Api\V1\UserResource;
 use App\Models\User;
 use App\Models\UserFactoryImage;
 use App\Services\Company\CompanySlugService;
+use App\Services\Manufacturer\ManufacturerExportMarketService;
+use App\Support\Manufacturer\ManufacturerProfileRelations;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -18,11 +20,11 @@ class ManufacturerProfileController extends Controller
 {
     public function index(Request $request)
     {
-        $user = $request->user()->load(['company.industries', 'manufacturerReviews', 'factoryImages']);
+        $user = ManufacturerProfileRelations::load($request->user());
 
         return sendResponse(
             status: true,
-            data: new UserResource($request->user()),
+            data: new UserResource($user),
             message: __('common.success'),
             statusCode: HttpStatus::HTTP_OK
         );
@@ -110,8 +112,13 @@ class ManufacturerProfileController extends Controller
             $validated['certifications'] = json_encode($validated['certifications']);
         }
 
-        if (isset($validated['export_markets']) && !empty($validated['export_markets'])) {
-            $validated['export_markets'] = json_encode($validated['export_markets']);
+        $profileExportMarkets = null;
+
+        if (array_key_exists('export_markets', $validated)) {
+            $profileExportMarkets = is_array($validated['export_markets'])
+                ? $validated['export_markets']
+                : [];
+            $validated['export_markets'] = json_encode($profileExportMarkets);
         }
 
         if (isset($validated['language_spoken']) && !empty($validated['language_spoken'])) {
@@ -197,9 +204,18 @@ class ManufacturerProfileController extends Controller
             $company->industries()->sync($industries_id);
         }
 
+        if ($profileExportMarkets !== null) {
+            app(ManufacturerExportMarketService::class)->syncFromProfileRegions($user, $profileExportMarkets);
+        }
 
+        ManufacturerProfileRelations::load($user);
 
-        $user->load(['company.industries', 'factoryImages',]);
+        return sendResponse(
+            status: true,
+            message: __('common.updated'),
+            data: new UserResource($user),
+            statusCode: HttpStatus::HTTP_OK
+        );
     }
 
     public function changePassword(Request $request)
@@ -246,6 +262,8 @@ class ManufacturerProfileController extends Controller
 
         $user->update($validated);
 
+        ManufacturerProfileRelations::load($user);
+
         return sendResponse(
             status: true,
             message: __('common.updated'),
@@ -283,6 +301,8 @@ class ManufacturerProfileController extends Controller
                 'deleted_reason' => null,
             ]);
         }
+
+        ManufacturerProfileRelations::load($user);
 
         return sendResponse(
             status: true,
@@ -335,6 +355,8 @@ class ManufacturerProfileController extends Controller
         
 
        
+        ManufacturerProfileRelations::load($user);
+
         return sendResponse(
             status: true,
             message: __('common.updated'),

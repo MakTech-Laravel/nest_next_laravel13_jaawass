@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\UpdateUserPreferencesRequest;
 use App\Http\Resources\Api\V1\UserResource;
+use App\Support\Manufacturer\ManufacturerProfileRelations;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
@@ -33,7 +34,7 @@ class UserPreferencesController extends Controller
             date_default_timezone_set($tz);
         }
 
-        $user->loadMissing(['company', 'factoryImages', 'preferredCurrency']);
+        $user = ManufacturerProfileRelations::load($user);
 
         return sendResponse(
             status: true,

@@ -3,6 +3,7 @@
 namespace App\Filters\Api\V1;
 
 use App\Http\Requests\Api\V1\PublicSupplierIndexRequest;
+use App\Support\ExportMarkets\ManufacturerExportMarketVisibility;
 use App\Support\Subscription\SupplierVisibilityScoreQuery;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,7 @@ class PublicSupplierFilter
             ->withCountry($request->country())
             ->withCertification($request->certification())
             ->withExportMarket($request->exportMarket())
+            ->withViewerCountryVisibility($request->viewerCountryCode())
             ->withMoqRange($request->minMoq(), $request->maxMoq())
             ->withReviewedOnly($request->reviewedOnly())
             ->withSort($request->sort())
@@ -140,6 +142,18 @@ class PublicSupplierFilter
 
         $this->query->whereHas('company', fn (Builder $company) => $company
             ->where('export_markets', 'like', '%'.$exportMarket.'%'));
+
+        return $this;
+    }
+
+    private function withViewerCountryVisibility(?string $viewerCountryCode): self
+    {
+        if ($viewerCountryCode === null) {
+            return $this;
+        }
+
+        app(ManufacturerExportMarketVisibility::class)
+            ->applyToSupplierQuery($this->query, $viewerCountryCode);
 
         return $this;
     }
