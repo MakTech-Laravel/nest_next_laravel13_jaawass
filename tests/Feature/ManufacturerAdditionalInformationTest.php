@@ -266,3 +266,76 @@ test('admin manufacturer show includes pending and submitted additional informat
     expect($messages)->toContain('Pending request')
         ->toContain('Submitted request');
 });
+
+test('manufacturer me and profile include verification and all additional information requests', function () {
+    config(['app.frontend_url' => 'https://app.example.com']);
+
+    $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    $manufacturer = User::factory()->create([
+        'role' => UserRole::MANUFACTURER->value,
+        'status' => UserStatus::PENDING,
+        'manufacture_status' => UserManuFactureStatus::PENDING,
+        'manufacture_status_at' => now()->subDay(),
+    ]);
+
+    ManufacturerAdditionalInformationRequest::query()->create([
+        'user_id' => $manufacturer->id,
+        'requested_by' => $admin->id,
+        'token' => 'me-endpoint-token',
+        'message' => 'Pending verification docs',
+        'allowed_types' => ['document'],
+        'status' => 'pending',
+        'expires_at' => now()->addDays(5),
+    ]);
+
+    ManufacturerAdditionalInformationRequest::query()->create([
+        'user_id' => $manufacturer->id,
+        'requested_by' => $admin->id,
+        'token' => 'me-submitted-token',
+        'message' => 'Submitted verification docs',
+        'allowed_types' => ['text'],
+        'status' => 'submitted',
+        'expires_at' => now()->addDays(5),
+        'submitted_at' => now(),
+    ]);
+
+    Passport::actingAs($manufacturer);
+
+    /** @var TestCase $this */
+    $meResponse = $this->getJson('/api/v1/me');
+
+    $meResponse->assertOk()
+        ->assertJsonPath('data.verification.manufacture_status', UserManuFactureStatus::PENDING->value)
+        ->assertJsonPath('data.verification.rejection_reason', null)
+        ->assertJsonCount(2, 'data.additional_information_requests');
+
+    $pending = collect($meResponse->json('data.additional_information_requests'))
+        ->firstWhere('message', 'Pending verification docs');
+
+    expect($pending)->not->toBeNull()
+        ->and($pending['submit_url'])->toBe(
+            'https://app.example.com/manufacturer-additional-information-request/me-endpoint-token'
+        );
+
+    $subscribedManufacturer = manufacturerWithSubscription([
+        'manufacture_status' => UserManuFactureStatus::PENDING->value,
+        'manufacture_status_at' => now()->subDay(),
+    ]);
+
+    ManufacturerAdditionalInformationRequest::query()->create([
+        'user_id' => $subscribedManufacturer->id,
+        'requested_by' => $admin->id,
+        'token' => 'profile-endpoint-token',
+        'message' => 'Profile pending docs',
+        'allowed_types' => ['document'],
+        'status' => 'pending',
+        'expires_at' => now()->addDays(5),
+    ]);
+
+    Passport::actingAs($subscribedManufacturer);
+
+    $this->getJson('/api/v1/manufacturer/profile')
+        ->assertOk()
+        ->assertJsonPath('data.verification.manufacture_status', UserManuFactureStatus::PENDING->value)
+        ->assertJsonPath('data.additional_information_requests.0.message', 'Profile pending docs');
+});

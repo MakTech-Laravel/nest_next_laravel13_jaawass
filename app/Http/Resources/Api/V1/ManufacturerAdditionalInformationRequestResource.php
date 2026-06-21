@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Enums\AdditionalInformationRequestStatus;
 use App\Support\Time\TimezoneFormatter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -36,6 +37,12 @@ class ManufacturerAdditionalInformationRequestResource extends JsonResource
             ]),
             'responses' => ManufacturerAdditionalInformationResponseResource::collection(
                 $this->whenLoaded('responses')
+            ),
+            'submit_url' => $this->when(
+                $request->user()?->role?->isManufacturer()
+                    && $this->status === AdditionalInformationRequestStatus::Pending,
+                fn () => rtrim((string) config('app.frontend_url'), '/')
+                    ."/review?token={$this->token}"
             ),
         ];
 

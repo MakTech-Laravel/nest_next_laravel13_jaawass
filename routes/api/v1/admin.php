@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\AdminAnalyticsController;
 use App\Http\Controllers\Api\V1\Admin\AdminCategoryAndSubCategoryController;
 use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\V1\Admin\ArticleCategoryController;
@@ -26,6 +27,13 @@ use App\Http\Controllers\Api\V1\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', [AdminDashboardController::class, 'overview']);
+
+Route::prefix('analytics')->controller(AdminAnalyticsController::class)->group(function (): void {
+    Route::get('/metrics', 'metrics');
+    Route::get('/growth', 'growth');
+    Route::get('/countries', 'countries');
+    Route::get('/industries', 'industries');
+});
 
 Route::controller(UserController::class)->prefix('users')->group(function (): void {
     Route::get('/', 'index');

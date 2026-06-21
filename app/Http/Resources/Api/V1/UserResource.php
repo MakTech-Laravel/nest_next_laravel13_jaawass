@@ -92,6 +92,17 @@ class UserResource extends JsonResource
             $resource['rejection_reason'] = $normalized->isRejected()
                 ? $this->manufacture_status_reason
                 : null;
+            $resource['verification'] = [
+                'manufacture_status' => $normalized->value,
+                'manufacture_status_label' => $normalized->label(),
+                'rejection_reason' => $normalized->isRejected()
+                    ? $this->manufacture_status_reason
+                    : null,
+                'manufacture_status_at' => TimezoneFormatter::format($this->manufacture_status_at),
+                'submitted_at' => TimezoneFormatter::format(
+                    $this->manufacture_status_at ?? $this->created_at
+                ),
+            ];
 
             $resource['total_products'] = $this->total_products ?? 0;
             $resource['reviews'] = $this->whenLoaded('manufacturerReviews', function () {

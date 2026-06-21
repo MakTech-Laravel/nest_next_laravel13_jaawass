@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\UserFactoryImage;
 use App\Models\Company;
 use App\Services\ManufacturerAccountGate;
+use App\Support\Manufacturer\ManufacturerProfileRelations;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -952,7 +953,8 @@ class SocialAuthController extends Controller
             deviceName: $deviceName,
         );
 
-        $user->loadMissing(['company', 'factoryImages', 'preferredCurrency']);
+        $user->loadMissing(['preferredCurrency']);
+        $user = ManufacturerProfileRelations::load($user);
 
         app(RecordLoginHistoryAction::class)->handle($user, $request, $deviceName);
 

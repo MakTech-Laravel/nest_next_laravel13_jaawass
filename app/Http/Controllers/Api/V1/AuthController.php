@@ -18,6 +18,7 @@ use App\Enums\MailTemplate;
 use App\Services\Mailing\MailingService;
 use App\Models\User;
 use App\Services\ManufacturerAccountGate;
+use App\Support\Manufacturer\ManufacturerProfileRelations;
 use Carbon\Carbon;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
@@ -48,7 +49,9 @@ class AuthController extends Controller
             );
         }
 
-        $user = $result['user']->loadMissing(['company', 'factoryImages', 'preferredCurrency']);
+        $user = ManufacturerProfileRelations::load(
+            $result['user']->loadMissing(['preferredCurrency'])
+        );
 
         return sendResponse(
             status: true,
@@ -239,7 +242,8 @@ class AuthController extends Controller
             user: $user,
             deviceName: $resolvedDevice !== '' ? $resolvedDevice : null
         );
-        $user->loadMissing(['company', 'factoryImages', 'preferredCurrency']);
+        $user->loadMissing(['preferredCurrency']);
+        $user = ManufacturerProfileRelations::load($user);
 
         app(RecordLoginHistoryAction::class)->handle($user, $request, $resolvedDevice !== '' ? $resolvedDevice : null);
 
