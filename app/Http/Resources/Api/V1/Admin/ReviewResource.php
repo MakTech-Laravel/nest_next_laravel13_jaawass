@@ -18,6 +18,7 @@ class ReviewResource extends JsonResource
         return [
             'id' => $this->id,
             'rating' => $this->rating,
+            'status' => $this->status?->value,
             'user_id' => $this->user_id,
             'reviewer_id' => $this->reviewer_id,
             'created_at' => TimezoneFormatter::format($this->created_at),

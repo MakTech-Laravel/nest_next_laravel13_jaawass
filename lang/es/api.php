@@ -104,4 +104,12 @@ return [
     'admin_contacts_fetched_successfully' => 'Contactos de administraci?n obtenidos correctamente.',
     'admin_contact_fetched_successfully' => 'Contacto de administraci?n obtenido correctamente.',
     'admin_contact_read_status_updated_successfully' => 'Estado de lectura del contacto actualizado correctamente.',
+
+    'review_created_successfully' => 'Rese?a enviada correctamente.',
+    'review_order_not_eligible' => 'Solo puedes rese?ar compras completadas de este producto.',
+    'review_already_exists_for_order' => 'Ya enviaste una rese?a para este pedido.',
+    'admin_review_stats_fetched_successfully' => 'Estad?sticas de rese?as obtenidas correctamente.',
+    'admin_reviews_fetched_successfully' => 'Rese?as obtenidas correctamente.',
+    'admin_review_fetched_successfully' => 'Rese?a obtenida correctamente.',
+    'admin_review_updated_successfully' => 'Rese?a actualizada correctamente.',
 ];

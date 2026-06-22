@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api\V1\Buyer;
 
 use App\Enums\OrderStatus;
+use App\Enums\ReviewStatus;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Review;
@@ -32,6 +33,7 @@ class StoreProductReviewRequest extends FormRequest
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'title' => ['sometimes', 'nullable', 'string', 'max:255'],
             'comment' => ['required', 'string', 'max:5000'],
+            'locale' => ['sometimes', 'string', 'max:10'],
         ];
     }
 
@@ -91,6 +93,7 @@ class StoreProductReviewRequest extends FormRequest
             'rating' => (int) $validated['rating'],
             'title' => $validated['title'] ?? null,
             'comment' => $validated['comment'],
+            'status' => ReviewStatus::PENDING->value,
         ];
     }
 }

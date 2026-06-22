@@ -103,4 +103,12 @@ return [
     'admin_contacts_fetched_successfully' => 'הפניות נטענו בהצלחה.',
     'admin_contact_fetched_successfully' => 'הפנייה נטענה בהצלחה.',
     'admin_contact_read_status_updated_successfully' => 'הסטטוס של הפנייה עודכן בהצלחה.',
+
+    'review_created_successfully' => 'הביקורת נשלחה בהצלחה.',
+    'review_order_not_eligible' => 'ניתן לכתוב ביקורת רק על רכישות שהושלמו של מוצר זה.',
+    'review_already_exists_for_order' => 'כבר שלחת ביקורת עבור הזמנה זו.',
+    'admin_review_stats_fetched_successfully' => 'סטטיסטיקות הביקורות נטענו בהצלחה.',
+    'admin_reviews_fetched_successfully' => 'הביקורות נטענו בהצלחה.',
+    'admin_review_fetched_successfully' => 'הביקורת נטענה בהצלחה.',
+    'admin_review_updated_successfully' => 'הביקורת עודכנה בהצלחה.',
 ];

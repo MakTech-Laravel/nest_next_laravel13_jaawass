@@ -103,4 +103,12 @@ return [
     'admin_contacts_fetched_successfully' => 'تم جلب الاستفسارات بنجاح.',
     'admin_contact_fetched_successfully' => 'تم جلب الاستفسار بنجاح.',
     'admin_contact_read_status_updated_successfully' => 'تم تحديث حالة الاستفسار بنجاح.',
+
+    'review_created_successfully' => 'تم إرسال المراجعة بنجاح.',
+    'review_order_not_eligible' => 'يمكنك مراجعة مشتريات هذا المنتج المكتملة فقط.',
+    'review_already_exists_for_order' => 'لقد أرسلت مراجعة لهذا الطلب بالفعل.',
+    'admin_review_stats_fetched_successfully' => 'تم جلب إحصائيات المراجعات بنجاح.',
+    'admin_reviews_fetched_successfully' => 'تم جلب المراجعات بنجاح.',
+    'admin_review_fetched_successfully' => 'تم جلب المراجعة بنجاح.',
+    'admin_review_updated_successfully' => 'تم تحديث المراجعة بنجاح.',
 ];

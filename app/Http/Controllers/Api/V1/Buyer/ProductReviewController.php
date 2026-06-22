@@ -14,9 +14,20 @@ class ProductReviewController extends Controller
 {
     public function store(StoreProductReviewRequest $request, Product $product): JsonResponse
     {
+        $attributes = $request->reviewAttributes($product);
+
         $review = Review::query()
-            ->create($request->reviewAttributes($product))
-            ->load(['reviewer.company', 'order']);
+            ->create($attributes)
+            ->load(['reviewer.company', 'order', 'translations']);
+
+        $sourceLocale = $request->input('locale') ?? app()->getLocale();
+        $sourceData = [
+            'title' => $attributes['title'],
+            'comment' => $attributes['comment'],
+        ];
+
+        $review->syncTranslations($sourceData, $sourceLocale);
+        $review->load('translations');
 
         return sendResponse(
             status: true,
