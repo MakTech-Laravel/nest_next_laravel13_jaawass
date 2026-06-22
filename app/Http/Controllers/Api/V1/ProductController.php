@@ -145,6 +145,7 @@ class ProductController extends Controller
             'quantity' => $validated['quantity'],
             'image' => $validated['image'] ?? null,
             'status' => $validated['status'],
+            'is_approved' => true,
         ]);
 
         // Dispatch translation job — non-blocking when queue is enabled

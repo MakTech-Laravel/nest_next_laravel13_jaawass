@@ -103,6 +103,7 @@ test('manufacturer can create product with minimal required fields', function ()
         ->assertJsonPath('data.name', 'Industrial Sensor');
 
     expect(Product::query()->where('user_id', $manufacturer->id)->count())->toBe(1);
+    expect(Product::query()->where('user_id', $manufacturer->id)->value('is_approved'))->toBeTrue();
 });
 
 test('unauthenticated manufacturer product create returns json unauthorized', function (): void {

@@ -104,6 +104,7 @@ class ManufacturerProductController extends Controller
                     'sub_category_id' => $validate['sub_category_id'],
                     'keywords' => Arr::get($validate, 'keywords'),
                     'status' => Arr::get($validate, 'status', ProductStatusEnum::ACTIVE->value),
+                    'is_approved' => true,
                 ]);
 
                 $product->autoTranslate(
