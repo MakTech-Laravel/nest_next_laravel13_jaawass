@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Api\V1;
 
 use App\Enums\AdditionalInformationRequestStatus;
+use App\Enums\AdditionalInformationType;
 use App\Support\Time\TimezoneFormatter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -14,17 +15,16 @@ class ManufacturerAdditionalInformationRequestResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $data =  [
+        $data = [
             'id' => $this->id,
-            'token' => $this->when($request->user()?->role?->isAdmin(), $this->token),
+            'token' => $this->token,
             'message' => $this->message,
             'allowed_types' => $this->allowed_types,
             'allowed_type_labels' => collect($this->allowed_types ?? [])
-                ->map(fn (string $type) => \App\Enums\AdditionalInformationType::from($type)->label())
+                ->map(fn (string $type) => AdditionalInformationType::from($type)->label())
                 ->values()
                 ->all(),
-         
-            
+
             'status' => $this->status->value,
             'status_label' => $this->status->label(),
             'expires_at' => TimezoneFormatter::format($this->expires_at),
@@ -46,12 +46,11 @@ class ManufacturerAdditionalInformationRequestResource extends JsonResource
             ),
         ];
 
-        if(env('APP_ENV') === 'local') {
-           $data['test_url'] = config('app.frontend_url').'/manufacturer-additional-information-request/'.$this->token;
+        if (env('APP_ENV') === 'local') {
+            $data['test_url'] = config('app.frontend_url').'/review?token='.$this->token;
         }
 
         return $data;
-
 
     }
 }
