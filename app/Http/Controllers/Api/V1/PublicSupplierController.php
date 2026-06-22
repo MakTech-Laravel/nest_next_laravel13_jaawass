@@ -350,7 +350,7 @@ class PublicSupplierController extends Controller
         $reviews = Review::query()
             ->where('user_id', $supplier->id)
             ->publiclyVisible()
-            ->with(['reviewer.company', 'product', 'order'])
+            ->with(['reviewer.company', 'product', 'order', 'translations'])
             ->latest('id')
             ->paginate($perPage);
 

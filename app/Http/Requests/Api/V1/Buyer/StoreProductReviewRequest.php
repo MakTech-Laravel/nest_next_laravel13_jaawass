@@ -33,6 +33,7 @@ class StoreProductReviewRequest extends FormRequest
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'title' => ['sometimes', 'nullable', 'string', 'max:255'],
             'comment' => ['required', 'string', 'max:5000'],
+            'locale' => ['sometimes', 'string', 'max:10'],
         ];
     }
 

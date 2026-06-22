@@ -24,6 +24,7 @@ class UpdateAdminReviewRequest extends FormRequest
             'rating' => ['sometimes', 'integer', 'min:1', 'max:5'],
             'title' => ['sometimes', 'nullable', 'string', 'max:255'],
             'comment' => ['sometimes', 'string', 'max:5000'],
+            'locale' => ['sometimes', 'string', 'max:10'],
         ];
     }
 }

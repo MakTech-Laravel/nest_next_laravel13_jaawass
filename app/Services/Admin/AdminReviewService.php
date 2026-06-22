@@ -26,6 +26,14 @@ class AdminReviewService
             'pending_review' => (int) ($counts[ReviewStatus::PENDING->value] ?? 0),
             'flagged' => (int) ($counts[ReviewStatus::FLAGGED->value] ?? 0),
             'hidden' => (int) ($counts[ReviewStatus::HIDDEN->value] ?? 0),
+            'labels' => [
+                'total_reviews' => __('review.stats.total_reviews'),
+                'published' => __('review.stats.published'),
+                'pending_review' => __('review.stats.pending_review'),
+                'flagged' => __('review.stats.flagged'),
+                'hidden' => __('review.stats.hidden'),
+            ],
+            'status_options' => ReviewStatus::options(),
         ];
     }
 
@@ -47,9 +55,21 @@ class AdminReviewService
     /**
      * @param  array<string, mixed>  $attributes
      */
-    public function update(Review $review, array $attributes): Review
+    public function update(Review $review, array $attributes, ?string $sourceLocale = null): Review
     {
+        $locale = $attributes['locale'] ?? $sourceLocale;
+        unset($attributes['locale']);
+
+        $translatable = array_intersect_key(
+            $attributes,
+            array_flip($review->translatableFields()),
+        );
+
         $review->update($attributes);
+
+        if ($translatable !== []) {
+            $review->syncTranslations($translatable, is_string($locale) ? $locale : null);
+        }
 
         return $review->fresh($this->detailRelations());
     }
@@ -68,9 +88,11 @@ class AdminReviewService
     public function listRelations(): array
     {
         return [
+            'translations',
             'reviewer.company',
             'user.company',
-            'product.category',
+            'product.translations',
+            'product.category.translations',
             'order',
         ];
     }
@@ -104,6 +126,11 @@ class AdminReviewService
                 $builder
                     ->where('title', 'like', "%{$searchTerm}%")
                     ->orWhere('comment', 'like', "%{$searchTerm}%")
+                    ->orWhereHas('translations', function (Builder $translation) use ($searchTerm): void {
+                        $translation
+                            ->where('title', 'like', "%{$searchTerm}%")
+                            ->orWhere('comment', 'like', "%{$searchTerm}%");
+                    })
                     ->orWhereHas('reviewer', function (Builder $reviewer) use ($searchTerm): void {
                         $reviewer
                             ->where('first_name', 'like', "%{$searchTerm}%")

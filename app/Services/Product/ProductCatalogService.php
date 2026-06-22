@@ -41,7 +41,7 @@ class ProductCatalogService
         if ($withReviews) {
             $relations['reviews'] = fn ($query) => $query
                 ->publiclyVisible()
-                ->with(['reviewer.company', 'order'])
+                ->with(['reviewer.company', 'order', 'translations'])
                 ->latest('id');
         }
 

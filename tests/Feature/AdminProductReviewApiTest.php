@@ -63,7 +63,16 @@ test('admin can fetch review stats', function (): void {
         ->assertJsonPath('data.total_reviews', 1)
         ->assertJsonPath('data.pending_review', 1)
         ->assertJsonPath('data.published', 0)
-        ->assertJsonPath('data.flagged', 0);
+        ->assertJsonPath('data.flagged', 0)
+        ->assertJsonPath('data.labels.total_reviews', 'Total Reviews')
+        ->assertJsonStructure([
+            'data' => [
+                'labels' => ['total_reviews', 'published', 'pending_review', 'flagged', 'hidden'],
+                'status_options' => [
+                    ['value', 'label'],
+                ],
+            ],
+        ]);
 });
 
 test('admin can list reviews with search status and rating filters', function (): void {

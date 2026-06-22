@@ -51,7 +51,11 @@ class ProductReviewController extends Controller
 
     public function update(UpdateAdminReviewRequest $request, Review $review): JsonResponse
     {
-        $review = $this->adminReviewService->update($review, $request->validated());
+        $review = $this->adminReviewService->update(
+            $review,
+            $request->validated(),
+            $request->input('locale'),
+        );
 
         return sendResponse(
             status: true,

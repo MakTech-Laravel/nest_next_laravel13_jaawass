@@ -411,7 +411,7 @@ class ReviewSeeder extends Seeder
                 'updated_at' => $orderCreatedAt->copy()->addDays(28),
             ]);
 
-            Review::query()->create([
+            $review = Review::query()->create([
                 'user_id' => $supplier->id,
                 'product_id' => $product->id,
                 'order_id' => $order->id,
@@ -424,8 +424,17 @@ class ReviewSeeder extends Seeder
                 'updated_at' => $submittedAt,
             ]);
 
+            $review->upsertTranslations([
+                'en' => [
+                    'title' => $entry['title'],
+                    'comment' => $entry['comment'],
+                ],
+            ]);
+
             $created++;
         }
+
+        $this->backfillMissingTranslations();
 
         $this->command?->info("ReviewSeeder finished: {$created} created, {$skipped} skipped.");
     }
@@ -499,5 +508,19 @@ class ReviewSeeder extends Seeder
                 ],
             );
         }
+    }
+
+    private function backfillMissingTranslations(): void
+    {
+        Review::query()
+            ->whereDoesntHave('translations')
+            ->each(function (Review $review): void {
+                $review->upsertTranslations([
+                    'en' => [
+                        'title' => $review->title,
+                        'comment' => $review->comment,
+                    ],
+                ]);
+            });
     }
 }

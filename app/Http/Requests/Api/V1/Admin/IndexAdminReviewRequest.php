@@ -23,6 +23,7 @@ class IndexAdminReviewRequest extends FormRequest
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
             'page' => ['sometimes', 'integer', 'min:1'],
             'search' => ['sometimes', 'string', 'max:120'],
+            'locale' => ['sometimes', 'string', 'max:10'],
             'status' => ['sometimes', 'string', Rule::in(array_column(ReviewStatus::cases(), 'value'))],
             'rating' => ['sometimes', 'integer', 'min:1', 'max:5'],
         ];
