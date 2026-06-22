@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ReviewStatus;
 use App\Models\Company;
 use App\Models\Industry;
 use App\Models\Product;
@@ -85,6 +86,7 @@ test('public products index is paginated and returns reviews', function (): void
         'rating' => 5,
         'title' => 'Excellent',
         'comment' => 'Great quality',
+        'status' => ReviewStatus::PUBLISHED->value,
     ]);
 
     /** @var TestCase $this */

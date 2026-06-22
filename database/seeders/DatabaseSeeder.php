@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
 
             // ── Products ──────────────────────────────────────────────────
             ProductSeeder::class, // requires users, industries & sub-categories
+            ReviewSeeder::class, // requires products, manufacturers & buyers
 
             // ── Help center ─────────────────────────────────────────────────
             HelpCenterCategorySeeder::class,

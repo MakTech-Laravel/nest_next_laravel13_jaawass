@@ -83,8 +83,8 @@ class PublicSupplierCatalogService
     {
         $query = $this->publicSupplierBaseQuery()
             ->with($this->eagerRelationsForList())
-            ->withCount('manufacturerReviews as review_count')
-            ->withAvg('manufacturerReviews as avg_rating', 'rating')
+            ->withCount(['manufacturerReviews as review_count' => fn (Builder $review) => $review->publiclyVisible()])
+            ->withAvg(['manufacturerReviews as avg_rating' => fn (Builder $review) => $review->publiclyVisible()], 'rating')
             ->withCount([
                 'products as public_product_count' => fn (Builder $product) => $product
                     ->where('status', 'active')
@@ -111,8 +111,8 @@ class PublicSupplierCatalogService
 
         return $this->publicSupplierBaseQuery()
             ->with($this->eagerRelationsForList())
-            ->withCount('manufacturerReviews as review_count')
-            ->withAvg('manufacturerReviews as avg_rating', 'rating')
+            ->withCount(['manufacturerReviews as review_count' => fn (Builder $review) => $review->publiclyVisible()])
+            ->withAvg(['manufacturerReviews as avg_rating' => fn (Builder $review) => $review->publiclyVisible()], 'rating')
             ->withCount([
                 'products as public_product_count' => fn (Builder $product) => $product
                     ->where('status', 'active')
@@ -129,6 +129,7 @@ class PublicSupplierCatalogService
     {
         $reviews = Review::query()
             ->where('user_id', $supplier->id)
+            ->publiclyVisible()
             ->get(['rating']);
 
         $totalReviews = $reviews->count();

@@ -3,13 +3,12 @@
 namespace App\Services\Dashboard;
 
 use App\Enums\DashboardEventType;
-use App\Enums\RfqSubmissionStatus;
 use App\Enums\OrderStatus;
+use App\Enums\RfqSubmissionStatus;
 use App\Models\Company;
-use App\Models\DashboardEvent;
 use App\Models\Conversation;
+use App\Models\DashboardEvent;
 use App\Models\Order;
-use App\Models\Product;
 use App\Models\Review;
 use App\Models\RfqSubmission;
 use App\Models\User;
@@ -139,7 +138,10 @@ class ManufacturerDashboardService
             ->where('quoted_at', '>=', $currentStart)
             ->sum('quoted_price');
 
-        $reviews = Review::query()->where('user_id', $manufacturerId)->get(['rating']);
+        $reviews = Review::query()
+            ->where('user_id', $manufacturerId)
+            ->publiclyVisible()
+            ->get(['rating']);
         $reviewCount = $reviews->count();
         $avgRating = $reviewCount > 0 ? round((float) $reviews->avg('rating'), 1) : 0.0;
 

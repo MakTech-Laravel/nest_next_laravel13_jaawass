@@ -4,9 +4,9 @@ namespace App\Services\Dashboard;
 
 use App\Enums\DashboardEventType;
 use App\Enums\RfqSubmissionStatus;
-use App\Models\DashboardEvent;
 use App\Models\Conversation;
 use App\Models\ConversationParticipant;
+use App\Models\DashboardEvent;
 use App\Models\Message;
 use App\Models\RfqSubmission;
 use App\Models\SaveSupplier;
@@ -208,8 +208,8 @@ class BuyerDashboardService
         return $this->supplierCatalogService
             ->publicSupplierBaseQuery()
             ->with($this->supplierCatalogService->eagerRelationsForList())
-            ->withCount('manufacturerReviews as review_count')
-            ->withAvg('manufacturerReviews as avg_rating', 'rating')
+            ->withCount(['manufacturerReviews as review_count' => fn ($review) => $review->publiclyVisible()])
+            ->withAvg(['manufacturerReviews as avg_rating' => fn ($review) => $review->publiclyVisible()], 'rating')
             ->withCount([
                 'products as public_product_count' => fn ($q) => $q
                     ->where('status', 'active')

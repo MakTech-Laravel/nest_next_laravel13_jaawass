@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\OrderStatus;
+use App\Enums\ReviewStatus;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -63,6 +64,7 @@ test('buyer can review product only after completed purchase', function (): void
         ->assertCreated()
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.rating', 5)
+        ->assertJsonPath('data.status', 'pending')
         ->assertJsonPath('data.order.id', $orderId);
 
     expect(Review::query()->count())->toBe(1);
@@ -170,7 +172,15 @@ test('product details include review summary and review list', function (): void
         'comment' => 'Consistently high quality and responsive team.',
     ])->assertCreated();
 
-    Passport::actingAs($buyer);
+    auth('api')->forgetUser();
+
+    $this->getJson("/api/v1/products/{$productId}")
+        ->assertOk()
+        ->assertJsonPath('data.review_stats.total_reviews', 0)
+        ->assertJsonPath('data.reviews', []);
+
+    Review::query()->first()?->update(['status' => ReviewStatus::PUBLISHED->value]);
+
     $this->getJson("/api/v1/products/{$productId}")
         ->assertOk()
         ->assertJsonPath('data.review_stats.total_reviews', 1)

@@ -3,6 +3,7 @@
 use App\Enums\Api\V1\CatalogStatusEnum;
 use App\Enums\CertificateStatus;
 use App\Enums\CertificateTypeStatus;
+use App\Enums\ReviewStatus;
 use App\Enums\UserManuFactureStatus;
 use App\Enums\UserStatus;
 use App\Models\Catalog;
@@ -15,7 +16,6 @@ use App\Models\Review;
 use App\Models\SubCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 
 uses(RefreshDatabase::class);
 
@@ -274,6 +274,7 @@ test('public supplier reviews endpoint returns stats and paginated reviews', fun
         'rating' => 5,
         'title' => 'Great supplier',
         'comment' => 'Excellent quality',
+        'status' => ReviewStatus::PUBLISHED->value,
     ]);
 
     $response = $this->getJson('/api/v1/suppliers/techvision-electronics/reviews');
@@ -355,7 +356,7 @@ test('public supplier certifications endpoint merges profile and valid uploads',
 test('company slug is generated on manufacturer profile update', function (): void {
     $manufacturer = manufacturerWithSubscription();
 
-  Company::query()->create([
+    Company::query()->create([
         'user_id' => $manufacturer->id,
         'company_name' => 'Alpha Manufacturing',
         'company_type' => 'manufacturer',

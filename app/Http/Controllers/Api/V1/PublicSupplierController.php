@@ -21,9 +21,9 @@ use App\Services\Supplier\PublicSupplierCatalogService;
 use App\Support\Countries\CountryMapCatalog;
 use App\Support\Countries\ViewerCountryResolver;
 use App\Support\ExportMarkets\ManufacturerExportMarketVisibility;
-use Illuminate\Support\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
 class PublicSupplierController extends Controller
@@ -349,6 +349,7 @@ class PublicSupplierController extends Controller
 
         $reviews = Review::query()
             ->where('user_id', $supplier->id)
+            ->publiclyVisible()
             ->with(['reviewer.company', 'product', 'order'])
             ->latest('id')
             ->paginate($perPage);
@@ -418,7 +419,6 @@ class PublicSupplierController extends Controller
     {
         return CountryMapCatalog::all();
     }
-
 
     /**
      * @param  array<string, mixed>  $country

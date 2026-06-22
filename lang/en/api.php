@@ -65,6 +65,10 @@ return [
     'review_created_successfully' => 'Review submitted successfully.',
     'review_order_not_eligible' => 'You can review only completed purchases of this product.',
     'review_already_exists_for_order' => 'You already submitted a review for this order.',
+    'admin_review_stats_fetched_successfully' => 'Review statistics fetched successfully.',
+    'admin_reviews_fetched_successfully' => 'Reviews fetched successfully.',
+    'admin_review_fetched_successfully' => 'Review fetched successfully.',
+    'admin_review_updated_successfully' => 'Review updated successfully.',
 
     'product_approval_status_updated_successfully' => 'Product approval status updated successfully.',
 

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\Admin\AdminAnalyticsController;
 use App\Http\Controllers\Api\V1\Admin\AdminCategoryAndSubCategoryController;
 use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
+use App\Http\Controllers\Api\V1\Admin\AdminSubscriptionController;
 use App\Http\Controllers\Api\V1\Admin\ArticleCategoryController;
 use App\Http\Controllers\Api\V1\Admin\ArticleController;
 use App\Http\Controllers\Api\V1\Admin\CertificateTypeController;
@@ -14,10 +15,12 @@ use App\Http\Controllers\Api\V1\Admin\FaqController;
 use App\Http\Controllers\Api\V1\Admin\FeatureController;
 use App\Http\Controllers\Api\V1\Admin\HelpCenterArticleController;
 use App\Http\Controllers\Api\V1\Admin\HelpCenterCategoryController;
+use App\Http\Controllers\Api\V1\Admin\ManufacturerAdditionalInformationController;
 use App\Http\Controllers\Api\V1\Admin\ManufacturerController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\PlanController;
 use App\Http\Controllers\Api\V1\Admin\Product\AdminProductController;
+use App\Http\Controllers\Api\V1\Admin\ProductReviewController;
 use App\Http\Controllers\Api\V1\Admin\PromotionController;
 use App\Http\Controllers\Api\V1\Admin\QuickFilterAdminController;
 use App\Http\Controllers\Api\V1\Admin\RfqSubmissionAdminController;
@@ -58,7 +61,7 @@ Route::controller(ManufacturerController::class)->prefix('manufacturer')->group(
     Route::patch('/{manufacturer}/change/status', 'updateStatus');
     Route::patch('/{manufacturer}/suspend', 'suspend');
 
-    Route::controller(\App\Http\Controllers\Api\V1\Admin\ManufacturerAdditionalInformationController::class)
+    Route::controller(ManufacturerAdditionalInformationController::class)
         ->prefix('{manufacturer}/additional-information')
         ->group(function (): void {
             Route::get('/', 'index');
@@ -68,7 +71,7 @@ Route::controller(ManufacturerController::class)->prefix('manufacturer')->group(
 
 Route::get(
     '/manufacturer-additional-information/{informationRequest}',
-    [\App\Http\Controllers\Api\V1\Admin\ManufacturerAdditionalInformationController::class, 'show']
+    [ManufacturerAdditionalInformationController::class, 'show']
 );
 
 // Category & Subscategory Managment
@@ -171,7 +174,7 @@ Route::controller(QuickFilterAdminController::class)->prefix('quick-filters')->g
     Route::patch('/options/{quickFilterOption}/sort', 'sort');
 });
 
-Route::controller(\App\Http\Controllers\Api\V1\Admin\AdminSubscriptionController::class)->group(function (): void {
+Route::controller(AdminSubscriptionController::class)->group(function (): void {
     Route::get('/subscriptions/stats', 'stats');
     Route::get('/subscriptions', 'index');
     Route::get('/subscriptions/{subscription}', 'show');
@@ -273,4 +276,12 @@ Route::controller(OrderController::class)->prefix('orders')->group(function (): 
     Route::get('/stats', 'stats');
     Route::get('/', 'index');
     Route::get('/{order}', 'show');
+});
+
+Route::controller(ProductReviewController::class)->prefix('reviews')->group(function (): void {
+    Route::get('/stats', 'stats');
+    Route::get('/', 'index');
+    Route::get('/{review}', 'show');
+    Route::patch('/{review}', 'update');
+    Route::delete('/{review}', 'destroy');
 });
