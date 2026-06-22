@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Api\V1\Manufacturer;
 
 use App\Enums\AdditionalInformationRequestStatus;
+use App\Enums\AdditionalInformationType;
 use App\Http\Resources\Api\V1\ManufacturerAdditionalInformationResponseResource;
 use App\Support\Time\TimezoneFormatter;
 use Illuminate\Http\Request;
@@ -19,10 +20,11 @@ class ManufacturerReviewCenterAdditionalInformationResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'token' => $this->token,
             'message' => $this->message,
             'allowed_types' => $this->allowed_types,
             'allowed_type_labels' => collect($this->allowed_types ?? [])
-                ->map(fn (string $type) => \App\Enums\AdditionalInformationType::from($type)->label())
+                ->map(fn (string $type) => AdditionalInformationType::from($type)->label())
                 ->values()
                 ->all(),
             'status' => $this->status->value,
