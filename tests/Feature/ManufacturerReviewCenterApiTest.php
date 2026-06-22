@@ -74,6 +74,7 @@ test('manufacturer can fetch review center with verification and additional info
     $pending = $requests->firstWhere('id', $pendingRequest->id);
 
     expect($pending)->not->toBeNull()
+        ->and($pending['token'])->toBe('review-center-token')
         ->and($pending['status'])->toBe('pending')
         ->and($pending['submit_url'])->toContain('/manufacturer-additional-information-request/review-center-token');
 });
