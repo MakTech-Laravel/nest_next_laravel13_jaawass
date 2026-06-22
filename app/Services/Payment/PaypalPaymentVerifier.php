@@ -17,28 +17,17 @@ class PaypalPaymentVerifier implements PaymentVerifierInterface
      */
     public function verify(array $paymentData): VerifiedPaymentDTO
     {
-        $orderId = (string) ($paymentData['payment_id'] ?? '');
+        $paymentId = (string) ($paymentData['payment_id'] ?? '');
         $expectedAmount = (float) ($paymentData['paid_amount'] ?? 0);
 
-        if ($orderId === '') {
+        if ($paymentId === '') {
             throw new PaymentVerificationException(__('subscription.payment_id_required'));
         }
 
         $baseUrl = $this->apiBaseUrl();
         $accessToken = $this->accessToken($baseUrl);
-
-        $response = Http::withToken($accessToken)
-            ->acceptJson()
-            ->get("{$baseUrl}/v2/checkout/orders/{$orderId}");
-
-        if (! $response->successful()) {
-            throw new PaymentVerificationException(
-                __('subscription.paypal_verification_failed'),
-                Response::HTTP_BAD_GATEWAY,
-            );
-        }
-
-        $order = $response->json();
+        $order = $this->fetchOrder($baseUrl, $accessToken, $paymentId);
+        $orderId = (string) ($order['id'] ?? $paymentId);
         $status = strtoupper((string) ($order['status'] ?? ''));
 
         if ($status !== 'COMPLETED') {
@@ -59,6 +48,67 @@ class PaypalPaymentVerifier implements PaymentVerifierInterface
             status: strtolower($status),
             paymentMethod: RegisterPaymentManager::PAYPAL->value,
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function fetchOrder(string $baseUrl, string $accessToken, string $paymentId): array
+    {
+        $orderResponse = Http::withToken($accessToken)
+            ->acceptJson()
+            ->get("{$baseUrl}/v2/checkout/orders/{$paymentId}");
+
+        if ($orderResponse->successful()) {
+            return $orderResponse->json();
+        }
+
+        if ($orderResponse->status() !== Response::HTTP_NOT_FOUND) {
+            throw new PaymentVerificationException(
+                __('subscription.paypal_verification_failed'),
+                Response::HTTP_BAD_GATEWAY,
+            );
+        }
+
+        $captureResponse = Http::withToken($accessToken)
+            ->acceptJson()
+            ->get("{$baseUrl}/v2/payments/captures/{$paymentId}");
+
+        if (! $captureResponse->successful()) {
+            throw new PaymentVerificationException(
+                __('subscription.paypal_verification_failed'),
+                Response::HTTP_BAD_GATEWAY,
+            );
+        }
+
+        $capture = $captureResponse->json();
+        $captureStatus = strtoupper((string) ($capture['status'] ?? ''));
+
+        if ($captureStatus !== 'COMPLETED') {
+            throw new PaymentVerificationException(__('subscription.paypal_not_completed'));
+        }
+
+        $orderId = (string) ($capture['supplementary_data']['related_ids']['order_id'] ?? '');
+
+        if ($orderId === '') {
+            throw new PaymentVerificationException(
+                __('subscription.paypal_verification_failed'),
+                Response::HTTP_BAD_GATEWAY,
+            );
+        }
+
+        $resolvedOrderResponse = Http::withToken($accessToken)
+            ->acceptJson()
+            ->get("{$baseUrl}/v2/checkout/orders/{$orderId}");
+
+        if (! $resolvedOrderResponse->successful()) {
+            throw new PaymentVerificationException(
+                __('subscription.paypal_verification_failed'),
+                Response::HTTP_BAD_GATEWAY,
+            );
+        }
+
+        return $resolvedOrderResponse->json();
     }
 
     private function apiBaseUrl(): string
