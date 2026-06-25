@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Jobs\SendMailJob;
 use App\Models\ManufacturerAdditionalInformationRequest;
+use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -52,6 +53,13 @@ test('admin can request additional information and email is queued', function ()
         'requested_by' => $admin->id,
         'status' => 'pending',
     ]);
+
+    $request = ManufacturerAdditionalInformationRequest::query()
+        ->where('user_id', $manufacturer->id)
+        ->first();
+
+    expect($request?->ticket_id)->not->toBeNull();
+    expect(Ticket::query()->whereKey($request->ticket_id)->exists())->toBeTrue();
 
     Queue::assertPushed(SendMailJob::class, function (SendMailJob $job) use ($manufacturer): bool {
         return $job->recipient === $manufacturer->email

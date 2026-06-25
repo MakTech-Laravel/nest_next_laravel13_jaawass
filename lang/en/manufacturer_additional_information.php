@@ -3,6 +3,7 @@
 return [
 
     'request_sent' => 'Additional information request sent and email queued.',
+    'ticket_subject' => 'Additional information requested for your application',
     'submitted' => 'Your additional information has been submitted successfully.',
     'invalid_token' => 'This submission link is invalid.',
     'already_submitted' => 'This request has already been submitted.',

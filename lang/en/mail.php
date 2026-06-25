@@ -89,4 +89,37 @@ return [
         'notification_body' => 'Your :plan subscription has been renewed.',
     ],
 
+    'manufacturer_admin_message' => [
+        'subject' => 'New message about your manufacturer application',
+        'preheader' => 'SourceNest review team sent you a message.',
+        'greeting' => 'Hello :name,',
+        'intro' => ':admin from the SourceNest team sent you a message regarding your application for :company.',
+        'message_heading' => 'Message',
+        'ticket_heading' => 'Support ticket',
+        'ticket_body' => 'We also opened support ticket ":subject" so you can follow up in your dashboard.',
+        'cta' => 'View support ticket',
+        'footer' => 'If you did not apply to SourceNest, you can safely ignore this email.',
+    ],
+
+    'supplier_report_received' => [
+        'subject' => 'We received your supplier report',
+        'preheader' => 'Our Trust & Safety team is reviewing your report.',
+        'greeting' => 'Hello :name,',
+        'intro' => 'Thank you for reporting :supplier. We received report #:id and our team will review it within 24-48 hours.',
+        'reason_heading' => 'Report reason',
+        'details_heading' => 'Your details',
+        'cta' => 'View your reports',
+        'footer' => 'False reports may result in account restrictions.',
+    ],
+
+    'supplier_report_status_updated' => [
+        'subject' => 'Update on your supplier report',
+        'preheader' => 'The status of your supplier report has changed.',
+        'greeting' => 'Hello :name,',
+        'intro' => 'Your report about :supplier is now marked as :status.',
+        'message_heading' => 'Message from our team',
+        'cta' => 'View your reports',
+        'footer' => 'Thank you for helping keep SourceNest safe.',
+    ],
+
 ];
