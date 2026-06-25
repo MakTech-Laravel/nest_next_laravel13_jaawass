@@ -122,4 +122,8 @@ return [
         'footer' => 'Thank you for helping keep SourceNest safe.',
     ],
 
+    'admin_test_email' => [
+        'subject' => 'Test email from :platform_name',
+    ],
+
 ];

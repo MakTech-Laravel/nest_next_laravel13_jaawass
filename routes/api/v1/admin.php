@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\AdminDatabaseExportController;
+use App\Http\Controllers\Api\V1\Admin\AdminPlatformSettingsController;
 use App\Http\Controllers\Api\V1\Admin\AdminAnalyticsController;
 use App\Http\Controllers\Api\V1\Admin\AdminCategoryAndSubCategoryController;
 use App\Http\Controllers\Api\V1\Admin\AdminDashboardController;
@@ -32,6 +34,21 @@ use App\Http\Controllers\Api\V1\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', [AdminDashboardController::class, 'overview']);
+
+Route::prefix('settings')->controller(AdminPlatformSettingsController::class)->group(function (): void {
+    Route::get('/', 'show');
+    Route::put('/', 'update');
+    Route::post('/test-email', 'sendTestEmail');
+});
+
+Route::prefix('database')->controller(AdminDatabaseExportController::class)->group(function (): void {
+    Route::get('/tables', 'tables');
+    Route::get('/backup-status', 'backupStatus');
+    Route::get('/exports', 'index');
+    Route::post('/exports', 'store');
+    Route::get('/exports/{databaseExport}', 'show');
+    Route::get('/exports/{databaseExport}/download', 'download');
+});
 
 Route::prefix('analytics')->controller(AdminAnalyticsController::class)->group(function (): void {
     Route::get('/metrics', 'metrics');
