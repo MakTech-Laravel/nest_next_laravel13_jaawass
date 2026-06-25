@@ -90,6 +90,11 @@ return [
       'subject' => 'mail.subscription_renewed.subject',
       'markdown' => false,
     ],
+    'admin-test-email' => [
+      'view' => 'mail.admin-test-email',
+      'subject' => 'mail.admin_test_email.subject',
+      'markdown' => false,
+    ],
   ],
 
 ];
