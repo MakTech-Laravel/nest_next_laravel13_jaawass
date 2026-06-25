@@ -12,6 +12,7 @@ class ManufacturerAdditionalInformationRequest extends Model
     protected $fillable = [
         'user_id',
         'requested_by',
+        'ticket_id',
         'token',
         'message',
         'allowed_types',
@@ -38,6 +39,11 @@ class ManufacturerAdditionalInformationRequest extends Model
     public function requestedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by');
+    }
+
+    public function ticket(): BelongsTo
+    {
+        return $this->belongsTo(Ticket::class);
     }
 
     public function responses(): HasMany

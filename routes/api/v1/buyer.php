@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Buyer\BuyerRfqController;
 use App\Http\Controllers\Api\V1\Buyer\BuyerSupplierController;
 use App\Http\Controllers\Api\V1\Buyer\OrderController;
 use App\Http\Controllers\Api\V1\Buyer\ProductReviewController;
+use App\Http\Controllers\Api\V1\Buyer\SupplierReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', [BuyerDashboardController::class, 'overview']);
@@ -58,4 +59,13 @@ Route::controller(BuyerSupplierController::class)->prefix('suppliers')->group(fu
     Route::get('/compare', 'indexCompare');
     Route::post('/compare', 'addToCompare');
     Route::delete('/compare/{supplier}', 'removeFromCompare');
+});
+
+Route::controller(SupplierReportController::class)->prefix('suppliers')->group(function (): void {
+    Route::get('/{manufacturer}/reports/can-report', 'canReport');
+    Route::post('/{manufacturer}/reports', 'store');
+});
+
+Route::controller(SupplierReportController::class)->prefix('supplier-reports')->group(function (): void {
+    Route::get('/', 'index');
 });

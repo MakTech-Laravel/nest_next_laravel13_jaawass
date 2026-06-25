@@ -40,8 +40,10 @@ class ManufacturerController extends Controller
                 ->orWhere('last_name', 'like', '%' . request()->input('search') . '%')
                 ->orWhere('email', 'like', '%' . request()->input('search') . '%');
         }
-        if(request()->has('status')) {
-            $query->where('status', request()->input('status'));
+        if (request()->has('manufacture_status')) {
+            $query->where('manufacture_status', request()->input('manufacture_status'));
+        } elseif (request()->has('status')) {
+            $query->where('manufacture_status', request()->input('status'));
         }
         $manufacturers = $query->paginate(
             perPage: request()->integer('per_page', 10),

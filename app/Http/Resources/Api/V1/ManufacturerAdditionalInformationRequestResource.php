@@ -17,6 +17,7 @@ class ManufacturerAdditionalInformationRequestResource extends JsonResource
     {
         $data = [
             'id' => $this->id,
+            'ticket_id' => $this->ticket_id,
             'token' => $this->token,
             'message' => $this->message,
             'allowed_types' => $this->allowed_types,

@@ -55,6 +55,21 @@ return [
       'subject' => 'mail.manufacturer_additional_information.subject',
       'markdown' => false,
     ],
+    'manufacturer-admin-message' => [
+      'view' => 'mail.manufacturer-admin-message',
+      'subject' => 'mail.manufacturer_admin_message.subject',
+      'markdown' => false,
+    ],
+    'supplier-report-received' => [
+      'view' => 'mail.supplier-report-received',
+      'subject' => 'mail.supplier_report_received.subject',
+      'markdown' => false,
+    ],
+    'supplier-report-status-updated' => [
+      'view' => 'mail.supplier-report-status-updated',
+      'subject' => 'mail.supplier_report_status_updated.subject',
+      'markdown' => false,
+    ],
     'subscription-expiry-reminder' => [
       'view' => 'mail.subscription-expiry-reminder',
       'subject' => 'mail.subscription_expiry_reminder.subject',

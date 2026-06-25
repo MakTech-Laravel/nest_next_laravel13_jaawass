@@ -5,6 +5,8 @@ namespace App\Services\Manufacturer;
 use App\Enums\AdditionalInformationRequestStatus;
 use App\Enums\AdditionalInformationType;
 use App\Enums\MailTemplate;
+use App\Enums\TicketDepartmentType;
+use App\Enums\TicketStatus;
 use App\Models\ManufacturerAdditionalInformationRequest;
 use App\Models\ManufacturerAdditionalInformationResponse;
 use App\Models\User;
@@ -20,6 +22,7 @@ class ManufacturerAdditionalInformationService
 {
     public function __construct(
         private readonly MailingService $mailingService,
+        private readonly ManufacturerRegistrationTicketService $ticketService,
     ) {}
 
     /**
@@ -29,9 +32,19 @@ class ManufacturerAdditionalInformationService
     {
         $normalizedTypes = $this->normalizeAllowedTypes($allowedTypes);
 
+        $ticket = $this->ticketService->createForManufacturer(
+            manufacturer: $manufacturer,
+            admin: $admin,
+            subject: __('manufacturer_additional_information.ticket_subject'),
+            message: $message,
+            department: TicketDepartmentType::Account,
+            status: TicketStatus::WaitingOnCustomer,
+        );
+
         $request = ManufacturerAdditionalInformationRequest::query()->create([
             'user_id' => $manufacturer->id,
             'requested_by' => $admin->id,
+            'ticket_id' => $ticket->id,
             'token' => Str::random(64),
             'message' => $message,
             'allowed_types' => $normalizedTypes,

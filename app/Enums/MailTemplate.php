@@ -8,6 +8,9 @@ enum MailTemplate: string
     case PasswordResetOtp = 'password-reset-otp';
     case AccountRestoreOtp = 'account-restore-otp';
     case ManufacturerAdditionalInformation = 'manufacturer-additional-information';
+    case ManufacturerAdminMessage = 'manufacturer-admin-message';
+    case SupplierReportReceived = 'supplier-report-received';
+    case SupplierReportStatusUpdated = 'supplier-report-status-updated';
     case SubscriptionExpiryReminder = 'subscription-expiry-reminder';
     case SubscriptionExpired = 'subscription-expired';
     case SubscriptionCreated = 'subscription-created';

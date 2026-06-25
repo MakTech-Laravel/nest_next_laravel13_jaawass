@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\Admin\FaqController;
 use App\Http\Controllers\Api\V1\Admin\FeatureController;
 use App\Http\Controllers\Api\V1\Admin\HelpCenterArticleController;
 use App\Http\Controllers\Api\V1\Admin\HelpCenterCategoryController;
+use App\Http\Controllers\Api\V1\Admin\ManufacturerAdminMessageController;
 use App\Http\Controllers\Api\V1\Admin\ManufacturerAdditionalInformationController;
 use App\Http\Controllers\Api\V1\Admin\ManufacturerController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Api\V1\Admin\PromotionController;
 use App\Http\Controllers\Api\V1\Admin\QuickFilterAdminController;
 use App\Http\Controllers\Api\V1\Admin\RfqSubmissionAdminController;
 use App\Http\Controllers\Api\V1\Admin\ShippinMethodController;
+use App\Http\Controllers\Api\V1\Admin\SupplierReportAdminController;
 use App\Http\Controllers\Api\V1\Admin\TicketAdminController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +69,8 @@ Route::controller(ManufacturerController::class)->prefix('manufacturer')->group(
             Route::get('/', 'index');
             Route::post('/', 'store');
         });
+
+    Route::post('/{manufacturer}/send-message', [ManufacturerAdminMessageController::class, 'store']);
 });
 
 Route::get(
@@ -103,6 +107,12 @@ Route::controller(AdminCategoryAndSubCategoryController::class)->prefix('/subcat
 
 // ==============Products===============
 // ManageShippingMethods
+
+Route::controller(SupplierReportAdminController::class)->prefix('supplier-reports')->group(function (): void {
+    Route::get('/', 'index');
+    Route::get('/{supplierReport}', 'show');
+    Route::patch('/{supplierReport}', 'update');
+});
 
 Route::controller(ShippinMethodController::class)->prefix('/shipping/methods')->group(function (): void {
     Route::get('/', 'index');
