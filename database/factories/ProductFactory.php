@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\UserRole;
 use App\Models\Industry;
 use App\Models\Product;
 use App\Models\SubCategory;
@@ -32,24 +33,47 @@ class ProductFactory extends Factory
 
     public function configure(): static
     {
-        return $this->afterMaking(function (Product $product): void {
-            if ($product->industry_id !== null && $product->sub_category_id !== null) {
-                return;
-            }
+        return $this
+            ->afterMaking(function (Product $product): void {
+                if ($product->industry_id !== null && $product->sub_category_id !== null) {
+                    return;
+                }
 
-            $industry = Industry::query()->create([
-                'name' => fake()->words(2, true),
-                'slug' => fake()->unique()->slug(),
-            ]);
+                $industry = Industry::query()->create([
+                    'name' => fake()->words(2, true),
+                    'slug' => fake()->unique()->slug(),
+                ]);
 
-            $subCategory = SubCategory::query()->create([
-                'industry_id' => $industry->id,
-                'name' => fake()->words(2, true),
-                'slug' => fake()->unique()->slug(),
-            ]);
+                $subCategory = SubCategory::query()->create([
+                    'industry_id' => $industry->id,
+                    'name' => fake()->words(2, true),
+                    'slug' => fake()->unique()->slug(),
+                ]);
 
-            $product->industry_id ??= $industry->id;
-            $product->sub_category_id ??= $subCategory->id;
-        });
+                $product->industry_id ??= $industry->id;
+                $product->sub_category_id ??= $subCategory->id;
+            })
+            ->afterCreating(function (Product $product): void {
+                if ($product->status !== 'active' || ! $product->is_approved || $product->user_id === null) {
+                    return;
+                }
+
+                $manufacturer = $product->user;
+
+                $role = $manufacturer->role;
+                $isManufacturer = $role instanceof UserRole
+                    ? $role->isManufacturer()
+                    : (string) $role === UserRole::MANUFACTURER->value;
+
+                if (! $isManufacturer) {
+                    return;
+                }
+
+                if ($manufacturer->subscription !== null) {
+                    return;
+                }
+
+                attachActiveSubscription($manufacturer);
+            });
     }
 }

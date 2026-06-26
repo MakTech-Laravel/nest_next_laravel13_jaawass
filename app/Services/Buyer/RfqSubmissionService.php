@@ -7,11 +7,16 @@ use App\Models\Conversation;
 use App\Models\Product;
 use App\Models\RfqSubmission;
 use App\Models\User;
+use App\Support\Product\BuyerFacingProductVisibility;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class RfqSubmissionService
 {
+    public function __construct(
+        private readonly BuyerFacingProductVisibility $buyerFacingProductVisibility,
+    ) {}
+
     /**
      * @param  array<string, mixed>  $validated
      */
@@ -21,7 +26,13 @@ class RfqSubmissionService
 
         if ($manufacturer === null) {
             throw ValidationException::withMessages([
-                'product_id' => ['Selected product has no supplier account.'],
+                'product_id' => [__('api.product_not_found')],
+            ]);
+        }
+
+        if (! $this->buyerFacingProductVisibility->productHasManufacturerWithActiveSubscription($product)) {
+            throw ValidationException::withMessages([
+                'product_id' => [__('api.product_not_found')],
             ]);
         }
 

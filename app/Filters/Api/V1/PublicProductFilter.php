@@ -4,6 +4,7 @@ namespace App\Filters\Api\V1;
 
 use App\Http\Requests\Api\V1\PublicProductIndexRequest;
 use App\Support\ExportMarkets\ManufacturerExportMarketVisibility;
+use App\Support\Product\BuyerFacingProductVisibility;
 use Illuminate\Database\Eloquent\Builder;
 
 class PublicProductFilter
@@ -40,6 +41,9 @@ class PublicProductFilter
         $this->query
             ->where('products.status', 'active')
             ->where('products.is_approved', true);
+
+        app(BuyerFacingProductVisibility::class)
+            ->applyManufacturerSubscriptionConstraint($this->query);
 
         return $this;
     }

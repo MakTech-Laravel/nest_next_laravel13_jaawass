@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\SaveProduct;
 use App\Models\User;
 use App\Services\Dashboard\EventTrackerService;
+use App\Support\Product\BuyerFacingProductVisibility;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -15,6 +16,7 @@ class BuyerProductListService
 {
     public function __construct(
         private readonly EventTrackerService $eventTracker,
+        private readonly BuyerFacingProductVisibility $buyerFacingProductVisibility,
     ) {}
 
     public function save(User $buyer, int $productId): SaveProduct
@@ -108,9 +110,14 @@ class BuyerProductListService
      */
     public function savedProducts(User $buyer): Collection
     {
-        return $buyer
+        $query = $buyer
             ->savedProducts()
-            ->with($this->productRelations())
+            ->with($this->productRelations());
+
+        $this->buyerFacingProductVisibility
+            ->applyManufacturerSubscriptionConstraint($query);
+
+        return $query
             ->latest('save_products.created_at')
             ->get();
     }
@@ -120,9 +127,14 @@ class BuyerProductListService
      */
     public function compareProducts(User $buyer): Collection
     {
-        return $buyer
+        $query = $buyer
             ->compareProducts()
-            ->with($this->productRelations())
+            ->with($this->productRelations());
+
+        $this->buyerFacingProductVisibility
+            ->applyManufacturerSubscriptionConstraint($query);
+
+        return $query
             ->latest('compare_products.created_at')
             ->get();
     }
@@ -140,6 +152,12 @@ class BuyerProductListService
         if ((int) $product->user_id === (int) $buyer->id) {
             throw ValidationException::withMessages([
                 'product_id' => [__('api.buyer_own_product_not_allowed')],
+            ]);
+        }
+
+        if (! $this->buyerFacingProductVisibility->productHasManufacturerWithActiveSubscription($product)) {
+            throw ValidationException::withMessages([
+                'product_id' => [__('api.product_not_found')],
             ]);
         }
 
