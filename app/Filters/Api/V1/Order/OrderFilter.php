@@ -35,7 +35,13 @@ class OrderFilter
     private function withProductFilter(?int $productId): self
     {
         if ($productId !== null) {
-            $this->query->where('product_id', $productId);
+            $this->query->where(function (Builder $builder) use ($productId): void {
+                $builder
+                    ->where('product_id', $productId)
+                    ->orWhereHas('items', function (Builder $itemQuery) use ($productId): void {
+                        $itemQuery->where('product_id', $productId);
+                    });
+            });
         }
 
         return $this;
@@ -79,6 +85,11 @@ class OrderFilter
                         });
                 })
                 ->orWhereHas('product', function (Builder $productQuery) use ($searchTerm): void {
+                    $productQuery
+                        ->where('name', 'like', "%{$searchTerm}%")
+                        ->orWhere('slug', 'like', "%{$searchTerm}%");
+                })
+                ->orWhereHas('items.product', function (Builder $productQuery) use ($searchTerm): void {
                     $productQuery
                         ->where('name', 'like', "%{$searchTerm}%")
                         ->orWhere('slug', 'like', "%{$searchTerm}%");

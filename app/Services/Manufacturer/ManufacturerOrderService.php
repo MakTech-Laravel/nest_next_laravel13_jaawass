@@ -10,20 +10,25 @@ use App\Http\Requests\Api\V1\Manufacturer\Order\SelectOrderProductsRequest;
 use App\Http\Requests\Api\V1\Manufacturer\Order\StoreOrderRequest;
 use App\Models\Order;
 use App\Models\OrderAttachment;
+use App\Models\OrderItem;
 use App\Models\OrderStatusUpdate;
 use App\Models\Product;
 use App\Models\RfqSubmission;
 use App\Models\User;
+use App\Services\Order\OrderNotificationService;
 use App\Services\Order\OrderStatusUpdateService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ManufacturerOrderService
 {
     public function __construct(
         private readonly OrderStatusUpdateService $orderStatusUpdateService,
+        private readonly OrderNotificationService $orderNotificationService,
     ) {}
 
     /**
@@ -66,35 +71,53 @@ class ManufacturerOrderService
 
     public function create(StoreOrderRequest $request, int $manufacturerId): Order
     {
-        $order = Order::query()->create([
-            ...$request->orderAttributes($manufacturerId),
-            'status' => OrderStatus::OrderCreated->value,
-        ]);
-
-        OrderStatusUpdate::query()->create([
-            'order_id' => $order->id,
-            'user_id' => $manufacturerId,
-            'status' => OrderStatus::OrderCreated->value,
-            'notes' => null,
-        ]);
-
-        $sourceLocale = $request->sourceLocale();
-        $sourceData = $request->translationSourceData();
-
-        if ($sourceData !== []) {
-            $order->upsertTranslations([
-                $sourceLocale => $sourceData,
+        return DB::transaction(function () use ($request, $manufacturerId): Order {
+            $order = Order::query()->create([
+                ...$request->orderAttributes($manufacturerId),
+                'status' => OrderStatus::OrderCreated->value,
             ]);
 
-            $order->autoTranslate(
-                sourceData: $sourceData,
-                sourceLocale: $sourceLocale,
-            );
-        }
+            foreach ($request->normalizedItems() as $item) {
+                OrderItem::query()->create([
+                    'order_id' => $order->id,
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['quantity'],
+                    'quantity_unit' => $item['quantity_unit'],
+                    'unit_price' => $item['unit_price'],
+                    'line_total' => $item['line_total'],
+                    'notes' => $item['notes'],
+                ]);
+            }
 
-        $this->storeAttachments($order, $request->file('attachments', []));
+            OrderStatusUpdate::query()->create([
+                'order_id' => $order->id,
+                'user_id' => $manufacturerId,
+                'status' => OrderStatus::OrderCreated->value,
+                'notes' => null,
+            ]);
 
-        return $order->load($this->orderDetailRelations());
+            $sourceLocale = $request->sourceLocale();
+            $sourceData = $request->translationSourceData();
+
+            if ($sourceData !== []) {
+                $order->upsertTranslations([
+                    $sourceLocale => $sourceData,
+                ]);
+
+                $order->autoTranslate(
+                    sourceData: $sourceData,
+                    sourceLocale: $sourceLocale,
+                );
+            }
+
+            $this->storeAttachments($order, $request->file('attachments', []));
+
+            $order = $order->load($this->orderDetailRelations());
+
+            $this->orderNotificationService->sendOrderCreated($order);
+
+            return $order;
+        });
     }
 
     public function selectProducts(SelectOrderProductsRequest $request, int $manufacturerId): LengthAwarePaginator
@@ -125,11 +148,10 @@ class ManufacturerOrderService
 
     public function selectBuyers(SelectOrderBuyersRequest $request, int $manufacturerId): LengthAwarePaginator
     {
-        $buyerIds = RfqSubmission::query()
-            ->where('product_id', $request->productId())
-            ->where('manufacturer_id', $manufacturerId)
-            ->distinct()
-            ->pluck('buyer_id');
+        $buyerIds = $this->buyerIdsWithRfqsForAllProducts(
+            $request->productIds(),
+            $manufacturerId,
+        );
 
         $query = User::query()
             ->isBuyer()
@@ -157,6 +179,29 @@ class ManufacturerOrderService
                 pageName: 'page',
                 page: $request->pageNumber(),
             );
+    }
+
+    /**
+     * @param  array<int, int>  $productIds
+     * @return Collection<int, int>
+     */
+    private function buyerIdsWithRfqsForAllProducts(array $productIds, int $manufacturerId): Collection
+    {
+        $buyerIds = null;
+
+        foreach ($productIds as $productId) {
+            $idsForProduct = RfqSubmission::query()
+                ->where('product_id', $productId)
+                ->where('manufacturer_id', $manufacturerId)
+                ->distinct()
+                ->pluck('buyer_id');
+
+            $buyerIds = $buyerIds === null
+                ? $idsForProduct
+                : $buyerIds->intersect($idsForProduct);
+        }
+
+        return $buyerIds ?? collect();
     }
 
     /**

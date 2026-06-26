@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api\V1\Manufacturer\Order;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class SelectOrderBuyersRequest extends FormRequest
 {
@@ -17,16 +18,24 @@ class SelectOrderBuyersRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'product_ids' => ['required', 'array', 'min:1', 'max:50'],
+            'product_ids.*' => ['integer', Rule::exists('products', 'id')],
             'search' => ['sometimes', 'nullable', 'string', 'max:120'],
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
             'page' => ['sometimes', 'integer', 'min:1'],
+            'product_id' => ['prohibited'],
         ];
     }
 
-    public function productId(): int
+    /**
+     * @return array<int, int>
+     */
+    public function productIds(): array
     {
-        return $this->integer('product_id');
+        return array_values(array_unique(array_map(
+            fn (mixed $id): int => (int) $id,
+            $this->input('product_ids', []),
+        )));
     }
 
     public function searchTerm(): ?string

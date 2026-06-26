@@ -80,14 +80,19 @@ test('admin can list reviews with search status and rating filters', function ()
 
     Passport::actingAs($manufacturer);
 
-    $secondOrderId = test()->postJson('/api/v1/manufacturer/orders/create', [
-        'buyer_id' => $buyer->id,
-        'product_id' => $productId,
-        'title' => 'Second order',
-        'quantity' => 200,
-        'total_amount' => 2200,
-        'estimated_delivery_at' => now()->addDays(10)->toDateString(),
-    ])->assertCreated()->json('data.id');
+    $secondOrderId = test()->postJson('/api/v1/manufacturer/orders/create', buildManufacturerOrderCreatePayload(
+        buyerId: $buyer->id,
+        items: [[
+            'product_id' => $productId,
+            'quantity' => 200,
+            'unit_price' => 11.00,
+        ]],
+        overrides: [
+            'title' => 'Second order',
+            'total_amount' => 2200,
+            'estimated_delivery_at' => now()->addDays(10)->toDateString(),
+        ],
+    ))->assertCreated()->json('data.id');
 
     test()->postJson("/api/v1/manufacturer/orders/{$secondOrderId}/status-updates", [
         'status' => OrderStatus::Completed->value,

@@ -8,6 +8,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
+use Illuminate\Validation\Validator as IlluminateValidator;
 
 class StoreOrderRequest extends FormRequest
 {
@@ -23,13 +24,16 @@ class StoreOrderRequest extends FormRequest
     {
         return [
             'buyer_id' => ['required', 'integer', Rule::exists('users', 'id')],
-            'product_id' => ['required', 'integer', Rule::exists('products', 'id')],
+            'items' => ['required', 'array', 'min:1', 'max:50'],
+            'items.*.product_id' => ['required', 'integer', Rule::exists('products', 'id')],
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'items.*.quantity_unit' => ['sometimes', 'nullable', 'string', 'max:64'],
+            'items.*.unit_price' => ['required', 'numeric', 'min:0'],
+            'items.*.notes' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'title' => ['required', 'string', 'max:255'],
-            'quantity' => ['required', 'integer', 'min:1'],
-            'quantity_unit' => ['sometimes', 'nullable', 'string', 'max:64'],
             'total_amount' => ['required', 'numeric', 'min:0'],
             'currency_code' => ['sometimes', 'nullable', 'string', 'size:3'],
-            'estimated_delivery_at' => ['required', 'date'],
+            'estimated_delivery_at' => ['required', 'date', 'after_or_equal:today'],
             'production_lead' => ['sometimes', 'nullable', 'string', 'max:128'],
             'payment_terms' => ['sometimes', 'nullable', 'string', 'max:255'],
             'shipping_terms' => ['sometimes', 'nullable', 'string', 'max:128'],
@@ -42,42 +46,93 @@ class StoreOrderRequest extends FormRequest
                 File::types(['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'jpg', 'jpeg', 'png', 'webp'])
                     ->max(51200),
             ],
+            'product_id' => ['prohibited'],
+            'quantity' => ['prohibited'],
+            'quantity_unit' => ['prohibited'],
         ];
     }
 
     public function withValidator(Validator $validator): void
     {
-        $validator->after(function (Validator $validator): void {
+        $validator->after(function (IlluminateValidator $validator): void {
             if ($validator->errors()->isNotEmpty()) {
                 return;
             }
 
             $manufacturerId = (int) $this->user()->id;
-            $productId = $this->integer('product_id');
             $buyerId = $this->integer('buyer_id');
+            $items = $this->normalizedItems();
 
-            $product = Product::query()->find($productId);
+            foreach ($items as $index => $item) {
+                $productId = (int) $item['product_id'];
+                $product = Product::query()->find($productId);
 
-            if ($product !== null && (int) $product->user_id !== $manufacturerId) {
-                $validator->errors()->add(
-                    'product_id',
-                    __('api.manufacturer_order_product_not_owned'),
-                );
+                if ($product !== null && (int) $product->user_id !== $manufacturerId) {
+                    $validator->errors()->add(
+                        "items.{$index}.product_id",
+                        __('api.manufacturer_order_product_not_owned'),
+                    );
+                }
+
+                $hasRfq = RfqSubmission::query()
+                    ->where('product_id', $productId)
+                    ->where('buyer_id', $buyerId)
+                    ->where('manufacturer_id', $manufacturerId)
+                    ->exists();
+
+                if (! $hasRfq) {
+                    $validator->errors()->add(
+                        'buyer_id',
+                        __('api.manufacturer_order_buyer_not_connected'),
+                    );
+
+                    break;
+                }
             }
 
-            $hasRfq = RfqSubmission::query()
-                ->where('product_id', $productId)
-                ->where('buyer_id', $buyerId)
-                ->where('manufacturer_id', $manufacturerId)
-                ->exists();
+            $computedTotal = $this->computedTotalAmount();
+            $submittedTotal = round((float) $this->input('total_amount'), 2);
 
-            if (! $hasRfq) {
+            if (abs($computedTotal - $submittedTotal) > 0.01) {
                 $validator->errors()->add(
-                    'buyer_id',
-                    __('api.manufacturer_order_buyer_not_connected'),
+                    'total_amount',
+                    __('api.manufacturer_order_total_amount_mismatch'),
                 );
             }
         });
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function normalizedItems(): array
+    {
+        $items = $this->input('items', []);
+
+        return array_map(function (array $item): array {
+            $quantity = (int) $item['quantity'];
+            $unitPrice = round((float) $item['unit_price'], 4);
+
+            return [
+                'product_id' => (int) $item['product_id'],
+                'quantity' => $quantity,
+                'quantity_unit' => $item['quantity_unit'] ?? 'pieces',
+                'unit_price' => $unitPrice,
+                'line_total' => round($quantity * $unitPrice, 2),
+                'notes' => $item['notes'] ?? null,
+            ];
+        }, $items);
+    }
+
+    public function computedTotalAmount(): float
+    {
+        $total = 0.0;
+
+        foreach ($this->normalizedItems() as $item) {
+            $total += $item['line_total'];
+        }
+
+        return round($total, 2);
     }
 
     /**
@@ -86,16 +141,17 @@ class StoreOrderRequest extends FormRequest
     public function orderAttributes(int $manufacturerId): array
     {
         $validated = $this->validated();
+        $firstItem = $this->normalizedItems()[0];
 
         return [
             'user_id' => $manufacturerId,
             'buyer_id' => $validated['buyer_id'],
             'manufacturer_id' => $manufacturerId,
-            'product_id' => $validated['product_id'],
+            'product_id' => $firstItem['product_id'],
             'title' => $validated['title'],
-            'quantity' => $validated['quantity'],
-            'quantity_unit' => $validated['quantity_unit'] ?? 'pieces',
-            'total_amount' => $validated['total_amount'],
+            'quantity' => $firstItem['quantity'],
+            'quantity_unit' => $firstItem['quantity_unit'],
+            'total_amount' => $this->computedTotalAmount(),
             'currency_code' => strtoupper($validated['currency_code'] ?? 'USD'),
             'estimated_delivery_at' => $validated['estimated_delivery_at'],
             'production_lead' => $validated['production_lead'] ?? null,

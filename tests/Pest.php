@@ -215,6 +215,42 @@ function seedManufacturerOrderScenario(): array
 }
 
 /**
+ * Build a manufacturer order create payload. All orders must use items[] (one or more lines).
+ *
+ * @param  array<int, array<string, mixed>>  $items  Each item: product_id, quantity, unit_price; optional quantity_unit, notes
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
+ */
+function buildManufacturerOrderCreatePayload(int $buyerId, array $items, array $overrides = []): array
+{
+    $normalizedItems = [];
+    $totalAmount = 0.0;
+
+    foreach ($items as $item) {
+        $quantity = (int) $item['quantity'];
+        $unitPrice = round((float) $item['unit_price'], 4);
+        $lineTotal = round($quantity * $unitPrice, 2);
+        $totalAmount += $lineTotal;
+
+        $normalizedItems[] = [
+            'product_id' => (int) $item['product_id'],
+            'quantity' => $quantity,
+            'quantity_unit' => $item['quantity_unit'] ?? 'pieces',
+            'unit_price' => $unitPrice,
+            'notes' => $item['notes'] ?? null,
+        ];
+    }
+
+    return array_merge([
+        'buyer_id' => $buyerId,
+        'title' => 'Test order',
+        'items' => $normalizedItems,
+        'total_amount' => round($totalAmount, 2),
+        'estimated_delivery_at' => now()->addDays(30)->toDateString(),
+    ], $overrides);
+}
+
+/**
  * @param  array<int, array{key: string, input_type: string, value: string}>  $features
  * @param  array<string, mixed>  $subscriptionOverrides
  */
