@@ -3,12 +3,14 @@
 declare(strict_types=1);
 
 use App\Enums\OrderStatus;
+use App\Jobs\SendMailJob;
 use App\Models\Order;
 use App\Models\OrderStatusUpdate;
 use App\Models\OrderStatusUpdateAttachment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
@@ -21,6 +23,7 @@ beforeEach(function (): void {
         provider: config('auth.guards.api.provider')
     );
 
+    Queue::fake([SendMailJob::class]);
     Storage::fake('public');
 });
 
@@ -33,14 +36,18 @@ function seedManufacturerOrderWithStatus(): array
 
     Passport::actingAs($manufacturer);
 
-    $orderId = test()->postJson('/api/v1/manufacturer/orders/create', [
-        'buyer_id' => $buyer->id,
-        'product_id' => $product->id,
-        'title' => 'Premium ceramic mugs - 350ml',
-        'quantity' => 5000,
-        'total_amount' => 12500.50,
-        'estimated_delivery_at' => now()->addDays(30)->toDateString(),
-    ])->assertCreated()->json('data.id');
+    $orderId = test()->postJson('/api/v1/manufacturer/orders/create', buildManufacturerOrderCreatePayload(
+        buyerId: $buyer->id,
+        items: [[
+            'product_id' => $product->id,
+            'quantity' => 5000,
+            'unit_price' => 2.5001,
+        ]],
+        overrides: [
+            'title' => 'Premium ceramic mugs - 350ml',
+            'total_amount' => 12500.50,
+        ],
+    ))->assertCreated()->json('data.id');
 
     return [
         'buyer' => $buyer,

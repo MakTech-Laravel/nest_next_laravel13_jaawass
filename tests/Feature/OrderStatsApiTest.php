@@ -3,8 +3,10 @@
 declare(strict_types=1);
 
 use App\Enums\OrderStatus;
+use App\Jobs\SendMailJob;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 
@@ -15,6 +17,8 @@ beforeEach(function (): void {
         name: 'Test Personal Access Client',
         provider: config('auth.guards.api.provider')
     );
+
+    Queue::fake([SendMailJob::class]);
 });
 
 test('buyer order stats reflect only own purchases', function (): void {
@@ -22,14 +26,15 @@ test('buyer order stats reflect only own purchases', function (): void {
 
     Passport::actingAs($manufacturer);
 
-    test()->postJson('/api/v1/manufacturer/orders/create', [
-        'buyer_id' => $buyer->id,
-        'product_id' => $product->id,
-        'title' => 'Buyer order A',
-        'quantity' => 100,
-        'total_amount' => 1000,
-        'estimated_delivery_at' => now()->addDays(10)->toDateString(),
-    ])->assertCreated();
+    test()->postJson('/api/v1/manufacturer/orders/create', buildManufacturerOrderCreatePayload(
+        buyerId: $buyer->id,
+        items: [[
+            'product_id' => $product->id,
+            'quantity' => 100,
+            'unit_price' => 10.00,
+        ]],
+        overrides: ['title' => 'Buyer order A'],
+    ))->assertCreated();
 
     $otherBuyer = User::factory()->create();
     Passport::actingAs($otherBuyer);
@@ -41,14 +46,15 @@ test('buyer order stats reflect only own purchases', function (): void {
 
     Passport::actingAs($manufacturer);
 
-    test()->postJson('/api/v1/manufacturer/orders/create', [
-        'buyer_id' => $otherBuyer->id,
-        'product_id' => $product->id,
-        'title' => 'Other buyer order',
-        'quantity' => 50,
-        'total_amount' => 500,
-        'estimated_delivery_at' => now()->addDays(10)->toDateString(),
-    ])->assertCreated();
+    test()->postJson('/api/v1/manufacturer/orders/create', buildManufacturerOrderCreatePayload(
+        buyerId: $otherBuyer->id,
+        items: [[
+            'product_id' => $product->id,
+            'quantity' => 50,
+            'unit_price' => 10.00,
+        ]],
+        overrides: ['title' => 'Other buyer order'],
+    ))->assertCreated();
 
     Passport::actingAs($buyer);
 
@@ -66,14 +72,15 @@ test('manufacturer order stats reflect only own sales', function (): void {
 
     Passport::actingAs($manufacturer);
 
-    $orderId = test()->postJson('/api/v1/manufacturer/orders/create', [
-        'buyer_id' => $buyer->id,
-        'product_id' => $product->id,
-        'title' => 'Manufacturer order',
-        'quantity' => 200,
-        'total_amount' => 2000,
-        'estimated_delivery_at' => now()->addDays(10)->toDateString(),
-    ])->assertCreated()->json('data.id');
+    $orderId = test()->postJson('/api/v1/manufacturer/orders/create', buildManufacturerOrderCreatePayload(
+        buyerId: $buyer->id,
+        items: [[
+            'product_id' => $product->id,
+            'quantity' => 200,
+            'unit_price' => 10.00,
+        ]],
+        overrides: ['title' => 'Manufacturer order'],
+    ))->assertCreated()->json('data.id');
 
     test()->postJson("/api/v1/manufacturer/orders/{$orderId}/status-updates", [
         'status' => OrderStatus::InProduction->value,
@@ -96,23 +103,28 @@ test('admin order stats include all orders buyers and manufacturers', function (
 
     Passport::actingAs($manufacturer);
 
-    test()->postJson('/api/v1/manufacturer/orders/create', [
-        'buyer_id' => $buyer->id,
-        'product_id' => $product->id,
-        'title' => 'Order one',
-        'quantity' => 100,
-        'total_amount' => 1000,
-        'estimated_delivery_at' => now()->addDays(10)->toDateString(),
-    ])->assertCreated();
+    test()->postJson('/api/v1/manufacturer/orders/create', buildManufacturerOrderCreatePayload(
+        buyerId: $buyer->id,
+        items: [[
+            'product_id' => $product->id,
+            'quantity' => 100,
+            'unit_price' => 10.00,
+        ]],
+        overrides: ['title' => 'Order one'],
+    ))->assertCreated();
 
-    test()->postJson('/api/v1/manufacturer/orders/create', [
-        'buyer_id' => $buyer->id,
-        'product_id' => $product->id,
-        'title' => 'Order two',
-        'quantity' => 200,
-        'total_amount' => 2500,
-        'estimated_delivery_at' => now()->addDays(15)->toDateString(),
-    ])->assertCreated();
+    test()->postJson('/api/v1/manufacturer/orders/create', buildManufacturerOrderCreatePayload(
+        buyerId: $buyer->id,
+        items: [[
+            'product_id' => $product->id,
+            'quantity' => 200,
+            'unit_price' => 12.50,
+        ]],
+        overrides: [
+            'title' => 'Order two',
+            'total_amount' => 2500,
+        ],
+    ))->assertCreated();
 
     Passport::actingAs($admin);
 

@@ -13,6 +13,7 @@ use App\Services\Dashboard\EventTrackerService;
 use App\Services\Product\ProductCatalogService;
 use App\Support\Countries\ViewerCountryResolver;
 use App\Support\ExportMarkets\ManufacturerExportMarketVisibility;
+use App\Support\Product\BuyerFacingProductVisibility;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -26,6 +27,7 @@ class ProductController extends Controller
         private readonly EventTrackerService $eventTracker,
         private readonly ViewerCountryResolver $viewerCountryResolver,
         private readonly ManufacturerExportMarketVisibility $exportMarketVisibility,
+        private readonly BuyerFacingProductVisibility $buyerFacingProductVisibility,
     ) {}
 
     /* ------------------------------------------------------------------
@@ -77,6 +79,10 @@ class ProductController extends Controller
 
     public function show(Request $request, Product $product): JsonResponse
     {
+        if (! $this->buyerFacingProductVisibility->qualifiesForPublicCatalog($product)) {
+            abort(HttpStatus::HTTP_NOT_FOUND);
+        }
+
         $viewerCountryCode = $this->viewerCountryResolver->resolveFromRequest($request);
 
         if (! $this->exportMarketVisibility->supplierVisibleToCountry((int) $product->user_id, $viewerCountryCode)) {

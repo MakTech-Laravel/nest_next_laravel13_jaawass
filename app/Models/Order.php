@@ -111,6 +111,11 @@ class Order extends Model
         return $this->belongsTo(Product::class, 'product_id');
     }
 
+    public function items(): HasMany
+    {
+        return $this->hasMany(OrderItem::class, 'order_id', 'id');
+    }
+
     public function statusUpdates(): HasMany
     {
         return $this->hasMany(OrderStatusUpdate::class, 'order_id', 'id');

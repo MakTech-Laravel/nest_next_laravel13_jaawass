@@ -7,7 +7,9 @@ use App\Http\Controllers\Api\V1\Manufacturer\ManufacturerProductController;
 use App\Http\Requests\Api\V1\PublicProductIndexRequest;
 use App\Http\Resources\Api\V1\ProductResource;
 use App\Models\Product;
+use App\Support\Product\BuyerFacingProductVisibility;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 class ProductCatalogService
@@ -64,7 +66,7 @@ class ProductCatalogService
 
     public function getPublicProducts(): Collection
     {
-        return Product::query()
+        return $this->publicCatalogBaseQuery()
             ->with($this->eagerRelationsForPublicProduct())
             ->orderBy('id')
             ->get();
@@ -72,10 +74,8 @@ class ProductCatalogService
 
     public function getPublicProductsByCategory(int $categoryId): Collection
     {
-        return Product::query()
+        return $this->publicCatalogBaseQuery()
             ->with($this->eagerRelationsForPublicProduct(withReviews: true))
-            ->where('status', 'active')
-            ->where('is_approved', true)
             ->where('industry_id', $categoryId)
             ->orderBy('id')
             ->get();
@@ -83,12 +83,20 @@ class ProductCatalogService
 
     public function getPublicProductsBySubCategory(int $subCategoryId): Collection
     {
-        return Product::query()
+        return $this->publicCatalogBaseQuery()
             ->with($this->eagerRelationsForPublicProduct(withReviews: true))
-            ->where('status', 'active')
-            ->where('is_approved', true)
             ->where('sub_category_id', $subCategoryId)
             ->orderBy('id')
             ->get();
+    }
+
+    public function publicCatalogBaseQuery(): Builder
+    {
+        $query = Product::query()
+            ->where('status', 'active')
+            ->where('is_approved', true);
+
+        return app(BuyerFacingProductVisibility::class)
+            ->applyManufacturerSubscriptionConstraint($query);
     }
 }

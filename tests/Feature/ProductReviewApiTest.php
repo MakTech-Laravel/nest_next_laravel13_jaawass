@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 use App\Enums\OrderStatus;
 use App\Enums\ReviewStatus;
+use App\Jobs\SendMailJob;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 
@@ -17,6 +19,8 @@ beforeEach(function (): void {
         name: 'Test Personal Access Client',
         provider: config('auth.guards.api.provider')
     );
+
+    Queue::fake([SendMailJob::class]);
 });
 
 /**
@@ -28,14 +32,19 @@ function createCompletedOrderForReview(): array
 
     Passport::actingAs($manufacturer);
 
-    $orderId = test()->postJson('/api/v1/manufacturer/orders/create', [
-        'buyer_id' => $buyer->id,
-        'product_id' => $product->id,
-        'title' => 'Reviewable order',
-        'quantity' => 300,
-        'total_amount' => 4500,
-        'estimated_delivery_at' => now()->addDays(20)->toDateString(),
-    ])->assertCreated()->json('data.id');
+    $orderId = test()->postJson('/api/v1/manufacturer/orders/create', buildManufacturerOrderCreatePayload(
+        buyerId: $buyer->id,
+        items: [[
+            'product_id' => $product->id,
+            'quantity' => 300,
+            'unit_price' => 15.00,
+        ]],
+        overrides: [
+            'title' => 'Reviewable order',
+            'total_amount' => 4500,
+            'estimated_delivery_at' => now()->addDays(20)->toDateString(),
+        ],
+    ))->assertCreated()->json('data.id');
 
     test()->postJson("/api/v1/manufacturer/orders/{$orderId}/status-updates", [
         'status' => OrderStatus::Completed->value,
@@ -75,14 +84,18 @@ test('buyer cannot review without completed purchase of product', function (): v
     $otherBuyer = User::factory()->create();
 
     Passport::actingAs($manufacturer);
-    $orderId = $this->postJson('/api/v1/manufacturer/orders/create', [
-        'buyer_id' => $buyer->id,
-        'product_id' => $product->id,
-        'title' => 'Not completed order',
-        'quantity' => 100,
-        'total_amount' => 1000,
-        'estimated_delivery_at' => now()->addDays(10)->toDateString(),
-    ])->assertCreated()->json('data.id');
+    $orderId = $this->postJson('/api/v1/manufacturer/orders/create', buildManufacturerOrderCreatePayload(
+        buyerId: $buyer->id,
+        items: [[
+            'product_id' => $product->id,
+            'quantity' => 100,
+            'unit_price' => 10.00,
+        ]],
+        overrides: [
+            'title' => 'Not completed order',
+            'estimated_delivery_at' => now()->addDays(10)->toDateString(),
+        ],
+    ))->assertCreated()->json('data.id');
 
     Passport::actingAs($otherBuyer);
 
@@ -105,14 +118,19 @@ test('buyer can review same product multiple times with different completed orde
     ])->assertCreated();
 
     Passport::actingAs($manufacturer);
-    $secondOrderId = $this->postJson('/api/v1/manufacturer/orders/create', [
-        'buyer_id' => $buyer->id,
-        'product_id' => $productId,
-        'title' => 'Second order',
-        'quantity' => 200,
-        'total_amount' => 2200,
-        'estimated_delivery_at' => now()->addDays(10)->toDateString(),
-    ])->assertCreated()->json('data.id');
+    $secondOrderId = $this->postJson('/api/v1/manufacturer/orders/create', buildManufacturerOrderCreatePayload(
+        buyerId: $buyer->id,
+        items: [[
+            'product_id' => $productId,
+            'quantity' => 200,
+            'unit_price' => 11.00,
+        ]],
+        overrides: [
+            'title' => 'Second order',
+            'total_amount' => 2200,
+            'estimated_delivery_at' => now()->addDays(10)->toDateString(),
+        ],
+    ))->assertCreated()->json('data.id');
 
     $this->postJson("/api/v1/manufacturer/orders/{$secondOrderId}/status-updates", [
         'status' => OrderStatus::Completed->value,

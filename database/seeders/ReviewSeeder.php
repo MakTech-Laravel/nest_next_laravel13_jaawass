@@ -411,6 +411,18 @@ class ReviewSeeder extends Seeder
                 'updated_at' => $orderCreatedAt->copy()->addDays(28),
             ]);
 
+            $quantity = 500 + ($index * 25);
+            $unitPrice = round($entry['total_amount'] / $quantity, 2);
+
+            \App\Models\OrderItem::query()->create([
+                'order_id' => $order->id,
+                'product_id' => $product->id,
+                'quantity' => $quantity,
+                'quantity_unit' => 'pieces',
+                'unit_price' => $unitPrice,
+                'line_total' => $entry['total_amount'],
+            ]);
+
             $review = Review::query()->create([
                 'user_id' => $supplier->id,
                 'product_id' => $product->id,

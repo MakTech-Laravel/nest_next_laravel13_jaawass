@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\ReviewStatus;
+use App\Jobs\SendMailJob;
 use App\Models\Language;
 use App\Models\Review;
 use App\Models\User;
@@ -10,6 +11,7 @@ use App\Services\Translation\TranslationOrchestrator;
 use Database\Seeders\LanguageSeeder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 
@@ -20,6 +22,8 @@ beforeEach(function (): void {
         name: 'Test Personal Access Client',
         provider: config('auth.guards.api.provider')
     );
+
+    Queue::fake([SendMailJob::class]);
 });
 
 function fakeReviewTranslationOrchestrator(): void

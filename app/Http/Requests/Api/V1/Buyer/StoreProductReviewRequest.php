@@ -53,8 +53,14 @@ class StoreProductReviewRequest extends FormRequest
             $order = Order::query()
                 ->whereKey($this->integer('order_id'))
                 ->where('buyer_id', (int) $this->user()->id)
-                ->where('product_id', (int) $product->id)
                 ->where('status', OrderStatus::Completed->value)
+                ->where(function ($query) use ($product): void {
+                    $query
+                        ->where('product_id', (int) $product->id)
+                        ->orWhereHas('items', function ($itemQuery) use ($product): void {
+                            $itemQuery->where('product_id', (int) $product->id);
+                        });
+                })
                 ->first();
 
             if ($order === null) {

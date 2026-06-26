@@ -99,7 +99,10 @@ test('manufacturer can fetch order buyer select options for product rfqs', funct
 
     Passport::actingAs($manufacturer);
 
-    $response = $this->getJson("/api/v1/manufacturer/orders/select/buyers?product_id={$product->id}&search=ABC");
+    $response = $this->getJson('/api/v1/manufacturer/orders/select/buyers?'.http_build_query([
+        'product_ids' => [$product->id],
+        'search' => 'ABC',
+    ]));
 
     $response->assertOk()
         ->assertJsonPath('success', true)
@@ -137,7 +140,9 @@ test('manufacturer order buyer select excludes buyers without rfq for product', 
 
     Passport::actingAs($manufacturer);
 
-    $this->getJson("/api/v1/manufacturer/orders/select/buyers?product_id={$product->id}")
+    $this->getJson('/api/v1/manufacturer/orders/select/buyers?'.http_build_query([
+        'product_ids' => [$product->id],
+    ]))
         ->assertOk()
         ->assertJsonPath('success', true)
         ->assertJsonCount(0, 'data');
@@ -153,15 +158,83 @@ test('manufacturer order select endpoints require manufacturer role', function (
     Passport::actingAs($buyer);
 
     $this->getJson('/api/v1/manufacturer/orders/select/products')->assertForbidden();
-    $this->getJson("/api/v1/manufacturer/orders/select/buyers?product_id={$product->id}")->assertForbidden();
+    $this->getJson('/api/v1/manufacturer/orders/select/buyers?'.http_build_query([
+        'product_ids' => [$product->id],
+    ]))->assertForbidden();
 });
 
-test('manufacturer order buyer select requires product id', function (): void {
+test('manufacturer order buyer select requires product ids array', function (): void {
     $manufacturer = manufacturerWithSubscription();
 
     Passport::actingAs($manufacturer);
 
     $this->getJson('/api/v1/manufacturer/orders/select/buyers')
         ->assertUnprocessable()
+        ->assertJsonValidationErrors(['product_ids']);
+});
+
+test('manufacturer order buyer select rejects legacy product id param', function (): void {
+    $manufacturer = manufacturerWithSubscription();
+    $product = seedOrderSelectProduct($manufacturer);
+
+    Passport::actingAs($manufacturer);
+
+    $this->getJson("/api/v1/manufacturer/orders/select/buyers?product_id={$product->id}")
+        ->assertUnprocessable()
         ->assertJsonValidationErrors(['product_id']);
+});
+
+test('manufacturer can fetch buyers connected to all selected products', function (): void {
+    $buyer = User::factory()->create();
+    $otherBuyer = User::factory()->create();
+    $manufacturer = manufacturerWithSubscription();
+    $firstProduct = seedOrderSelectProduct($manufacturer);
+    $secondProduct = seedOrderSelectProduct($manufacturer, 'Ceramic Travel Mug');
+
+    DB::table('companies')->insert([
+        [
+            'user_id' => $buyer->id,
+            'company_name' => 'ABC Imports LLC',
+            'country' => 'United States',
+            'city' => 'Los Angeles',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+        [
+            'user_id' => $manufacturer->id,
+            'company_name' => 'Zenith Manufacturing',
+            'country' => 'China',
+            'city' => 'Shenzhen',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ],
+    ]);
+
+    Passport::actingAs($buyer);
+    $this->postJson('/api/v1/buyer/rfqs', [
+        'product_id' => $firstProduct->id,
+        'quantity' => 5000,
+    ])->assertCreated();
+    $this->postJson('/api/v1/buyer/rfqs', [
+        'product_id' => $secondProduct->id,
+        'quantity' => 1000,
+    ])->assertCreated();
+
+    Passport::actingAs($otherBuyer);
+    $this->postJson('/api/v1/buyer/rfqs', [
+        'product_id' => $firstProduct->id,
+        'quantity' => 500,
+    ])->assertCreated();
+
+    Passport::actingAs($manufacturer);
+
+    $response = $this->getJson('/api/v1/manufacturer/orders/select/buyers?'.http_build_query([
+        'product_ids' => [$firstProduct->id, $secondProduct->id],
+        'search' => 'ABC',
+    ]));
+
+    $response->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $buyer->id);
 });
