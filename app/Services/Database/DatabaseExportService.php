@@ -175,8 +175,6 @@ class DatabaseExportService
      */
     private function resolveTables(array $requestedTables): array
     {
-        $allowed = $this->sqlExporter->listTables();
-
         $tables = collect($requestedTables)
             ->filter(fn ($table): bool => is_string($table) && $table !== '')
             ->unique()
@@ -184,7 +182,7 @@ class DatabaseExportService
             ->all();
 
         foreach ($tables as $table) {
-            if (! in_array($table, $allowed, true)) {
+            if (! $this->sqlExporter->tableExists($table)) {
                 throw new \InvalidArgumentException("Table [{$table}] is not allowed for export.");
             }
         }
