@@ -144,6 +144,7 @@ return [
     'manufacturer_order_stats_fetched_successfully' => 'Order statistics fetched successfully.',
     'manufacturer_order_product_not_owned' => 'The selected product does not belong to your account.',
     'manufacturer_order_buyer_not_connected' => 'The selected buyer has no RFQ for this product with you.',
+    'manufacturer_order_total_amount_mismatch' => 'The total amount does not match the sum of all product line totals.',
 
     'order_status_options_fetched_successfully' => 'Order status options fetched successfully.',
     'order_status_update_created_successfully' => 'Order progress update posted successfully.',

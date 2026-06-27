@@ -16,6 +16,8 @@ function seedPublicCatalogProduct(array $overrides = []): Product
 {
     $manufacturer = User::factory()->manufacturer()->create();
 
+    attachActiveSubscription($manufacturer);
+
     Company::query()->create([
         'user_id' => $manufacturer->id,
         'company_name' => $overrides['company_name'] ?? 'TechVision Electronics',
@@ -228,6 +230,8 @@ test('supplier name falls back to manufacturer user name when company profile is
         'is_approved' => true,
     ]);
 
+    attachActiveSubscription($manufacturer);
+
     /** @var TestCase $this */
     $this->getJson("/api/v1/products/{$product->id}")
         ->assertOk()
@@ -254,4 +258,41 @@ test('unapproved products are excluded from public index', function (): void {
         ->assertOk()
         ->assertJsonPath('meta.total', 1)
         ->assertJsonPath('data.0.slug', 'approved-product');
+});
+
+test('products from manufacturers without active subscription are excluded from public catalog', function (): void {
+    $visible = seedPublicCatalogProduct(['slug' => 'subscribed-product']);
+
+    $unsubscribedManufacturer = User::factory()->manufacturer()->create();
+
+    Company::query()->create([
+        'user_id' => $unsubscribedManufacturer->id,
+        'company_name' => 'No Subscription Co',
+        'company_type' => 'manufacturer',
+        'country' => 'China',
+        'city' => 'Shanghai',
+        'street_address' => '456 Side St',
+        'phone' => '+86123456780',
+        'zip_code' => '200000',
+    ]);
+
+    $unsubscribedProduct = Product::query()->create([
+        'user_id' => $unsubscribedManufacturer->id,
+        'name' => 'Unsubscribed Product',
+        'slug' => 'unsubscribed-product',
+        'description' => 'Manufacturer has no active subscription',
+        'industry_id' => $visible->industry_id,
+        'sub_category_id' => $visible->sub_category_id,
+        'status' => 'active',
+        'is_approved' => true,
+    ]);
+
+    /** @var TestCase $this */
+    $this->getJson('/api/v1/products')
+        ->assertOk()
+        ->assertJsonPath('meta.total', 1)
+        ->assertJsonPath('data.0.slug', 'subscribed-product');
+
+    $this->getJson("/api/v1/products/{$unsubscribedProduct->id}")
+        ->assertNotFound();
 });

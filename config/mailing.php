@@ -90,6 +90,11 @@ return [
       'subject' => 'mail.subscription_renewed.subject',
       'markdown' => false,
     ],
+    'manufacturer-order-created' => [
+      'view' => 'mail.manufacturer-order-created',
+      'subject' => 'mail.manufacturer_order_created.subject',
+      'markdown' => false,
+    ],
     'admin-test-email' => [
       'view' => 'mail.admin-test-email',
       'subject' => 'mail.admin_test_email.subject',

@@ -103,6 +103,9 @@ class OrderStatusUpdateService
             'product.images',
             'product.category',
             'product.subCategory',
+            'items.product.images',
+            'items.product.category',
+            'items.product.subCategory',
             'translations',
             'attachments',
             'statusUpdates' => fn ($query) => $query

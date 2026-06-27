@@ -15,6 +15,7 @@ enum MailTemplate: string
     case SubscriptionExpired = 'subscription-expired';
     case SubscriptionCreated = 'subscription-created';
     case SubscriptionRenewed = 'subscription-renewed';
+    case ManufacturerOrderCreated = 'manufacturer-order-created';
 
     public static function tryFromName(string $template): ?self
     {

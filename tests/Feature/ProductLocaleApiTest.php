@@ -121,7 +121,9 @@ test('products by category endpoint returns only selected category products', fu
         'slug' => 'sub-b',
     ]);
 
-    $user = User::factory()->create();
+    $user = User::factory()->manufacturer()->create();
+
+    attachActiveSubscription($user);
 
     Product::query()->create([
         'user_id' => $user->id,
@@ -180,7 +182,9 @@ test('products by sub category endpoint returns only selected sub category produ
         'slug' => 'sub-b1',
     ]);
 
-    $user = User::factory()->create();
+    $user = User::factory()->manufacturer()->create();
+
+    attachActiveSubscription($user);
 
     Product::query()->create([
         'user_id' => $user->id,
