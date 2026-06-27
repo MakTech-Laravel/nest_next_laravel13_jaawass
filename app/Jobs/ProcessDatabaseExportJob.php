@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\DatabaseExportStatus;
 use App\Models\DatabaseExport;
 use App\Services\Database\DatabaseExportService;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,6 +15,8 @@ class ProcessDatabaseExportJob implements ShouldQueue
     use Queueable;
 
     public int $timeout = 3600;
+
+    public int $tries = 1;
 
     public function __construct(
         public int $exportId,
@@ -32,10 +35,16 @@ class ProcessDatabaseExportJob implements ShouldQueue
             'error' => $exception->getMessage(),
         ]);
 
+        $export = DatabaseExport::query()->find($this->exportId);
+
+        if ($export === null || $export->status === DatabaseExportStatus::Completed) {
+            return;
+        }
+
         DatabaseExport::query()
             ->whereKey($this->exportId)
             ->update([
-                'status' => 'failed',
+                'status' => DatabaseExportStatus::Failed->value,
                 'error_message' => $exception->getMessage(),
             ]);
     }

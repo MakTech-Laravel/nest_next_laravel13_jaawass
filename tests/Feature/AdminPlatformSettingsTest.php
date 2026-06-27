@@ -118,10 +118,25 @@ test('admin can list database tables for export', function () {
     Passport::actingAs($admin);
 
     /** @var TestCase $this */
-    $this->getJson('/api/v1/admin/database/tables')
+    $response = $this->getJson('/api/v1/admin/database/tables')
         ->assertOk()
         ->assertJsonStructure([
             'success',
             'data',
         ]);
+
+    $tables = $response->json('data') ?? [];
+    foreach ($tables as $table) {
+        expect($table)->not->toContain('.');
+    }
+});
+
+test('database table listing only includes the active connection database', function () {
+    $tables = app(\App\Services\Database\DatabaseSqlExporter::class)->listTables();
+
+    expect($tables)->not->toBeEmpty();
+
+    foreach ($tables as $table) {
+        expect($table)->not->toContain('.');
+    }
 });
