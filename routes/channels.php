@@ -8,6 +8,10 @@ Broadcast::channel('user.{userId}', function (User $user, string $userId): bool 
     return (int) $user->getAuthIdentifier() === (int) $userId;
 }, ['guards' => ['api']]);
 
+Broadcast::channel('notifications.{userId}', function (User $user, string $userId): bool {
+    return (int) $user->getAuthIdentifier() === (int) $userId;
+}, ['guards' => ['api']]);
+
 Broadcast::channel('chat.room.{conversationId}', function (User $user, string $conversationId): bool {
     return Conversation::query()
         ->whereKey($conversationId)

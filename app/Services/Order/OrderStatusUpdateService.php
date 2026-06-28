@@ -18,6 +18,7 @@ class OrderStatusUpdateService
 {
     public function __construct(
         private readonly EventTrackerService $eventTracker,
+        private readonly OrderNotificationService $orderNotificationService,
     ) {}
 
     public function create(
@@ -78,7 +79,11 @@ class OrderStatusUpdateService
                 );
             }
 
-            return $this->loadOrderWithRelations($order->fresh());
+            $freshOrder = $this->loadOrderWithRelations($order->fresh());
+
+            $this->orderNotificationService->sendStatusUpdated($freshOrder, $status, $user);
+
+            return $freshOrder;
         });
     }
 
