@@ -8,6 +8,8 @@ return [
 
     'unauthenticated' => 'No autenticado.',
 
+    'email_verification_required' => 'Verifique su direcci?n de correo electr?nico antes de acceder a esta funci?n.',
+
     'logout_successful' => 'Sesión cerrada correctamente',
 
     'validation_error' => 'Error de validación.',

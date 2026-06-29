@@ -8,6 +8,8 @@ return [
 
     'unauthenticated' => 'Unauthenticated.',
 
+    'email_verification_required' => 'Please verify your email address before accessing this feature.',
+
     'logout_successful' => 'Logout successful',
 
     'validation_error' => 'Validation error.',

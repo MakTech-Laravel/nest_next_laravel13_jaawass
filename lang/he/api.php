@@ -8,6 +8,8 @@ return [
 
     'unauthenticated' => 'לא מאומת.',
 
+    'email_verification_required' => 'יש לאמת את כתובת הדוא"ל שלך לפני גישה לתכונה זו.',
+
     'logout_successful' => 'ההתנתקות בוצעה בהצלחה',
 
     'validation_error' => 'שגיאת אימות נתונים.',

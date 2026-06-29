@@ -96,6 +96,7 @@ class RegisterUserAction
                 ];
             }
 
+            
             $accessToken = $this->issuePersonalAccessTokenAction->handle($user, $validated['device_name'] ?? null);
 
             return [
