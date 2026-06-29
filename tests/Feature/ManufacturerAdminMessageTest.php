@@ -4,8 +4,10 @@ use App\Enums\UserManuFactureStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Jobs\SendMailJob;
+use App\Jobs\Support\SendSupportTicketInAppNotificationJob;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Models\UserNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Passport\ClientRepository;
@@ -19,6 +21,11 @@ beforeEach(function () {
         name: 'Test Personal Access Client',
         provider: config('auth.guards.api.provider')
     );
+
+    config([
+        'app.frontend_url' => 'http://localhost:3000',
+        'broadcasting.default' => 'null',
+    ]);
 });
 
 test('admin can send message to manufacturer and ticket plus email are created', function () {
@@ -51,6 +58,12 @@ test('admin can send message to manufacturer and ticket plus email are created',
     Queue::assertPushed(SendMailJob::class, function (SendMailJob $job) use ($manufacturer): bool {
         return $job->recipient === $manufacturer->email
             && $job->template === 'manufacturer-admin-message';
+    });
+
+    Queue::assertPushed(SendSupportTicketInAppNotificationJob::class, function (SendSupportTicketInAppNotificationJob $job) use ($manufacturer, $admin): bool {
+        return $job->recipientId === $manufacturer->id
+            && $job->senderId === $admin->id
+            && $job->type === 'support.ticket.created';
     });
 });
 

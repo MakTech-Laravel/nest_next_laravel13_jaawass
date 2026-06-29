@@ -171,6 +171,11 @@ return [
     'ticket_forbidden' => 'You do not have access to this ticket.',
     'ticket_closed_cannot_reply' => 'This ticket is closed and cannot receive new replies.',
 
+    'admin_conversations_fetched_successfully' => 'Buyer–seller conversations fetched successfully.',
+    'admin_conversation_fetched_successfully' => 'Conversation fetched successfully.',
+    'admin_conversation_messages_fetched_successfully' => 'Conversation messages fetched successfully.',
+    'admin_conversation_forbidden' => 'This conversation is not available for admin monitoring.',
+
     'admin_tickets_fetched_successfully' => 'Admin tickets fetched successfully.',
     'admin_ticket_fetched_successfully' => 'Admin ticket fetched successfully.',
     'admin_ticket_updated_successfully' => 'Admin ticket updated successfully.',

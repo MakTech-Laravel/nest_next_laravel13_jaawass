@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\Admin\ArticleController;
 use App\Http\Controllers\Api\V1\Admin\CertificateTypeController;
 use App\Http\Controllers\Api\V1\Admin\CertificationController;
 use App\Http\Controllers\Api\V1\Admin\ContactController;
+use App\Http\Controllers\Api\V1\Admin\ConversationAdminController;
 use App\Http\Controllers\Api\V1\Admin\CurrencyAdminController;
 use App\Http\Controllers\Api\V1\Admin\FaqCategoryController;
 use App\Http\Controllers\Api\V1\Admin\FaqController;
@@ -20,6 +21,7 @@ use App\Http\Controllers\Api\V1\Admin\HelpCenterCategoryController;
 use App\Http\Controllers\Api\V1\Admin\ManufacturerAdminMessageController;
 use App\Http\Controllers\Api\V1\Admin\ManufacturerAdditionalInformationController;
 use App\Http\Controllers\Api\V1\Admin\ManufacturerController;
+use App\Http\Controllers\Api\V1\Admin\ManufacturerSupportTicketController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\PlanController;
 use App\Http\Controllers\Api\V1\Admin\Product\AdminProductController;
@@ -88,6 +90,7 @@ Route::controller(ManufacturerController::class)->prefix('manufacturer')->group(
         });
 
     Route::post('/{manufacturer}/send-message', [ManufacturerAdminMessageController::class, 'store']);
+    Route::post('/{manufacturer}/support-tickets', [ManufacturerSupportTicketController::class, 'store']);
 });
 
 Route::get(
@@ -147,6 +150,12 @@ Route::controller(AdminProductController::class)->prefix('products')->group(func
 Route::controller(RfqSubmissionAdminController::class)->prefix('rfqs')->group(function (): void {
     Route::get('/', 'index');
     Route::get('/{rfq}', 'show');
+});
+
+Route::controller(ConversationAdminController::class)->prefix('conversations')->group(function (): void {
+    Route::get('/', 'index');
+    Route::get('/{conversation}', 'show');
+    Route::get('/{conversation}/messages', 'messages');
 });
 
 Route::controller(TicketAdminController::class)->prefix('customer-supports/tickets')->group(function (): void {
