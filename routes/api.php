@@ -16,13 +16,13 @@ Route::middleware(['auth:api', ResolveApiLocale::class, ResolveApiTimezone::clas
     ->group(base_path('routes/api/v1/common.php'));
 
 // Buyers Routes
-Route::middleware(['auth:api', ResolveApiLocale::class, ResolveApiTimezone::class, 'role.buyer'])
+Route::middleware(['auth:api', ResolveApiLocale::class, ResolveApiTimezone::class, 'role.buyer', 'email.verified'])
     ->prefix('v1/buyer')
     ->name('api.v1.buyer.')
     ->group(base_path('routes/api/v1/buyer.php'));
 
 // Manufacturers Routes
-Route::middleware(['auth:api', ResolveApiLocale::class, ResolveApiTimezone::class, 'role.manufacturer'])
+Route::middleware(['auth:api', ResolveApiLocale::class, ResolveApiTimezone::class, 'role.manufacturer', 'email.verified'])
     ->prefix('v1/manufacturer')
     ->name('api.v1.manufacturer.')
     ->group(base_path('routes/api/v1/manufacturer.php'));

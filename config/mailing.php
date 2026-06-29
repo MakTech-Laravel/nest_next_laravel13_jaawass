@@ -100,6 +100,11 @@ return [
       'subject' => 'mail.admin_test_email.subject',
       'markdown' => false,
     ],
+    'email-verification' => [
+      'view' => 'mail.email-verification',
+      'subject' => 'mail.email_verification.subject',
+      'markdown' => false,
+    ],
   ],
 
 ];

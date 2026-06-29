@@ -59,6 +59,11 @@ class PlatformSettingsService
         return $settings;
     }
 
+    public function requiresEmailVerification(): bool
+    {
+        return (bool) ($this->all()['security']['require_email_verification'] ?? true);
+    }
+
     /**
      * @param  array<string, array<string, mixed>>  $payload
      * @return array<string, array<string, mixed>>

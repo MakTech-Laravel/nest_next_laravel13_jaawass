@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureEmailVerified;
 use App\Http\Middleware\EnsureActiveSubscription;
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureBuyer;
@@ -52,6 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role.buyer' => EnsureBuyer::class,
             'role.manufacturer' => EnsureManufacturer::class,
             'role.admin' => EnsureAdmin::class,
+            'email.verified' => EnsureEmailVerified::class,
             'subscription.active' => EnsureActiveSubscription::class,
             'plan.feature' => EnsurePlanFeature::class,
             'manufacturer.plan.feature' => EnsureManufacturerPlanFeature::class,

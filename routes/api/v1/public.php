@@ -40,6 +40,8 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/two-factor-challenge', 'twoFactorChallenge')->middleware(['throttle:api-login']);
     Route::post('/forgot-password', 'forgotPassword')->middleware(['throttle:api-password-reset']);
     Route::post('/reset-password', 'resetPassword')->middleware(['throttle:api-password-reset-verify']);
+    Route::post('/email/verify', 'verifyEmail')->middleware(['throttle:api-email-verification-verify']);
+    Route::post('/email/verification/resend', 'resendEmailVerification')->middleware(['throttle:api-email-verification-resend']);
 });
 
 Route::controller(SocialAuthController::class)->prefix('auth')->group(function () {

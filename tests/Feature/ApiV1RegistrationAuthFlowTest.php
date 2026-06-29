@@ -4,6 +4,7 @@ use App\Enums\UserManuFactureStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Jobs\SendMailJob;
+use App\Models\PlatformSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -25,6 +26,11 @@ beforeEach(function () {
 
 test('buyer can register and receives bearer token', function () {
     Queue::fake();
+
+    PlatformSetting::query()->updateOrCreate(
+        ['group' => 'security'],
+        ['payload' => ['require_email_verification' => false]],
+    );
 
     /** @var TestCase $this */
     $response = $this->postJson('/api/v1/register', [

@@ -32,6 +32,16 @@ return [
 
     'password_reset_invalid_otp' => 'קוד איפוס הסיסמה אינו תקין או שפג תוקפו.',
 
+    'email_verification_sent' => 'קוד אימות נשלח לכתובת הדוא\"ל שלך.',
+
+    'email_verification_resend_wait' => 'יש להמתין לפני בקשת קוד אימות חדש.',
+
+    'email_verification_invalid_otp' => 'קוד האימות אינו תקין או שפג תוקפו.',
+
+    'email_verification_token_invalid' => 'הפעלת האימות אינה תקפה או שפג תוקפה.',
+
+    'email_verification_already_verified' => 'כתובת הדוא\"ל הזו כבר אומתה.',
+
     'password_changed' => 'הסיסמה שונתה בהצלחה.',
 
     'two_factor' => [

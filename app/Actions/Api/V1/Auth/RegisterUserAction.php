@@ -2,15 +2,17 @@
 
 namespace App\Actions\Api\V1\Auth;
 
+use App\Enums\MailTemplate;
 use App\Enums\UserManuFactureStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Http\Requests\Api\V1\Register\BuyerRegisterRequest;
 use App\Http\Requests\Api\V1\Register\ManufacturerRegisterRequest;
-use App\Enums\MailTemplate;
-use App\Services\Mailing\MailingService;
 use App\Models\Company;
 use App\Models\User;
+use App\Services\Auth\EmailVerificationService;
+use App\Services\Mailing\MailingService;
+use App\Services\Platform\PlatformSettingsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -22,6 +24,8 @@ class RegisterUserAction
         protected StoreManufacturerFilesAction $storeManufacturerFilesAction,
         protected IssuePersonalAccessTokenAction $issuePersonalAccessTokenAction,
         protected MailingService $mailingService,
+        private readonly PlatformSettingsService $platformSettings,
+        private readonly EmailVerificationService $emailVerificationService,
     ) {}
 
     public function handle(Request $request): array
@@ -90,11 +94,33 @@ class RegisterUserAction
             Company::query()->create($informationPayload);
 
             if ($role === UserRole::MANUFACTURER->value) {
-                return [
+                $manufacturerResult = [
                     'user' => $user->fresh(['company', 'factoryImages']),
                     'manufacturer_pending' => true,
                 ];
+
+                if ($this->platformSettings->requiresEmailVerification()) {
+                    $challenge = $this->emailVerificationService->sendChallenge($user);
+                    $manufacturerResult['verification_token'] = $challenge['verification_token'];
+                    $manufacturerResult['code_expiry_time'] = $challenge['code_expiry_time'];
+                }
+
+                return $manufacturerResult;
             }
+
+
+            if ($this->platformSettings->requiresEmailVerification()) {
+                $challenge = $this->emailVerificationService->sendChallenge($user);
+
+                return [
+                    'user' => $user->fresh(['company', 'factoryImages']),
+                    'verification_token' => $challenge['verification_token'],
+                    'code_expiry_time' => $challenge['code_expiry_time'],
+                ];
+            }
+
+
+            // if email verification is not required, issue access token
 
             $accessToken = $this->issuePersonalAccessTokenAction->handle($user, $validated['device_name'] ?? null);
 

@@ -25,6 +25,8 @@ class UserResource extends JsonResource
             'avatar' => storage_url($this->avatar),
             'avatar_url' => $this->avatar_url,
             'email' => $this->email,
+            'email_verified_at' => TimezoneFormatter::format($this->email_verified_at),
+            'is_email_verified' => $this->hasVerifiedEmail(),
             'role' => $this->role->label(),
             'status' => $this->status?->value ?? UserStatus::ACTIVE->value,
             'status_label' => $this->status?->label() ?? UserStatus::ACTIVE->label(),

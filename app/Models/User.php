@@ -98,6 +98,11 @@ class User extends Authenticatable implements OAuthenticatable
         ];
     }
 
+    public function hasVerifiedEmail(): bool
+    {
+        return $this->email_verified_at !== null;
+    }
+
     protected $appends = ['avatar_url'];
 
     /* --------------------------------------------------------------
