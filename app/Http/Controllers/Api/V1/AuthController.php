@@ -18,6 +18,7 @@ use App\Enums\MailTemplate;
 use App\Services\Mailing\MailingService;
 use App\Models\User;
 use App\Services\ManufacturerAccountGate;
+use App\Services\Platform\PlatformSettingsService;
 use App\Support\Manufacturer\ManufacturerProfileRelations;
 use Carbon\Carbon;
 use Illuminate\Auth\Events\PasswordReset;
@@ -33,6 +34,10 @@ use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
 class AuthController extends Controller
 {
+
+    public function __construct(private readonly PlatformSettingsService $platformSettings)
+    {
+    }
     public function register(Request $request, RegisterUserAction $registerUserAction): JsonResponse
     {
         $result = $registerUserAction->handle($request);
@@ -53,6 +58,20 @@ class AuthController extends Controller
             $result['user']->loadMissing(['preferredCurrency'])
         );
 
+        if ($this->platformSettings->requiresEmailVerification()) {
+            return sendResponse(
+                status: true,
+                message: __('api.email_verification_required'),
+                data: [
+                    'verification_token' => $result['verification_token'],
+                    'code_expiry_time' => $result['code_expiry_time'],
+                ],
+                statusCode: HttpStatus::HTTP_CREATED,
+            );
+        }
+
+
+        
         return sendResponse(
             status: true,
             message: __('api.registration_successful'),
