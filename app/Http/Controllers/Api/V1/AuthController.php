@@ -47,10 +47,19 @@ class AuthController extends Controller
         $result = $registerUserAction->handle($request);
 
         if ($result['manufacturer_pending'] ?? false) {
+            $verificationData = null;
+
+            if ($this->platformSettings->requiresEmailVerification()) {
+                $verificationData = [
+                    'verification_token' => $result['verification_token'],
+                    'code_expiry_time' => $result['code_expiry_time'],
+                ];
+            }
+
             return sendResponse(
                 status: true,
                 message: __('auth.manufacturer.pending'),
-                data: null,
+                data: $verificationData,
                 statusCode: HttpStatus::HTTP_CREATED,
                 additional: [
                     'manufacture_status' => UserManuFactureStatus::PENDING->value,

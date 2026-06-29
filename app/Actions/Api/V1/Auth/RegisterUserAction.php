@@ -94,10 +94,18 @@ class RegisterUserAction
             Company::query()->create($informationPayload);
 
             if ($role === UserRole::MANUFACTURER->value) {
-                return [
+                $manufacturerResult = [
                     'user' => $user->fresh(['company', 'factoryImages']),
                     'manufacturer_pending' => true,
                 ];
+
+                if ($this->platformSettings->requiresEmailVerification()) {
+                    $challenge = $this->emailVerificationService->sendChallenge($user);
+                    $manufacturerResult['verification_token'] = $challenge['verification_token'];
+                    $manufacturerResult['code_expiry_time'] = $challenge['code_expiry_time'];
+                }
+
+                return $manufacturerResult;
             }
 
 
