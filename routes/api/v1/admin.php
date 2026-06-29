@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\Admin\HelpCenterCategoryController;
 use App\Http\Controllers\Api\V1\Admin\ManufacturerAdminMessageController;
 use App\Http\Controllers\Api\V1\Admin\ManufacturerAdditionalInformationController;
 use App\Http\Controllers\Api\V1\Admin\ManufacturerController;
+use App\Http\Controllers\Api\V1\Admin\ManufacturerSupportTicketController;
 use App\Http\Controllers\Api\V1\Admin\OrderController;
 use App\Http\Controllers\Api\V1\Admin\PlanController;
 use App\Http\Controllers\Api\V1\Admin\Product\AdminProductController;
@@ -89,6 +90,7 @@ Route::controller(ManufacturerController::class)->prefix('manufacturer')->group(
         });
 
     Route::post('/{manufacturer}/send-message', [ManufacturerAdminMessageController::class, 'store']);
+    Route::post('/{manufacturer}/support-tickets', [ManufacturerSupportTicketController::class, 'store']);
 });
 
 Route::get(

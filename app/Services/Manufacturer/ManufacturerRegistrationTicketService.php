@@ -24,6 +24,8 @@ class ManufacturerRegistrationTicketService
         TicketDepartmentType $department = TicketDepartmentType::Account,
         TicketStatus $status = TicketStatus::WaitingOnCustomer,
         bool $assignToAdmin = true,
+        TicketPriority $priority = TicketPriority::Medium,
+        array $attachments = [],
     ): Ticket {
         return DB::transaction(function () use (
             $manufacturer,
@@ -33,12 +35,14 @@ class ManufacturerRegistrationTicketService
             $department,
             $status,
             $assignToAdmin,
+            $priority,
+            $attachments,
         ): Ticket {
             $ticket = Ticket::query()->create([
                 'user_id' => $manufacturer->id,
                 'subject' => $subject,
                 'department_type' => $department->value,
-                'priority' => TicketPriority::Medium->value,
+                'priority' => $priority->value,
                 'status' => $status->value,
                 'assigned_to' => $assignToAdmin ? $admin->id : null,
             ]);
@@ -47,9 +51,10 @@ class ManufacturerRegistrationTicketService
                 $ticket,
                 $admin,
                 $message,
+                $attachments,
             );
 
-            return $ticket->load(['user', 'assignee']);
+            return $ticket->load(['user', 'assignee', 'messages']);
         });
     }
 }
