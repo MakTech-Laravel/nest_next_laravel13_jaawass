@@ -32,6 +32,16 @@ return [
 
     'password_reset_invalid_otp' => 'The password reset code is invalid or has expired.',
 
+    'email_verification_sent' => 'A verification code has been sent to your email address.',
+
+    'email_verification_resend_wait' => 'Please wait before requesting a new verification code.',
+
+    'email_verification_invalid_otp' => 'The verification code is invalid or has expired.',
+
+    'email_verification_token_invalid' => 'The verification session is invalid or has expired.',
+
+    'email_verification_already_verified' => 'This email address is already verified.',
+
     'password_changed' => 'Your password has been changed successfully.',
 
     'two_factor' => [

@@ -16,6 +16,12 @@ return [
         'expires' => 'This code expires in :minutes minutes.',
     ],
 
+    'email_verification' => [
+        'subject' => 'Your email verification code',
+        'intro' => 'Use the code below to verify your email address.',
+        'expires' => 'This code expires at :time.',
+    ],
+
     'welcome' => [
         'subject' => 'Welcome to SourceNest',
         'preheader' => 'Your SourceNest account is ready. Start exploring suppliers today.',

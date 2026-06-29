@@ -16,4 +16,6 @@ return [
 
     'email_verification_token_ttl_minutes' => (int) env('EMAIL_VERIFICATION_TOKEN_TTL_MINUTES', 5),
 
+    'email_verification_resend_seconds' => (int) env('EMAIL_VERIFICATION_RESEND_SECONDS', 60),
+
 ];

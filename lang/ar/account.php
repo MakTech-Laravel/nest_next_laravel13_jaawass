@@ -32,6 +32,16 @@ return [
 
     'password_reset_invalid_otp' => 'رمز إعادة تعيين كلمة المرور غير صالح أو منتهي الصلاحية.',
 
+    'email_verification_sent' => 'تم إرسال رمز التحقق إلى عنوان بريدك الإلكتروني.',
+
+    'email_verification_resend_wait' => 'يرجى الانتظار قبل طلب رمز تحقق جديد.',
+
+    'email_verification_invalid_otp' => 'رمز التحقق غير صالح أو منتهي الصلاحية.',
+
+    'email_verification_token_invalid' => 'جلسة التحقق غير صالحة أو منتهية الصلاحية.',
+
+    'email_verification_already_verified' => 'تم التحقق من عنوان البريد الإلكتروني هذا بالفعل.',
+
     'password_changed' => 'تم تغيير كلمة المرور بنجاح.',
 
     'two_factor' => [

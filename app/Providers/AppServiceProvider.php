@@ -102,6 +102,22 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(10)->by($throttleKey);
         });
 
+        RateLimiter::for('api-email-verification-resend', function (Request $request) {
+            $throttleKey = Str::transliterate(
+                (string) $request->input('verification_token').'|'.$request->ip()
+            );
+
+            return Limit::perMinute(5)->by($throttleKey);
+        });
+
+        RateLimiter::for('api-email-verification-verify', function (Request $request) {
+            $throttleKey = Str::transliterate(
+                (string) $request->input('verification_token').'|'.$request->ip()
+            );
+
+            return Limit::perMinute(10)->by($throttleKey);
+        });
+
         RateLimiter::for('currency-admin', function (Request $request) {
             return Limit::perMinute(60)->by((string) $request->user()?->getAuthIdentifier().'|'.$request->ip());
         });

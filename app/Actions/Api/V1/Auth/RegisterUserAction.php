@@ -10,14 +10,13 @@ use App\Http\Requests\Api\V1\Register\BuyerRegisterRequest;
 use App\Http\Requests\Api\V1\Register\ManufacturerRegisterRequest;
 use App\Models\Company;
 use App\Models\User;
+use App\Services\Auth\EmailVerificationService;
 use App\Services\Mailing\MailingService;
 use App\Services\Platform\PlatformSettingsService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Str;
 
 class RegisterUserAction
 {
@@ -26,6 +25,7 @@ class RegisterUserAction
         protected IssuePersonalAccessTokenAction $issuePersonalAccessTokenAction,
         protected MailingService $mailingService,
         private readonly PlatformSettingsService $platformSettings,
+        private readonly EmailVerificationService $emailVerificationService,
     ) {}
 
     public function handle(Request $request): array
@@ -101,25 +101,13 @@ class RegisterUserAction
             }
 
 
-            // if email verification is required, send otp to user's email
             if ($this->platformSettings->requiresEmailVerification()) {
-                 $plainToken = (string) Str::uuid();
-                 $otp = (string) random_int(100000, 999999);
-
-                Cache::put('email_verification:'.$plainToken, [
-                    'user_id' => $user->id,
-                    'otp' => encrypt($otp),
-                ], now()->addMinutes(config('account.email_verification_token_ttl_minutes')));
-
-                $this->mailingService->send($user->email, MailTemplate::EmailVerification, [    
-                    'otp' => $otp,
-                    "expires_at" => now()->addMinutes(config('account.email_verification_token_ttl_minutes')),
-                ]);
+                $challenge = $this->emailVerificationService->sendChallenge($user);
 
                 return [
                     'user' => $user->fresh(['company', 'factoryImages']),
-                    'verification_token' => $plainToken,
-                    "code_expiry_time" => config('account.email_verification_token_ttl_minutes'),
+                    'verification_token' => $challenge['verification_token'],
+                    'code_expiry_time' => $challenge['code_expiry_time'],
                 ];
             }
 

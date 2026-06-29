@@ -10,6 +10,8 @@ return [
 
     'email_verification_required' => 'يرجى التحقق من عنوان بريدك الإلكتروني قبل الوصول إلى هذه الميزة.',
 
+    'email_verification_successful' => 'تم التحقق من عنوان بريدك الإلكتروني بنجاح.',
+
     'logout_successful' => 'تم تسجيل الخروج بنجاح',
 
     'validation_error' => 'خطأ في التحقق من البيانات.',

@@ -11,10 +11,14 @@ use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
+use App\Http\Requests\Api\V1\ResendEmailVerificationRequest;
 use App\Http\Requests\Api\V1\ResetPasswordRequest;
 use App\Http\Requests\Api\V1\TwoFactor\TwoFactorChallengeRequest;
+use App\Http\Requests\Api\V1\VerifyEmailRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Enums\MailTemplate;
+use App\Exceptions\Auth\EmailVerificationException;
+use App\Services\Auth\EmailVerificationService;
 use App\Services\Mailing\MailingService;
 use App\Models\User;
 use App\Services\ManufacturerAccountGate;
@@ -81,6 +85,67 @@ class AuthController extends Controller
                 'user' => new UserResource($user),
             ],
             statusCode: HttpStatus::HTTP_CREATED
+        );
+    }
+
+    public function verifyEmail(
+        VerifyEmailRequest $request,
+        EmailVerificationService $emailVerificationService,
+        IssuePersonalAccessTokenAction $issuePersonalAccessTokenAction,
+    ): JsonResponse {
+        try {
+            $validated = $request->validated();
+            $user = $emailVerificationService->verify(
+                $validated['verification_token'],
+                $validated['otp'],
+            );
+        } catch (EmailVerificationException $exception) {
+            return sendResponse(
+                status: false,
+                message: $exception->getMessage(),
+                data: $exception->data,
+                statusCode: $exception->httpStatus,
+            );
+        }
+
+        $user = ManufacturerProfileRelations::load(
+            $user->loadMissing(['company', 'factoryImages', 'preferredCurrency'])
+        );
+
+        $accessToken = $issuePersonalAccessTokenAction->handle($user, $validated['device_name'] ?? null);
+
+        return sendResponse(
+            status: true,
+            message: __('api.email_verification_successful'),
+            data: [
+                'token_type' => 'Bearer',
+                'access_token' => $accessToken,
+                'user' => new UserResource($user),
+            ],
+            statusCode: HttpStatus::HTTP_OK,
+        );
+    }
+
+    public function resendEmailVerification(
+        ResendEmailVerificationRequest $request,
+        EmailVerificationService $emailVerificationService,
+    ): JsonResponse {
+        try {
+            $result = $emailVerificationService->resend($request->validated('verification_token'));
+        } catch (EmailVerificationException $exception) {
+            return sendResponse(
+                status: false,
+                message: $exception->getMessage(),
+                data: $exception->data,
+                statusCode: $exception->httpStatus,
+            );
+        }
+
+        return sendResponse(
+            status: true,
+            message: __('account.email_verification_sent'),
+            data: $result,
+            statusCode: HttpStatus::HTTP_OK,
         );
     }
 

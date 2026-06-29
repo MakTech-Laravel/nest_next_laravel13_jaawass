@@ -32,6 +32,16 @@ return [
 
     'password_reset_invalid_otp' => 'El código de restablecimiento de contraseña no es válido o ha caducado.',
 
+    'email_verification_sent' => 'Se ha enviado un código de verificación a su correo electrónico.',
+
+    'email_verification_resend_wait' => 'Espere antes de solicitar un nuevo código de verificación.',
+
+    'email_verification_invalid_otp' => 'El código de verificación no es válido o ha caducado.',
+
+    'email_verification_token_invalid' => 'La sesión de verificación no es válida o ha caducado.',
+
+    'email_verification_already_verified' => 'Esta dirección de correo electrónico ya está verificada.',
+
     'password_changed' => 'Tu contraseña se ha cambiado correctamente.',
 
     'two_factor' => [
