@@ -49,6 +49,15 @@ class DatabaseSeeder extends Seeder
             HelpCenterCategorySeeder::class,
             HelpCenterArticleSeeder::class, // requires help center categories
 
+            // ── Legal pages ─────────────────────────────────────────────────
+            LegalPageSeeder::class,
+
+            // ── About page ──────────────────────────────────────────────────
+            AboutPageSeeder::class,
+
+            // ── Social media links ──────────────────────────────────────────
+            SocialMediaLinkSeeder::class,
+
             // ── Derived / backfill data ─────────────────────────────────────
             DashboardEventBackfillSeeder::class, // backfills events from existing RFQs, orders, etc.
             ManufacturerAnalyticsDemoSeeder::class, // product views + RFQs for analytics/products API
