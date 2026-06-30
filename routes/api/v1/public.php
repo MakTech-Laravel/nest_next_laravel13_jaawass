@@ -13,6 +13,9 @@ use App\Http\Controllers\Api\V1\Admin\PromotionController;
 use App\Http\Controllers\Api\V1\Admin\ShippinMethodController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CurrencyController;
+use App\Http\Controllers\Api\V1\AboutPageController;
+use App\Http\Controllers\Api\V1\LegalPageController;
+use App\Http\Controllers\Api\V1\SocialMediaLinkController;
 use App\Http\Controllers\Api\V1\ProductController;
 use App\Http\Controllers\Api\V1\PublicSupplierController;
 use App\Http\Controllers\Api\V1\QuickFilterController;
@@ -143,3 +146,12 @@ Route::controller(HelpCenterArticleController::class)->prefix('help-center-artic
 Route::controller(ContactController::class)->prefix('contact')->group(function () {
     Route::post('/', 'store');
 });
+
+Route::controller(LegalPageController::class)->prefix('legal-pages')->group(function () {
+    Route::get('/', 'index');
+    Route::get('/{slug}', 'show');
+});
+
+Route::get('/about-page', [AboutPageController::class, 'show']);
+
+Route::get('/social-media-links', [SocialMediaLinkController::class, 'index']);

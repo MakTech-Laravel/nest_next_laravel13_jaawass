@@ -18,6 +18,9 @@ use App\Http\Controllers\Api\V1\Admin\FaqController;
 use App\Http\Controllers\Api\V1\Admin\FeatureController;
 use App\Http\Controllers\Api\V1\Admin\HelpCenterArticleController;
 use App\Http\Controllers\Api\V1\Admin\HelpCenterCategoryController;
+use App\Http\Controllers\Api\V1\Admin\AboutPageAdminController;
+use App\Http\Controllers\Api\V1\Admin\LegalPageAdminController;
+use App\Http\Controllers\Api\V1\Admin\SocialMediaLinkAdminController;
 use App\Http\Controllers\Api\V1\Admin\ManufacturerAdminMessageController;
 use App\Http\Controllers\Api\V1\Admin\ManufacturerAdditionalInformationController;
 use App\Http\Controllers\Api\V1\Admin\ManufacturerController;
@@ -306,6 +309,25 @@ Route::prefix('help-center')->group(function (): void {
         Route::put('/{id}/position', 'updatePosition');
         Route::delete('/{id}', 'destroy');
     });
+});
+
+Route::prefix('legal-pages')->controller(LegalPageAdminController::class)->group(function (): void {
+    Route::get('/', 'index');
+    Route::get('/{legalPage}', 'show');
+    Route::put('/{legalPage}/content', 'updateContent');
+});
+
+Route::prefix('about-page')->controller(AboutPageAdminController::class)->group(function (): void {
+    Route::get('/', 'show');
+    Route::put('/', 'update');
+});
+
+Route::prefix('social-media-links')->controller(SocialMediaLinkAdminController::class)->group(function (): void {
+    Route::get('/', 'index');
+    Route::post('/', 'store');
+    Route::put('/sync', 'sync');
+    Route::put('/{socialMediaLink}', 'update');
+    Route::delete('/{socialMediaLink}', 'destroy');
 });
 
 Route::controller(OrderController::class)->prefix('orders')->group(function (): void {
