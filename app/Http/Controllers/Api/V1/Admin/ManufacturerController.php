@@ -246,7 +246,7 @@ class ManufacturerController extends Controller
 
         $manufacturer->update([
             'manufacture_status' => $validated['manufacture_status'],
-            'manufacture_status_reason' => $validated['manufacture_status_reasonreason'] ?? null,
+            'manufacture_status_reason' => $validated['manufacture_status_reason'] ?? null,
             'manufacture_status_at' => now(),
         ]);
 

@@ -8,6 +8,7 @@ enum MailTemplate: string
     case PasswordResetOtp = 'password-reset-otp';
     case AccountRestoreOtp = 'account-restore-otp';
     case ManufacturerAdditionalInformation = 'manufacturer-additional-information';
+    case AdminManufacturerAdditionalInformationResponse = 'admin-manufacturer-additional-information-response';
     case ManufacturerAdminMessage = 'manufacturer-admin-message';
     case SupplierReportReceived = 'supplier-report-received';
     case SupplierReportStatusUpdated = 'supplier-report-status-updated';

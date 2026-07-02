@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\Admin\IndexAllManufacturerAdditionalInformationRequest;
+use App\Http\Requests\Api\V1\Admin\ReviewManufacturerAdditionalInformationRequest;
 use App\Http\Requests\Api\V1\Admin\StoreManufacturerAdditionalInformationRequest;
 use App\Http\Resources\Api\V1\ManufacturerAdditionalInformationRequestResource;
 use App\Models\ManufacturerAdditionalInformationRequest;
@@ -15,6 +17,18 @@ class ManufacturerAdditionalInformationController extends Controller
     public function __construct(
         private readonly ManufacturerAdditionalInformationService $service,
     ) {}
+
+    public function listAll(IndexAllManufacturerAdditionalInformationRequest $request)
+    {
+        $records = $this->service->paginateForAdmin($request);
+
+        return sendResponse(
+            status: true,
+            message: __('common.success'),
+            data: ManufacturerAdditionalInformationRequestResource::collection($records),
+            statusCode: HttpStatus::HTTP_OK,
+        );
+    }
 
     public function index(int $manufacturer)
     {
@@ -87,7 +101,7 @@ class ManufacturerAdditionalInformationController extends Controller
     public function show(int $informationRequest)
     {
         $record = ManufacturerAdditionalInformationRequest::query()
-            ->with(['requestedBy', 'responses', 'manufacturer.company'])
+            ->with(['requestedBy', 'reviewedBy', 'responses', 'manufacturer.company'])
             ->find($informationRequest);
 
         if ($record === null) {
@@ -103,6 +117,43 @@ class ManufacturerAdditionalInformationController extends Controller
             status: true,
             message: __('common.success'),
             data: new ManufacturerAdditionalInformationRequestResource($record),
+            statusCode: HttpStatus::HTTP_OK,
+        );
+    }
+
+    public function review(
+        ReviewManufacturerAdditionalInformationRequest $request,
+        int $informationRequest,
+    ) {
+        $record = ManufacturerAdditionalInformationRequest::query()
+            ->with(['manufacturer.company'])
+            ->find($informationRequest);
+
+        if ($record === null) {
+            return sendResponse(
+                status: false,
+                message: __('common.not_found'),
+                data: [],
+                statusCode: HttpStatus::HTTP_NOT_FOUND,
+            );
+        }
+
+        $reviewed = $this->service->reviewSubmission(
+            request: $record,
+            admin: $request->user(),
+            action: $request->action(),
+            notes: $request->notes(),
+            reason: $request->reason(),
+        );
+
+        $message = $request->action() === 'accept'
+            ? __('manufacturer_additional_information.accepted')
+            : __('manufacturer_additional_information.rejected');
+
+        return sendResponse(
+            status: true,
+            message: $message,
+            data: new ManufacturerAdditionalInformationRequestResource($reviewed),
             statusCode: HttpStatus::HTTP_OK,
         );
     }

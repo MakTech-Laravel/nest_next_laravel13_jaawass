@@ -55,6 +55,11 @@ return [
       'subject' => 'mail.manufacturer_additional_information.subject',
       'markdown' => false,
     ],
+    'admin-manufacturer-additional-information-response' => [
+      'view' => 'mail.admin-manufacturer-additional-information-response',
+      'subject' => 'mail.admin_manufacturer_additional_information_response.subject',
+      'markdown' => false,
+    ],
     'manufacturer-admin-message' => [
       'view' => 'mail.manufacturer-admin-message',
       'subject' => 'mail.manufacturer_admin_message.subject',
