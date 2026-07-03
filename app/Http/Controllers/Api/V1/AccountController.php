@@ -13,6 +13,7 @@ use App\Http\Requests\Api\V1\Account\RestoreDeleteVerifyRequest;
 use App\Http\Resources\Api\V1\UserLoginHistoryResource;
 use App\Enums\MailTemplate;
 use App\Services\Mailing\MailingService;
+use App\Support\Mail\MailNotificationHelper;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -146,7 +147,15 @@ class AccountController extends Controller
         $cacheKey = $this->restoreOtpCacheKey($user->id);
         Cache::put($cacheKey, Hash::make($otp), now()->addMinutes(config('account.restore_otp_ttl_minutes')));
 
-        $mailingService->send($user->email, MailTemplate::AccountRestoreOtp, ['otp' => $otp]);
+        $mailingService->send(
+            $user->email,
+            MailTemplate::AccountRestoreOtp,
+            MailNotificationHelper::otpMailPayload(
+                $otp,
+                'mail.account_restore_otp',
+                __('mail.account_restore_otp.expires', ['minutes' => config('account.restore_otp_ttl_minutes')]),
+            ),
+        );
 
         $resendSeconds = config('account.restore_otp_resend_seconds');
         $availableAt = now()->addSeconds($resendSeconds);

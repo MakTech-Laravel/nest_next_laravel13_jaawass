@@ -15,6 +15,7 @@ class RfqSubmissionService
 {
     public function __construct(
         private readonly BuyerFacingProductVisibility $buyerFacingProductVisibility,
+        private readonly \App\Services\Rfq\RfqNotificationService $rfqNotificationService,
     ) {}
 
     /**
@@ -73,11 +74,15 @@ class RfqSubmissionService
                 ->whereKey($product->id)
                 ->increment('inquiry_count');
 
-            return $rfq->load([
+            $loaded = $rfq->load([
                 'product',
                 'manufacturer.company',
                 'conversation',
             ]);
+
+            $this->rfqNotificationService->notifyCreated($loaded);
+
+            return $loaded;
         });
     }
 

@@ -3,18 +3,23 @@
 declare(strict_types=1);
 
 use App\Enums\RfqSubmissionStatus;
+use App\Jobs\SendMailJob;
+use App\Jobs\Support\SendSupportTicketInAppNotificationJob;
 use App\Models\Conversation;
 use App\Models\Product;
 use App\Models\RfqSubmission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Queue::fake([SendMailJob::class, SendSupportTicketInAppNotificationJob::class]);
+
     app(ClientRepository::class)->createPersonalAccessGrantClient(
         name: 'Test Personal Access Client',
         provider: config('auth.guards.api.provider')

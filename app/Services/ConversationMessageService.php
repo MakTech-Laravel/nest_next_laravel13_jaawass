@@ -22,6 +22,7 @@ final class ConversationMessageService
     public function __construct(
         private readonly RealtimeBroadcastDispatcher $realtimeBroadcastDispatcher,
         private readonly EventTrackerService $eventTracker,
+        private readonly \App\Services\Conversation\ConversationNotificationService $conversationNotificationService,
     ) {}
 
     /**
@@ -58,6 +59,15 @@ final class ConversationMessageService
             );
 
             $this->realtimeBroadcastDispatcher->queue(new MessageSent($message));
+
+            if ($counterparty !== null) {
+                $this->conversationNotificationService->notifyMessageReceived(
+                    $message,
+                    $conversation,
+                    $sender,
+                    $counterparty,
+                );
+            }
 
             return $message;
         });

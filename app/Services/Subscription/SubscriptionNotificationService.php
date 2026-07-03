@@ -9,6 +9,7 @@ use App\Jobs\Subscription\SendSubscriptionInAppNotificationJob;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Services\Mailing\MailingService;
+use Illuminate\Support\Facades\Lang;
 
 class SubscriptionNotificationService
 {
@@ -31,13 +32,17 @@ class SubscriptionNotificationService
         $this->mailingService->send(
             $manufacturer->email,
             MailTemplate::SubscriptionExpiryReminder,
-            [
+            $this->transactionalMail('mail.subscription_expiry_reminder', [
                 'manufacturerName' => $this->displayName($manufacturer),
                 'planName' => $subscription->plan?->name ?? __('subscription.plan'),
                 'endsAt' => $subscription->ends_at?->format('F j, Y') ?? '',
                 'daysRemaining' => $daysRemaining,
                 'plansUrl' => $plansUrl,
-            ],
+            ], [
+                'plan' => $subscription->plan?->name ?? __('subscription.plan'),
+                'days' => $daysRemaining,
+                'date' => $subscription->ends_at?->format('F j, Y') ?? '',
+            ]),
         );
 
         $this->dispatchInAppNotification(
@@ -71,12 +76,15 @@ class SubscriptionNotificationService
         $this->mailingService->send(
             $manufacturer->email,
             MailTemplate::SubscriptionExpired,
-            [
+            $this->transactionalMail('mail.subscription_expired', [
                 'manufacturerName' => $this->displayName($manufacturer),
                 'planName' => $subscription->plan?->name ?? __('subscription.plan'),
                 'endedAt' => $subscription->ends_at?->format('F j, Y') ?? '',
                 'plansUrl' => $plansUrl,
-            ],
+            ], [
+                'plan' => $subscription->plan?->name ?? __('subscription.plan'),
+                'date' => $subscription->ends_at?->format('F j, Y') ?? '',
+            ]),
         );
 
         $this->dispatchInAppNotification(
@@ -107,7 +115,11 @@ class SubscriptionNotificationService
         $this->mailingService->send(
             $manufacturer->email,
             MailTemplate::SubscriptionCreated,
-            $this->enrollmentMailData($subscription, $paidAmount),
+            $this->transactionalMail(
+                'mail.subscription_created',
+                $this->enrollmentMailData($subscription, $paidAmount),
+                ['plan' => $subscription->plan?->name ?? __('subscription.plan')],
+            ),
         );
 
         $this->dispatchInAppNotification(
@@ -138,7 +150,11 @@ class SubscriptionNotificationService
         $this->mailingService->send(
             $manufacturer->email,
             MailTemplate::SubscriptionRenewed,
-            $this->enrollmentMailData($subscription, $paidAmount),
+            $this->transactionalMail(
+                'mail.subscription_renewed',
+                $this->enrollmentMailData($subscription, $paidAmount),
+                ['plan' => $subscription->plan?->name ?? __('subscription.plan')],
+            ),
         );
 
         $this->dispatchInAppNotification(
@@ -176,6 +192,37 @@ class SubscriptionNotificationService
             $data,
             $actionUrl,
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $base
+     * @param  array<string, mixed>  $replacements
+     * @return array<string, mixed>
+     */
+    private function transactionalMail(string $prefix, array $base, array $replacements = []): array
+    {
+        $name = $base['manufacturerName'] ?? 'there';
+        $plan = $base['planName'] ?? __('subscription.plan');
+        $merge = array_merge(['name' => $name, 'plan' => $plan], $replacements);
+
+        return array_merge($base, [
+            'preheader' => __($prefix.'.preheader', $merge),
+            'headerEyebrow' => __('mail.layout.default_eyebrow'),
+            'headerTitle' => __($prefix.'.subject', $merge),
+            'headerSubtitle' => $plan,
+            'intro' => __($prefix.'.intro', $merge),
+            'extraBody' => Lang::has($prefix.'.body') ? __($prefix.'.body', $merge) : null,
+            'detailsHeading' => Lang::has($prefix.'.details_heading') ? __($prefix.'.details_heading', $merge) : null,
+            'details' => Lang::has($prefix.'.details_heading') ? array_filter([
+                __('mail.subscription_created.billing_interval') => $base['billingInterval'] ?? null,
+                __('mail.subscription_created.starts_at') => $base['startsAt'] ?? null,
+                __('mail.subscription_created.ends_at') => $base['endsAt'] ?? null,
+                __('mail.subscription_created.paid_amount') => $base['paidAmount'] ?? null,
+            ]) : [],
+            'ctaUrl' => $base['plansUrl'] ?? $this->plansUrl(),
+            'ctaLabel' => __($prefix.'.cta'),
+            'footerNote' => __($prefix.'.footer'),
+        ]);
     }
 
     /**

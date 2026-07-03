@@ -27,7 +27,12 @@ class AccountRestoreOtpMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.account-restore-otp',
+            view: 'mail.otp',
+            with: [
+                'otp' => $this->otp,
+                'intro' => __('mail.account_restore_otp.intro'),
+                'headerTitle' => __('mail.account_restore_otp.title'),
+            ],
         );
     }
 

@@ -54,6 +54,7 @@ class AdminPlatformSettingsController extends Controller
                 'from_name' => $settings['email']['from_name'] ?? config('mail.from.name'),
                 'from_email' => $settings['email']['from_email'] ?? config('mail.from.address'),
                 'platform_name' => $settings['general']['platform_name'] ?? config('app.name'),
+                'platform' => $settings['general']['platform_name'] ?? config('app.name'),
             ],
         ));
 

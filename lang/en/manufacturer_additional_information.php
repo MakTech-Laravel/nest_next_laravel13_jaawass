@@ -18,4 +18,12 @@ return [
     'file_too_large' => 'The uploaded file is too large.',
     'invalid_file_type' => 'The uploaded file type is not allowed.',
 
+    'admin_notification_title' => 'Manufacturer submitted additional information',
+    'admin_notification_body' => ':company submitted the requested information for reference :reference.',
+
+    'not_reviewable' => 'Only submitted requests can be reviewed.',
+    'rejection_reason_required' => 'A rejection reason is required.',
+    'accepted' => 'Verification request accepted and manufacturer approved.',
+    'rejected' => 'Verification request rejected.',
+
 ];

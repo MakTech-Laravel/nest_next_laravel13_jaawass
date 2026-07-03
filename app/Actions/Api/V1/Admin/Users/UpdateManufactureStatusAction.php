@@ -4,9 +4,14 @@ namespace App\Actions\Api\V1\Admin\Users;
 
 use App\Enums\UserManuFactureStatus;
 use App\Models\User;
+use App\Services\Manufacturer\ManufacturerStatusNotificationService;
 
 class UpdateManufactureStatusAction
 {
+    public function __construct(
+        private readonly ManufacturerStatusNotificationService $statusNotificationService,
+    ) {}
+
     public function handle(User $user, UserManuFactureStatus $status, ?string $reason): User
     {
         $user->update([
@@ -16,6 +21,12 @@ class UpdateManufactureStatusAction
             'status' => $user->resolvedStatusAfterManufactureReview($status),
         ]);
 
-        return $user->refresh()->load(['company', 'factoryImages']);
+        $fresh = $user->refresh()->load(['company', 'factoryImages']);
+
+        if ($status === UserManuFactureStatus::APPROVED || $status->isRejected()) {
+            $this->statusNotificationService->notifyStatusChanged($fresh, $status, $reason);
+        }
+
+        return $fresh;
     }
 }

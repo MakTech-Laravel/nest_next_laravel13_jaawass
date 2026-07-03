@@ -6,6 +6,7 @@ use App\Enums\MailTemplate;
 use App\Exceptions\Auth\EmailVerificationException;
 use App\Models\User;
 use App\Services\Mailing\MailingService;
+use App\Support\Mail\MailNotificationHelper;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -159,10 +160,11 @@ class EmailVerificationService
 
     private function dispatchOtp(string $email, string $otp, int $ttlMinutes): void
     {
-        $this->mailingService->send($email, MailTemplate::EmailVerification, [
-            'otp' => $otp,
-            'expires_at' => now()->addMinutes($ttlMinutes),
-        ]);
+        $this->mailingService->send($email, MailTemplate::EmailVerification, MailNotificationHelper::otpMailPayload(
+            $otp,
+            'mail.email_verification',
+            __('mail.email_verification.expires', ['time' => now()->addMinutes($ttlMinutes)->format('g:i A')]),
+        ));
     }
 
     private function forgetChallenge(string $verificationToken, int $userId): void

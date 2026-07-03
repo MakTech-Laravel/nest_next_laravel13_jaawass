@@ -11,6 +11,10 @@ use Illuminate\Support\Facades\Storage;
 
 class RfqQuoteService
 {
+    public function __construct(
+        private readonly \App\Services\Rfq\RfqNotificationService $rfqNotificationService,
+    ) {}
+
     public function sendQuote(RfqSubmission $rfqSubmission, SendRfqQuoteRequest $request): RfqSubmission
     {
         $validated = $request->validated();
@@ -40,12 +44,16 @@ class RfqQuoteService
         $this->storeAttachments($rfqSubmission, $request->file('photos', []), 'photo');
         $this->storeAttachments($rfqSubmission, $request->file('attachments', []), 'file');
 
-        return $rfqSubmission->fresh([
+        $quoted = $rfqSubmission->fresh([
             'buyer',
             'product',
             'conversation',
             'quoteAttachments',
         ]);
+
+        $this->rfqNotificationService->notifyQuoted($quoted);
+
+        return $quoted;
     }
 
     /**

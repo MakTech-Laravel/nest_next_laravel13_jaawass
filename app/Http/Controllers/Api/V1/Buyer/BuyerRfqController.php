@@ -13,6 +13,7 @@ use App\Models\Product;
 use App\Models\RfqSubmission;
 use App\Services\Dashboard\EventTrackerService;
 use App\Services\Buyer\RfqSubmissionService;
+use App\Services\Rfq\RfqNotificationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ class BuyerRfqController extends Controller
     public function __construct(
         private readonly RfqSubmissionService $rfqSubmissionService,
         private readonly EventTrackerService $eventTracker,
+        private readonly RfqNotificationService $rfqNotificationService,
     ) {}
 
     public function store(StoreRfqSubmissionRequest $request): JsonResponse
@@ -134,10 +136,13 @@ class BuyerRfqController extends Controller
             'status' => (string) $request->validated('status'),
         ])->save();
 
+        $fresh = $rfqSubmission->fresh(['buyer', 'manufacturer.company', 'product']);
+        $this->rfqNotificationService->notifyStatusUpdated($fresh, $request->user());
+
         return sendResponse(
             status: true,
             message: __('api.rfq_status_updated_successfully'),
-            data: new RfqSubmissionResource($rfqSubmission),
+            data: new RfqSubmissionResource($fresh),
             statusCode: HttpStatus::HTTP_OK
         );
     }
@@ -208,10 +213,13 @@ class BuyerRfqController extends Controller
             'buyer_action_at' => now(),
         ])->save();
 
+        $fresh = $rfqSubmission->fresh(['product', 'manufacturer.company', 'conversation']);
+        $this->rfqNotificationService->notifyStatusUpdated($fresh, $request->user());
+
         return sendResponse(
             status: true,
             message: __('api.rfq_quote_response_saved_successfully'),
-            data: new RfqSubmissionResource($rfqSubmission->fresh(['product', 'manufacturer.company', 'conversation'])),
+            data: new RfqSubmissionResource($fresh),
             statusCode: HttpStatus::HTTP_OK
         );
     }
