@@ -414,5 +414,11 @@ return [
         'notification_title' => 'Application not approved',
         'notification_body' => 'Your manufacturer application was not approved.',
     ],
+    
+    "email_verification" => [
+        "title" => "Verify your email address",
+        "intro" => "Use the code below to verify your email address.",
+        "expires" => "This code expires at :time.",
+    ]
 
 ];
