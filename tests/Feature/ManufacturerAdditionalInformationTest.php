@@ -20,6 +20,8 @@ use Tests\TestCase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    Queue::fake([SendMailJob::class, SendSupportTicketInAppNotificationJob::class]);
+
     app(ClientRepository::class)->createPersonalAccessGrantClient(
         name: 'Test Personal Access Client',
         provider: config('auth.guards.api.provider')

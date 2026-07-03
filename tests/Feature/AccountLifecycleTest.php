@@ -1,13 +1,14 @@
 <?php
 
+use App\Enums\MailTemplate;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
-use App\Mail\AccountRestoreOtpMail;
+use App\Jobs\SendMailJob;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Passport\ClientRepository;
 use Tests\TestCase;
 
@@ -50,7 +51,7 @@ test('buyer can schedule deletion and login is blocked during grace with restore
 
     $user->refresh();
     expect($user->deleted_at)->not->toBeNull();
-    expect($user->status)->toBe(UserStatus::ScheduledDeletion);
+    expect($user->status)->toBe(UserStatus::SCHEDULED_DELETION);
 
     $this->postJson('/api/v1/login', [
         'email' => $user->email,
@@ -63,7 +64,7 @@ test('buyer can schedule deletion and login is blocked during grace with restore
 });
 
 test('restore delete flow sends otp and clears deleted_at', function () {
-    Mail::fake();
+    Queue::fake([SendMailJob::class]);
 
     $user = User::factory()->create([
         'role' => UserRole::BUYER->value,
@@ -77,15 +78,18 @@ test('restore delete flow sends otp and clears deleted_at', function () {
         'password' => 'password',
     ])->assertOk();
 
-    Mail::assertSent(AccountRestoreOtpMail::class);
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->template === MailTemplate::AccountRestoreOtp->value);
 
     $cacheKey = 'account_restore_otp:'.$user->id;
     $hash = Cache::get($cacheKey);
     expect($hash)->toBeString();
 
     $otp = null;
-    Mail::assertSent(AccountRestoreOtpMail::class, function (AccountRestoreOtpMail $mail) use (&$otp): bool {
-        $otp = $mail->otp;
+    Queue::assertPushed(SendMailJob::class, function (SendMailJob $job) use (&$otp): bool {
+        if ($job->template !== MailTemplate::AccountRestoreOtp->value) {
+            return false;
+        }
+        $otp = $job->data['otp'] ?? null;
 
         return true;
     });
@@ -102,7 +106,7 @@ test('restore delete flow sends otp and clears deleted_at', function () {
 });
 
 test('restore delete otp request returns 429 during resend cooldown then allows after window', function () {
-    Mail::fake();
+    Queue::fake([SendMailJob::class]);
 
     $user = User::factory()->create([
         'role' => UserRole::BUYER->value,
@@ -126,7 +130,7 @@ test('restore delete otp request returns 429 during resend cooldown then allows 
         ->assertJsonPath('data.retry_after_seconds', fn ($v) => is_int($v) && $v >= 0)
         ->assertJsonStructure(['data' => ['available_at']]);
 
-    Mail::assertSentTimes(AccountRestoreOtpMail::class, 1);
+    Queue::assertPushed(SendMailJob::class, 1);
 
     $this->travel(61)->seconds();
 
@@ -135,7 +139,7 @@ test('restore delete otp request returns 429 during resend cooldown then allows 
         'password' => 'password',
     ])->assertOk();
 
-    Mail::assertSentTimes(AccountRestoreOtpMail::class, 2);
+    Queue::assertPushed(SendMailJob::class, 2);
 });
 
 test('finalize scheduled deletions command removes user after grace period', function () {

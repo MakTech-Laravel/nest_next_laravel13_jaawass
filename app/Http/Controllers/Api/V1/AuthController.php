@@ -20,6 +20,7 @@ use App\Enums\MailTemplate;
 use App\Exceptions\Auth\EmailVerificationException;
 use App\Services\Auth\EmailVerificationService;
 use App\Services\Mailing\MailingService;
+use App\Support\Mail\MailNotificationHelper;
 use App\Models\User;
 use App\Services\ManufacturerAccountGate;
 use App\Services\Platform\PlatformSettingsService;
@@ -405,7 +406,15 @@ class AuthController extends Controller
         Cache::put($cacheKey, Hash::make($otp), now()->addMinutes(config('account.password_reset_otp_ttl_minutes')));
 
         Log::info('Sending password reset OTP to email: '.$user->email);
-        $mailingService->send($user->email, MailTemplate::PasswordResetOtp, ['otp' => $otp]);
+        $mailingService->send(
+            $user->email,
+            MailTemplate::PasswordResetOtp,
+            MailNotificationHelper::otpMailPayload(
+                $otp,
+                'mail.password_reset_otp',
+                __('mail.password_reset_otp.expires', ['minutes' => config('account.password_reset_otp_ttl_minutes')]),
+            ),
+        );
 
         $resendSeconds = config('account.password_reset_otp_resend_seconds');
         $availableAt = now()->addSeconds($resendSeconds);

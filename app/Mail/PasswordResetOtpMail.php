@@ -27,7 +27,12 @@ class PasswordResetOtpMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.password-reset-otp',
+            view: 'mail.otp',
+            with: [
+                'otp' => $this->otp,
+                'intro' => __('mail.password_reset_otp.intro'),
+                'headerTitle' => __('mail.password_reset_otp.title'),
+            ],
         );
     }
 

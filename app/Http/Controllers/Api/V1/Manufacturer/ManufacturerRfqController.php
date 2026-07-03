@@ -11,6 +11,7 @@ use App\Http\Resources\Api\V1\Manufacturer\RfqSubmissionResource;
 use App\Models\RfqSubmission;
 use App\Services\Dashboard\EventTrackerService;
 use App\Services\Manufacturer\RfqQuoteService;
+use App\Services\Rfq\RfqNotificationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,6 +23,7 @@ class ManufacturerRfqController extends Controller
     public function __construct(
         private readonly RfqQuoteService $rfqQuoteService,
         private readonly EventTrackerService $eventTracker,
+        private readonly RfqNotificationService $rfqNotificationService,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -109,10 +111,13 @@ class ManufacturerRfqController extends Controller
             ],
         );
 
+        $fresh = $rfqSubmission->fresh(['buyer', 'product', 'conversation']);
+        $this->rfqNotificationService->notifyStatusUpdated($fresh, $request->user());
+
         return sendResponse(
             status: true,
             message: __('api.manufacturer_rfq_replied_successfully'),
-            data: new RfqSubmissionResource($rfqSubmission->fresh(['buyer', 'product', 'conversation'])),
+            data: new RfqSubmissionResource($fresh),
             statusCode: HttpStatus::HTTP_OK
         );
     }
