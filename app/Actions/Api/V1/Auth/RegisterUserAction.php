@@ -12,6 +12,7 @@ use App\Models\Company;
 use App\Models\User;
 use App\Services\Auth\EmailVerificationService;
 use App\Services\Mailing\MailingService;
+use App\Services\Manufacturer\ManufacturerRegistrationNotificationService;
 use App\Services\Platform\PlatformSettingsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,7 @@ class RegisterUserAction
         protected MailingService $mailingService,
         private readonly PlatformSettingsService $platformSettings,
         private readonly EmailVerificationService $emailVerificationService,
+        private readonly ManufacturerRegistrationNotificationService $manufacturerRegistrationNotificationService,
     ) {}
 
     public function handle(Request $request): array
@@ -131,6 +133,10 @@ class RegisterUserAction
                 'manufacturer_pending' => false,
             ];
         });
+
+        if ($result['manufacturer_pending'] ?? false) {
+            $this->manufacturerRegistrationNotificationService->notifyAdmins($result['user']);
+        }
 
         return $result;
     }

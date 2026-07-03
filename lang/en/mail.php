@@ -414,11 +414,34 @@ return [
         'notification_title' => 'Application not approved',
         'notification_body' => 'Your manufacturer application was not approved.',
     ],
+
+    'manufacturer_registered_admin' => [
+        'subject' => 'New manufacturer registration: :company',
+        'preheader' => 'A new manufacturer application is waiting for review.',
+        'header_title' => 'New Manufacturer Registration',
+        'header_subtitle' => 'Application review required',
+        'intro' => ':name (:email) registered :company and is awaiting approval.',
+        'message_heading' => 'Application notes',
+        'details_heading' => 'Registration details',
+        'company' => 'Company',
+        'contact' => 'Contact',
+        'email' => 'Email',
+        'country' => 'Country',
+        'city' => 'City',
+        'registered_at' => 'Registered',
+        'cta' => 'Review application',
+        'footer' => 'Admin notification from SourceNest manufacturer review.',
+        'notification_title' => 'New manufacturer registration',
+        'notification_body' => ':company registered by :name is awaiting review.',
+    ],
     
     "email_verification" => [
         "title" => "Verify your email address",
         "intro" => "Use the code below to verify your email address.",
         "expires" => "This code expires at :time.",
+        "footer" => "If you did not request this verification, please ignore this email.",
+        "notification_title" => "Email verification",
+        "notification_body" => "Use the code below to verify your email address.",
     ]
 
 ];

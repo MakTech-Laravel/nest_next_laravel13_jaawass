@@ -12,6 +12,7 @@ use App\Http\Resources\Api\V1\UserResource;
 use App\Models\User;
 use App\Models\UserFactoryImage;
 use App\Models\Company;
+use App\Services\Manufacturer\ManufacturerRegistrationNotificationService;
 use App\Services\ManufacturerAccountGate;
 use App\Support\Manufacturer\ManufacturerProfileRelations;
 use Illuminate\Http\JsonResponse;
@@ -898,6 +899,10 @@ class SocialAuthController extends Controller
 
         // Consume setup token — single use only
         Cache::forget($cacheKey);
+
+        app(ManufacturerRegistrationNotificationService::class)->notifyAdmins(
+            $user->fresh(['company', 'factoryImages']),
+        );
 
         return sendResponse(
             status: true,

@@ -32,6 +32,7 @@ enum MailTemplate: string
     case SupportTicketResolved = 'support-ticket-resolved';
     case ManufacturerApproved = 'manufacturer-approved';
     case ManufacturerRejected = 'manufacturer-rejected';
+    case ManufacturerRegisteredAdmin = 'manufacturer-registered-admin';
 
     public static function tryFromName(string $template): ?self
     {

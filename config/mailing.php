@@ -149,6 +149,11 @@ return [
       'subject' => 'mail.manufacturer_rejected.subject',
       'markdown' => false,
     ],
+    'manufacturer-registered-admin' => [
+      'view' => 'mail.transactional',
+      'subject' => 'mail.manufacturer_registered_admin.subject',
+      'markdown' => false,
+    ],
     'admin-test-email' => [
       'view' => 'mail.admin-test-email',
       'subject' => 'mail.admin_test_email.subject',
