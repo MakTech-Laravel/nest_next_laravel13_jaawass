@@ -23,4 +23,16 @@ class BuyerDashboardController extends Controller
             statusCode: HttpStatus::HTTP_OK
         );
     }
+
+    public function activity(Request $request): JsonResponse
+    {
+        $limit = min(max((int) $request->query('limit', 50), 1), 100);
+
+        return sendResponse(
+            status: true,
+            message: __('api.buyer_dashboard_fetched_successfully'),
+            data: $this->dashboardService->activity($request->user(), $limit),
+            statusCode: HttpStatus::HTTP_OK
+        );
+    }
 }

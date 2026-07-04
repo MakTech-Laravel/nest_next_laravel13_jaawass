@@ -74,13 +74,6 @@ class LegalPageSection extends Model
      */
     public function upsertContentTranslations(array $fields, string $locale): void
     {
-        $sourceLocale = (string) config('translation.source_locale', 'en');
-        $payload = [$locale => $fields];
-
-        if ($locale !== $sourceLocale) {
-            $payload[$sourceLocale] = $fields;
-        }
-
-        $this->upsertTranslations($payload);
+        $this->upsertTranslations([$locale => $fields]);
     }
 }

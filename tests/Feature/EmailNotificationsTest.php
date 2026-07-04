@@ -93,3 +93,31 @@ test('manufacturer approved sends email notification', function () {
     Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->recipient === $manufacturer->email
         && $job->template === MailTemplate::ManufacturerApproved->value);
 });
+
+test('manufacturer registration notifies admins by email and in-app', function () {
+    $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    $manufacturer = User::factory()->create([
+        'role' => UserRole::MANUFACTURER->value,
+        'manufacture_status' => UserManuFactureStatus::PENDING,
+        'first_name' => 'Maker',
+        'last_name' => 'One',
+        'email' => 'new-manufacturer@example.com',
+    ]);
+    $manufacturer->company()->create([
+        'company_name' => 'Factory Co',
+        'country' => 'US',
+        'city' => 'Austin',
+        'notes' => 'Scale-ready factory',
+    ]);
+
+    app(\App\Services\Manufacturer\ManufacturerRegistrationNotificationService::class)
+        ->notifyAdmins($manufacturer->fresh(['company']));
+
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->recipient === $admin->email
+        && $job->template === MailTemplate::ManufacturerRegisteredAdmin->value
+        && str_contains((string) ($job->data['ctaUrl'] ?? ''), 'admin/manufacturer-registrations?manufacturer='.$manufacturer->id));
+
+    Queue::assertPushed(SendSupportTicketInAppNotificationJob::class, fn (SendSupportTicketInAppNotificationJob $job) => $job->recipientId === $admin->id
+        && $job->type === 'manufacturer.registered'
+        && str_contains((string) $job->actionUrl, 'admin/manufacturer-registrations?manufacturer='.$manufacturer->id));
+});

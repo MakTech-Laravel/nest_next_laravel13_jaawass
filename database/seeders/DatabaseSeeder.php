@@ -37,6 +37,8 @@ class DatabaseSeeder extends Seeder
 
             // ── Users & manufacturer profiles ───────────────────────────────
             UserSeeder::class,
+            ArticleCategorySeeder::class, // requires users (for consistency with article seed order)
+            ArticleSeeder::class, // requires users & article categories
             UserNotificationSeeder::class, // requires users
             ManufacturerCompanySeeder::class, // requires users & industries
             ManufacturerSubscriptionSeeder::class, // requires plans (demo manufacturers + subscriptions)

@@ -14,13 +14,13 @@ class LegalPageResource extends JsonResource
     {
         $locale = $request->query('locale') ?? app()->getLocale();
 
-        ['title' => $title] = $this->resource->localizedData($locale);
+        ['title' => $title, 'last_updated_label' => $lastUpdatedLabel] = $this->resource->localizedData($locale);
 
         return [
             'id' => $this->id,
             'slug' => $this->slug,
             'title' => $title,
-            'last_updated' => $this->last_updated_label,
+            'last_updated' => $lastUpdatedLabel,
             'enabled' => $this->enabled,
             'sort' => $this->sort,
             'sections' => LegalPageSectionResource::collection(

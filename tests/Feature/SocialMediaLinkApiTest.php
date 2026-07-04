@@ -78,7 +78,9 @@ test('admin can list create update delete and sync social media links', function
             ],
         ])
         ->assertOk()
-        ->assertJsonCount(1, 'data');
+        ->assertJsonCount(6, 'data');
 
-    expect(SocialMediaLink::query()->count())->toBe(1);
+    expect(SocialMediaLink::query()->count())->toBe(6);
+    expect(SocialMediaLink::query()->where('platform', 'Instagram')->value('url'))
+        ->toBe('https://www.instagram.com/sourcenest1/');
 });

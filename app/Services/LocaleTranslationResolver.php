@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\Localization\LocaleCode;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
@@ -25,15 +26,21 @@ final class LocaleTranslationResolver
     ): ?Model {
         $locale ??= App::getLocale();
         $fallbackLocale ??= (string) config('app.fallback_locale', 'en');
+        $locale = LocaleCode::canonical($locale);
+        $fallbackLocale = LocaleCode::canonical($fallbackLocale);
 
-        $match = $translationRows->firstWhere($localeColumn, $locale);
+        $match = $translationRows->first(
+            fn (Model $row) => LocaleCode::matches((string) $row->getAttribute($localeColumn), $locale)
+        );
 
         if ($match !== null) {
             return $match;
         }
 
         if ($locale !== $fallbackLocale) {
-            return $translationRows->firstWhere($localeColumn, $fallbackLocale);
+            return $translationRows->first(
+                fn (Model $row) => LocaleCode::matches((string) $row->getAttribute($localeColumn), $fallbackLocale)
+            );
         }
 
         return null;

@@ -99,36 +99,24 @@ class SocialMediaLinkAdminController extends Controller
         $links = $request->validated()['links'];
 
         $synced = DB::transaction(function () use ($links) {
-            $keptIds = [];
-
             foreach ($links as $index => $linkData) {
-                $sort = (int) ($linkData['sort'] ?? ($index + 1));
-                $payload = [
+                if (empty($linkData['id'])) {
+                    continue;
+                }
+
+                $link = SocialMediaLink::query()->find($linkData['id']);
+
+                if ($link === null) {
+                    continue;
+                }
+
+                $link->update([
                     'platform' => $linkData['platform'],
                     'icon' => $linkData['icon'],
                     'url' => $linkData['url'],
                     'enabled' => (bool) $linkData['enabled'],
-                    'sort' => $sort,
-                ];
-
-                if (! empty($linkData['id'])) {
-                    $link = SocialMediaLink::query()->find($linkData['id']);
-                    if ($link !== null) {
-                        $link->update($payload);
-                        $keptIds[] = $link->id;
-
-                        continue;
-                    }
-                }
-
-                $link = SocialMediaLink::query()->create($payload);
-                $keptIds[] = $link->id;
-            }
-
-            if ($keptIds !== []) {
-                SocialMediaLink::query()->whereNotIn('id', $keptIds)->delete();
-            } else {
-                SocialMediaLink::query()->delete();
+                    'sort' => (int) ($linkData['sort'] ?? ($index + 1)),
+                ]);
             }
 
             return SocialMediaLink::query()->orderBy('sort')->get();

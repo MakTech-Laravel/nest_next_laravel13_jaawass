@@ -154,6 +154,37 @@ test('manufacturer dashboard computes response time and on-time delivery dynamic
         ->assertJsonPath('data.quick_stats.avg_response_time_seconds', 10800);
 });
 
+test('buyer dashboard activity endpoint returns activities and summary', function (): void {
+    $buyer = User::query()->where('email', 'user@dev.com')->firstOrFail();
+    $manufacturer = User::query()->where('email', 'manufacturer@dev.com')->firstOrFail();
+    $product = createDashboardTestProduct($manufacturer);
+
+    DashboardEvent::query()->create([
+        'actor_user_id' => $buyer->id,
+        'counterparty_user_id' => $manufacturer->id,
+        'role_context' => 'buyer',
+        'event_type' => DashboardEventType::ProductViewed->value,
+        'entity_type' => 'product',
+        'entity_id' => $product->id,
+        'occurred_at' => now(),
+    ]);
+
+    Passport::actingAs($buyer);
+
+    $this->getJson('/api/v1/buyer/dashboard/activity?limit=10')
+        ->assertOk()
+        ->assertJsonPath('success', true)
+        ->assertJsonStructure([
+            'data' => [
+                'activities' => [
+                    ['id', 'type', 'title', 'description', 'link', 'time', 'time_at'],
+                ],
+                'summary' => ['suppliers_contacted', 'rfqs_submitted', 'suppliers_saved'],
+            ],
+        ])
+        ->assertJsonPath('data.activities.0.description', $product->name);
+});
+
 test('buyer dashboard uses tracked product views', function (): void {
     $buyer = User::query()->where('email', 'user@dev.com')->firstOrFail();
     $manufacturer = User::query()->where('email', 'manufacturer@dev.com')->firstOrFail();

@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\Buyer\SupplierReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', [BuyerDashboardController::class, 'overview']);
+Route::get('/dashboard/activity', [BuyerDashboardController::class, 'activity']);
 
 Route::prefix('profile')->controller(BuyerProfileController::class)->group(function () {
     Route::get('/', 'show');

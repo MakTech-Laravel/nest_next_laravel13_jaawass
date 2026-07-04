@@ -8,11 +8,13 @@ use App\Models\Conversation;
 use App\Models\ConversationParticipant;
 use App\Models\DashboardEvent;
 use App\Models\Message;
+use App\Models\Product;
 use App\Models\RfqSubmission;
 use App\Models\SaveSupplier;
 use App\Models\User;
 use App\Services\Supplier\PublicSupplierCatalogService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 class BuyerDashboardService
 {
@@ -36,7 +38,25 @@ class BuyerDashboardService
             'recent_messages' => $this->recentMessages($buyer),
             'recent_rfqs' => $this->recentRfqs($buyer),
             'recommended_suppliers' => $this->recommendedSuppliers(),
-            'recent_activity' => $this->recentActivity($buyer),
+            'recent_activity' => $this->recentActivity($buyer, 5),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function activity(User $buyer, int $limit = 50): array
+    {
+        $stats = $this->stats($buyer);
+        $conversationStats = $this->conversationStats($buyer);
+
+        return [
+            'activities' => $this->recentActivity($buyer, $limit),
+            'summary' => [
+                'suppliers_contacted' => $conversationStats['total'],
+                'rfqs_submitted' => $stats['rfqs_submitted']['value'],
+                'suppliers_saved' => $stats['saved_suppliers']['value'],
+            ],
         ];
     }
 
@@ -244,7 +264,7 @@ class BuyerDashboardService
      */
     private function recentActivity(User $buyer, int $limit = 8): array
     {
-        return DashboardEvent::query()
+        $events = DashboardEvent::query()
             ->where('actor_user_id', $buyer->id)
             ->whereIn('event_type', [
                 DashboardEventType::ProductViewed->value,
@@ -256,13 +276,77 @@ class BuyerDashboardService
             ])
             ->latest('occurred_at')
             ->limit($limit)
-            ->get()
-            ->map(function (DashboardEvent $event): array {
+            ->get();
+
+        return $this->formatBuyerActivities($events);
+    }
+
+    /**
+     * @param  Collection<int, DashboardEvent>  $events
+     * @return array<int, array<string, mixed>>
+     */
+    private function formatBuyerActivities(Collection $events): array
+    {
+        if ($events->isEmpty()) {
+            return [];
+        }
+
+        $productIds = $events
+            ->filter(fn (DashboardEvent $event) => in_array($event->event_type, [
+                DashboardEventType::ProductViewed->value,
+                DashboardEventType::ProductSaved->value,
+            ], true))
+            ->pluck('entity_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $supplierIds = $events
+            ->filter(fn (DashboardEvent $event) => in_array($event->event_type, [
+                DashboardEventType::SupplierViewed->value,
+                DashboardEventType::SupplierSaved->value,
+            ], true))
+            ->pluck('entity_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $rfqIds = $events
+            ->where('event_type', DashboardEventType::RfqCreated->value)
+            ->pluck('entity_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $products = Product::query()
+            ->whereIn('id', $productIds)
+            ->get(['id', 'name', 'slug'])
+            ->keyBy('id');
+
+        $suppliers = User::query()
+            ->whereIn('id', $supplierIds)
+            ->with('company:id,user_id,company_name,slug')
+            ->get(['id'])
+            ->keyBy('id');
+
+        $rfqs = RfqSubmission::query()
+            ->whereIn('id', $rfqIds)
+            ->with('product:id,name')
+            ->get(['id', 'rfq_number', 'product_id'])
+            ->keyBy('id');
+
+        return $events
+            ->map(function (DashboardEvent $event) use ($products, $suppliers, $rfqs): array {
+                $product = $products->get($event->entity_id);
+                $supplier = $suppliers->get($event->entity_id);
+                $rfq = $rfqs->get($event->entity_id);
+
                 return [
                     'id' => $event->id,
                     'type' => $event->event_type,
-                    'title' => $this->buyerActivityTitle($event),
-                    'description' => $this->buyerActivityDescription($event),
+                    'title' => $this->buyerActivityTitle($event, $product, $supplier, $rfq),
+                    'description' => $this->buyerActivityDescription($event, $product, $supplier, $rfq),
+                    'link' => $this->buyerActivityLink($event, $product, $supplier),
                     'time' => $event->occurred_at?->diffForHumans(),
                     'time_at' => $event->occurred_at?->toIso8601String(),
                 ];
@@ -271,8 +355,12 @@ class BuyerDashboardService
             ->all();
     }
 
-    private function buyerActivityTitle(DashboardEvent $event): string
-    {
+    private function buyerActivityTitle(
+        DashboardEvent $event,
+        ?Product $product,
+        ?User $supplier,
+        ?RfqSubmission $rfq,
+    ): string {
         return match ($event->event_type) {
             DashboardEventType::ProductViewed->value => 'Viewed product',
             DashboardEventType::SupplierViewed->value => 'Viewed supplier profile',
@@ -284,16 +372,42 @@ class BuyerDashboardService
         };
     }
 
-    private function buyerActivityDescription(DashboardEvent $event): string
-    {
+    private function buyerActivityDescription(
+        DashboardEvent $event,
+        ?Product $product,
+        ?User $supplier,
+        ?RfqSubmission $rfq,
+    ): string {
         return match ($event->event_type) {
-            DashboardEventType::ProductViewed->value => 'Product #'.$event->entity_id,
-            DashboardEventType::SupplierViewed->value => 'Supplier #'.$event->entity_id,
-            DashboardEventType::ProductSaved->value => 'Product #'.$event->entity_id,
-            DashboardEventType::SupplierSaved->value => 'Supplier #'.$event->entity_id,
-            DashboardEventType::RfqCreated->value => 'RFQ #'.$event->entity_id,
+            DashboardEventType::ProductViewed->value => $product?->name ?? 'Product #'.$event->entity_id,
+            DashboardEventType::SupplierViewed->value => $supplier?->company?->company_name ?? 'Supplier #'.$event->entity_id,
+            DashboardEventType::ProductSaved->value => $product?->name ?? 'Product #'.$event->entity_id,
+            DashboardEventType::SupplierSaved->value => $supplier?->company?->company_name ?? 'Supplier #'.$event->entity_id,
+            DashboardEventType::RfqCreated->value => $rfq
+                ? trim(($rfq->rfq_number ?? '').($rfq->product?->name ? ' — '.$rfq->product->name : ''))
+                : 'RFQ #'.$event->entity_id,
             DashboardEventType::MessageSent->value => 'Conversation #'.$event->entity_id,
             default => '',
+        };
+    }
+
+    private function buyerActivityLink(
+        DashboardEvent $event,
+        ?Product $product,
+        ?User $supplier,
+    ): ?string {
+        return match ($event->event_type) {
+            DashboardEventType::ProductViewed->value,
+            DashboardEventType::ProductSaved->value => $product?->slug
+                ? '/products/'.$product->slug
+                : null,
+            DashboardEventType::SupplierViewed->value => $supplier?->company?->slug
+                ? '/suppliers/'.$supplier->company->slug
+                : null,
+            DashboardEventType::SupplierSaved->value => '/dashboard/buyer/saved',
+            DashboardEventType::RfqCreated->value => '/dashboard/buyer/rfqs',
+            DashboardEventType::MessageSent->value => '/dashboard/buyer/messages',
+            default => null,
         };
     }
 }

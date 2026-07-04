@@ -3,7 +3,9 @@
 use App\Enums\UserManuFactureStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
+use App\Enums\MailTemplate;
 use App\Jobs\SendMailJob;
+use App\Jobs\Support\SendSupportTicketInAppNotificationJob;
 use App\Models\PlatformSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -67,7 +69,15 @@ test('buyer can register and receives bearer token', function () {
 });
 
 test('manufacturer can register with required files and optional fields', function () {
+    Queue::fake([SendMailJob::class, SendSupportTicketInAppNotificationJob::class]);
     Storage::fake('public');
+
+    PlatformSetting::query()->updateOrCreate(
+        ['group' => 'security'],
+        ['payload' => ['require_email_verification' => false]],
+    );
+
+    User::factory()->create(['role' => UserRole::ADMIN->value, 'email' => 'admin@example.com']);
 
     $businessLicense = UploadedFile::fake()->create('license.pdf', 400, 'application/pdf');
     $factoryImageOne = UploadedFile::fake()->image('factory-1.jpg');
@@ -108,7 +118,7 @@ test('manufacturer can register with required files and optional fields', functi
     $user = User::query()->where('email', 'manufacturer@example.com')->firstOrFail();
     expect($user->manufacture_status_at)->not->toBeNull();
 
-    $this->assertDatabaseHas('company', [
+    $this->assertDatabaseHas('companies', [
         'user_id' => $user->id,
         'company_name' => 'Factory Co',
         'country' => 'US',
@@ -121,6 +131,11 @@ test('manufacturer can register with required files and optional fields', functi
     $info = $user->company()->firstOrFail();
     expect($info->bussiness_license)->not->toBeNull();
     expect(Storage::disk('public')->exists($info->bussiness_license))->toBeTrue();
+
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->recipient === 'admin@example.com'
+        && $job->template === MailTemplate::ManufacturerRegisteredAdmin->value);
+
+    Queue::assertPushed(SendSupportTicketInAppNotificationJob::class, fn (SendSupportTicketInAppNotificationJob $job) => $job->type === 'manufacturer.registered');
 });
 
 test('admin role registration is rejected', function () {

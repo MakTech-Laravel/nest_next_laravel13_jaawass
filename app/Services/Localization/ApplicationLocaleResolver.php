@@ -3,6 +3,7 @@
 namespace App\Services\Localization;
 
 use App\Support\Http\RequestPreferenceResolution;
+use App\Support\Localization\LocaleCode;
 use Illuminate\Http\Request;
 
 class ApplicationLocaleResolver
@@ -51,8 +52,11 @@ class ApplicationLocaleResolver
             }
 
             // Treat Accept-Language as a "header preference" for safe/read requests.
-            $fromAccept = $request->getPreferredLanguage($supported);
-            if (is_string($fromAccept) && in_array($fromAccept, $supported, true)) {
+            $fromAccept = LocaleCode::resolveSupported(
+                (string) ($request->getPreferredLanguage($supported) ?? ''),
+                $supported
+            );
+            if ($fromAccept !== null) {
                 return $fromAccept;
             }
 
@@ -72,14 +76,17 @@ class ApplicationLocaleResolver
             }
         }
 
-        $fromAccept = $request->getPreferredLanguage($supported);
-        if (is_string($fromAccept) && in_array($fromAccept, $supported, true)) {
+        $fromAccept = LocaleCode::resolveSupported(
+            (string) ($request->getPreferredLanguage($supported) ?? ''),
+            $supported
+        );
+        if ($fromAccept !== null) {
             return $fromAccept;
         }
 
-        $fallback = (string) config('app.fallback_locale', 'en');
+        $fallback = LocaleCode::canonical((string) config('app.fallback_locale', 'en'));
 
-        return in_array($fallback, $supported, true) ? $fallback : $supported[0];
+        return in_array($fallback, $supported, true) ? $fallback : LocaleCode::canonical($supported[0]);
     }
 
     /**
@@ -121,18 +128,10 @@ class ApplicationLocaleResolver
      */
     private function normalizeToSupportedLocale(string $candidate, array $supported): ?string
     {
-        $normalized = strtolower(str_replace('_', '-', trim($candidate)));
-
-        if ($normalized === '') {
+        if (trim($candidate) === '') {
             return null;
         }
 
-        if (in_array($normalized, $supported, true)) {
-            return $normalized;
-        }
-
-        $primary = strtolower(explode('-', $normalized)[0]);
-
-        return in_array($primary, $supported, true) ? $primary : null;
+        return LocaleCode::resolveSupported($candidate, $supported);
     }
 }
