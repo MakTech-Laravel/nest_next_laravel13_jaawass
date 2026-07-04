@@ -147,6 +147,9 @@ final class TranslationOrchestrator
                     'error' => $e->getMessage(),
                 ]);
             }
+
+            // Avoid bursting Google Translate rate limits when many jobs run at once.
+            usleep(250_000);
         }
 
         return $results;

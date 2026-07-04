@@ -67,17 +67,24 @@ class LegalPageAdminController extends Controller
         $sections = $validated['sections'];
 
         DB::transaction(function () use ($page, $validated, $locale, $sections): void {
+            $lastUpdated = $validated['last_updated'] ?? $page->last_updated_label;
+
             $page->update([
                 'title' => $validated['title'],
-                'last_updated_label' => $validated['last_updated'] ?? $page->last_updated_label,
+                'last_updated_label' => $lastUpdated,
                 'enabled' => $validated['enabled'] ?? $page->enabled,
                 'sort' => $validated['sort'] ?? $page->sort,
             ]);
 
-            $page->upsertContentTranslations(['title' => $validated['title']], $locale);
+            $translationFields = [
+                'title' => $validated['title'],
+                'last_updated_label' => (string) $lastUpdated,
+            ];
+
+            $page->upsertContentTranslations($translationFields, $locale);
 
             $page->autoTranslate(
-                sourceData: ['title' => $validated['title']],
+                sourceData: $translationFields,
                 sourceLocale: $locale,
             );
 

@@ -2,6 +2,7 @@
 
 namespace App\Services\Translation;
 
+use App\Support\Localization\LocaleCode;
 use Google\Auth\Credentials\ServiceAccountCredentials;
 use Google\Cloud\Translate\V3\Client\TranslationServiceClient;
 use Google\Cloud\Translate\V3\DetectLanguageRequest;
@@ -280,8 +281,11 @@ final class GoogleTranslationService
      */
     private function callApi(array $texts, string $targetLocale, ?string $sourceLocale): array
     {
+        $googleTarget = LocaleCode::toGoogle($targetLocale);
+        $googleSource = $sourceLocale !== null ? LocaleCode::toGoogle($sourceLocale) : null;
+
         if ($this->googleMode === 'v2') {
-            return $this->translateBatchV2($texts, $targetLocale, $sourceLocale);
+            return $this->translateBatchV2($texts, $googleTarget, $googleSource);
         }
 
         try {
@@ -292,12 +296,12 @@ final class GoogleTranslationService
             $model = config('translation.v3.model');
             $glossary = config('translation.v3.glossary');
 
-            $request = TranslateTextRequest::build($this->parent, $targetLocale, $texts);
+            $request = TranslateTextRequest::build($this->parent, $googleTarget, $texts);
 
             $request->setMimeType('text/plain');
 
-            if ($sourceLocale !== null) {
-                $request->setSourceLanguageCode($sourceLocale);
+            if ($googleSource !== null) {
+                $request->setSourceLanguageCode($googleSource);
             }
 
             if (! empty($model)) {
@@ -321,12 +325,19 @@ final class GoogleTranslationService
             return $translations;
         } catch (\Throwable $e) {
             if ($this->googleMode === 'auto' && $this->apiKey !== null) {
-                return $this->translateBatchV2($texts, $targetLocale, $sourceLocale);
+                Log::warning('GoogleTranslationService: v3 failed, falling back to v2 API key.', [
+                    'target' => $targetLocale,
+                    'google_target' => $googleTarget,
+                    'error' => $e->getMessage(),
+                ]);
+
+                return $this->translateBatchV2($texts, $googleTarget, $googleSource);
             }
 
             // Log without surfacing internal details or the API key
             Log::error('GoogleTranslationService::translateBatch API call failed.', [
                 'target' => $targetLocale,
+                'google_target' => $googleTarget,
                 'source' => $sourceLocale,
                 'count' => count($texts),
                 'error' => $e->getMessage(),
@@ -396,6 +407,15 @@ final class GoogleTranslationService
 
             $response = Http::asJson()
                 ->timeout(30)
+                ->retry(3, 2000, function (\Throwable $e): bool {
+                    if (! $e instanceof \Illuminate\Http\Client\RequestException) {
+                        return false;
+                    }
+
+                    $status = $e->response?->status();
+
+                    return in_array($status, [403, 429, 500, 503], true);
+                })
                 ->post($url, $payload)
                 ->throw()
                 ->json();
