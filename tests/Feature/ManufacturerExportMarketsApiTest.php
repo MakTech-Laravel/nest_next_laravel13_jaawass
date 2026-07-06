@@ -135,6 +135,53 @@ test('manufacturer can sync selected countries across regions', function (): voi
     )->toBe(['North America', 'Western Europe']);
 });
 
+test('manufacturer export markets countries endpoint returns full map catalog', function (): void {
+    $manufacturer = manufacturerWithSubscription();
+    Company::query()->create([
+        'user_id' => $manufacturer->id,
+        'company_name' => 'Export Co',
+    ]);
+
+    Passport::actingAs($manufacturer);
+
+    $response = $this->getJson('/api/v1/manufacturer/markets/countries?per_page=250');
+
+    $response->assertOk()
+        ->assertJsonPath('success', true);
+
+    expect(count($response->json('data')))->toBeGreaterThanOrEqual(190);
+
+    $kenya = collect($response->json('data'))->firstWhere('code', 'KE');
+    expect($kenya)->not->toBeNull()
+        ->and($kenya['name'])->toBe('Kenya')
+        ->and($kenya['export_market_region'])->toBe('Africa')
+        ->and($kenya['geographic_region'])->toBe('Africa');
+});
+
+test('manufacturer can sync map-only countries such as kenya', function (): void {
+    $manufacturer = manufacturerWithSubscription();
+    Company::query()->create([
+        'user_id' => $manufacturer->id,
+        'company_name' => 'Export Co',
+    ]);
+
+    Passport::actingAs($manufacturer);
+
+    $response = $this->putJson('/api/v1/manufacturer/markets/countries/sync', [
+        'country_codes' => ['KE', 'NG'],
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.stats.active_markets', 2)
+        ->assertJsonCount(1, 'data.active_regions')
+        ->assertJsonPath('data.active_regions.0.region', 'Africa');
+
+    $this->assertDatabaseHas('manufacturer_export_market_countries', [
+        'country_code' => 'KE',
+        'country_name' => 'Kenya',
+    ]);
+});
+
 test('manufacturer export markets countries endpoint supports search and selection state', function (): void {
     $manufacturer = manufacturerWithSubscription();
     Company::query()->create([

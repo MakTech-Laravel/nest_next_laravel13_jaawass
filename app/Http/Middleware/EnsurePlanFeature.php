@@ -29,6 +29,8 @@ class EnsurePlanFeature
             );
         }
 
+       
+    
         foreach ($features as $feature) {
             if (str_contains($feature, '|')) {
                 $alternatives = array_filter(explode('|', $feature));
