@@ -30,6 +30,7 @@ enum UserStatus: string
             self::ACTIVE->value => self::ACTIVE->label(),
             self::DEACTIVATED->value => self::DEACTIVATED->label(),
             self::SUSPENDED->value => self::SUSPENDED->label(),
+            self::SCHEDULED_DELETION->value => self::SCHEDULED_DELETION->label(),
             self::DELETED->value => self::DELETED->label(),
         ];
     }

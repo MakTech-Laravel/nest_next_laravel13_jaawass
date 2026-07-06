@@ -8,7 +8,6 @@ use App\Services\LocaleTranslationResolver;
 use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 #[Fillable(['title', 'slug', 'excerpt', 'content', 'content_format', 'tags', 'author', 'article_image','is_featured', 'status', 'published_at', 'archived_at', 'views', 'creator_id', 'article_category_id'])]
 class Article extends Model
@@ -89,7 +88,7 @@ class Article extends Model
     
     public function getArticleImageUrlAttribute()
     {
-        return $this->article_image ? rtrim(env('APP_URL'), '/') . Storage::url($this->article_image) : null;
+        return storage_url($this->article_image);
     }
 
     protected $appends = ['article_image_url'];

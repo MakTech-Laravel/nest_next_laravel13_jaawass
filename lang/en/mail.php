@@ -446,6 +446,7 @@ return [
         "footer" => "If you did not request this verification, please ignore this email.",
         "notification_title" => "Email verification",
         "notification_body" => "Use the code below to verify your email address.",
+        "subject" => "Verify your email address",
     ]
 
 ];
