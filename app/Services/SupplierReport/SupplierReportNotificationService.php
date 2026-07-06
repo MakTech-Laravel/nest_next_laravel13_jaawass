@@ -4,6 +4,7 @@ namespace App\Services\SupplierReport;
 
 use App\Enums\MailTemplate;
 use App\Enums\SupplierReportStatus;
+use App\Jobs\Support\SendSupportTicketInAppNotificationJob;
 use App\Models\SupplierReport;
 use App\Models\SupplierReportStatusLog;
 use App\Models\User;
@@ -48,6 +49,18 @@ class SupplierReportNotificationService
             ]),
         );
 
+        SendSupportTicketInAppNotificationJob::dispatch(
+            recipientId: $reporter->id,
+            type: 'supplier.report.received',
+            title: __('mail.supplier_report_received.notification_title'),
+            body: __('mail.supplier_report_received.notification_body', [
+                'supplier' => $data['supplierName'],
+            ]),
+            data: ['report_id' => $report->id],
+            actionUrl: $data['reportsUrl'],
+            senderId: null,
+        );
+
         $this->notifyAdminsOfNewReport($report, $data);
     }
 
@@ -84,6 +97,19 @@ class SupplierReportNotificationService
                 'footerNote' => __('mail.supplier_report_status_updated.footer'),
             ]),
         );
+
+        SendSupportTicketInAppNotificationJob::dispatch(
+            recipientId: $reporter->id,
+            type: 'supplier.report.status',
+            title: __('mail.supplier_report_status_updated.notification_title'),
+            body: __('mail.supplier_report_status_updated.notification_body', [
+                'supplier' => $data['supplierName'],
+                'status' => $toStatus->label(),
+            ]),
+            data: ['report_id' => $report->id, 'status' => $toStatus->value],
+            actionUrl: $data['reportsUrl'],
+            senderId: null,
+        );
     }
 
     /**
@@ -116,7 +142,20 @@ class SupplierReportNotificationService
                     'referenceId' => 'RPT-'.str_pad((string) $report->id, 5, '0', STR_PAD_LEFT),
                     'footerNote' => __('mail.supplier_report_received_admin.footer'),
                 ]);
-            });
+            }, 'supplier.report.created');
+
+            SendSupportTicketInAppNotificationJob::dispatch(
+                recipientId: $admin->id,
+                type: 'supplier.report.created',
+                title: __('mail.supplier_report_received_admin.notification_title'),
+                body: __('mail.supplier_report_received_admin.notification_body', [
+                    'buyer' => $data['buyerName'],
+                    'supplier' => $data['supplierName'],
+                ]),
+                data: ['report_id' => $report->id],
+                actionUrl: $adminUrl,
+                senderId: $report->reporter_id,
+            );
         }
     }
 

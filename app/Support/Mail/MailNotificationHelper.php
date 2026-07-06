@@ -3,6 +3,7 @@
 namespace App\Support\Mail;
 
 use App\Models\User;
+use App\Support\Notifications\UserNotificationPreferenceGate;
 use Illuminate\Support\Collection;
 
 final class MailNotificationHelper
@@ -52,9 +53,13 @@ final class MailNotificationHelper
         return User::query()->isAdmin()->get();
     }
 
-    public static function sendIfEmail(?User $user, callable $callback): void
+    public static function sendIfEmail(?User $user, callable $callback, ?string $notificationType = null): void
     {
         if ($user === null || $user->email === null || $user->email === '') {
+            return;
+        }
+
+        if ($notificationType !== null && ! UserNotificationPreferenceGate::allowsEmail($user, $notificationType)) {
             return;
         }
 

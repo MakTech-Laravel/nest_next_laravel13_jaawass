@@ -8,7 +8,10 @@ class ArticleService
 {
     public function find(string $id): Article
     {
-        return Article::findOrFail($id);
+        return Article::query()
+            ->where('id', $id)
+            ->orWhere('slug', $id)
+            ->firstOrFail();
     }
 
     public function create(array $data): Article

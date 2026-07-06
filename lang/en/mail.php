@@ -187,6 +187,8 @@ return [
         'details_heading' => 'Your details',
         'cta' => 'View your reports',
         'footer' => 'False reports may result in account restrictions.',
+        'notification_title' => 'Report received',
+        'notification_body' => 'We received your report about :supplier.',
     ],
 
     'supplier_report_status_updated' => [
@@ -197,6 +199,8 @@ return [
         'message_heading' => 'Message from our team',
         'cta' => 'View your reports',
         'footer' => 'Thank you for helping keep SourceNest safe.',
+        'notification_title' => 'Report status updated',
+        'notification_body' => 'Your report about :supplier is now :status.',
     ],
 
     'manufacturer_order_created' => [

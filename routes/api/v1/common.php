@@ -29,6 +29,7 @@ Route::controller(UserController::class)->group(function () {
 
 Route::controller(UserNotificationController::class)->group(function () {
     Route::get('/me/notifications', 'index');
+    Route::get('/me/notifications/unread-count', 'unreadCount');
     Route::patch('/me/notifications/{id}/read', 'markAsRead')->whereNumber('id');
     Route::post('/me/notifications/read-all', 'markAllRead');
     Route::post('/me/notifications/test-broadcast', 'storeTest')->middleware('throttle:12,1');

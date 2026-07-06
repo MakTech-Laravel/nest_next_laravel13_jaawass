@@ -49,7 +49,7 @@ class RfqNotificationService
                 referenceId: $rfqNumber,
                 footerNote: __('mail.rfq_created_manufacturer.footer'),
             ));
-        });
+        }, 'rfq.created');
 
         $this->dispatchInApp(
             recipient: $manufacturer,
@@ -102,7 +102,7 @@ class RfqNotificationService
                 referenceId: $rfqNumber,
                 footerNote: __('mail.rfq_quoted_buyer.footer'),
             ));
-        });
+        }, 'rfq.quoted');
 
         $this->dispatchInApp(
             recipient: $buyer,
@@ -153,7 +153,7 @@ class RfqNotificationService
                     referenceId: $rfqNumber,
                     footerNote: __('mail.rfq_status_updated.footer'),
                 ));
-            });
+            }, 'rfq.status.'.$status->value);
 
             $this->dispatchInApp(
                 recipient: $recipient,

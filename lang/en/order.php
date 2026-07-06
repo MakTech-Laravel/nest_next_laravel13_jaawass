@@ -10,10 +10,14 @@ return [
             'buyer_body' => ':manufacturerName created order :orderNumber for you.',
             'admin_title' => 'New order created',
             'admin_body' => ':manufacturerName created order :orderNumber for :buyerName.',
+            'manufacturer_title' => 'Order created',
+            'manufacturer_body' => 'You created order :orderNumber for :buyerName.',
         ],
         'status' => [
             'buyer_title' => 'Order :orderNumber updated',
             'admin_title' => 'Order :orderNumber status updated',
+            'manufacturer_title' => 'Order :orderNumber updated',
+            'manufacturer_body' => 'Order :orderNumber for :buyerName is now :status.',
             'buyer_body' => [
                 'order_created' => ':manufacturerName created order :orderNumber.',
                 'in_production' => 'Order :orderNumber from :manufacturerName is now in production.',
