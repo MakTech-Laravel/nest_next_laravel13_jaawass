@@ -164,3 +164,26 @@ test('post test broadcast route with origin self sets sender', function () {
         ->assertJsonPath('data.is_system', false)
         ->assertJsonPath('data.sender_id', $user->id);
 });
+
+test('notifications index includes unread count', function () {
+    $user = User::factory()->create();
+    UserNotification::factory()->create(['user_id' => $user->id, 'read_at' => null]);
+    UserNotification::factory()->read()->create(['user_id' => $user->id]);
+
+    Passport::actingAs($user);
+
+    $this->getJson('/api/v1/me/notifications')
+        ->assertOk()
+        ->assertJsonPath('unread_count', 1);
+});
+
+test('notifications unread count endpoint returns count', function () {
+    $user = User::factory()->create();
+    UserNotification::factory()->count(2)->create(['user_id' => $user->id, 'read_at' => null]);
+
+    Passport::actingAs($user);
+
+    $this->getJson('/api/v1/me/notifications/unread-count')
+        ->assertOk()
+        ->assertJsonPath('data.unread_count', 2);
+});

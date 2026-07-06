@@ -24,13 +24,15 @@ class UserNotificationController extends Controller
             'per_page' => ['sometimes', 'integer', 'min:1', 'max:100'],
         ]);
 
-        $query = $request->user()->userNotifications()->with('sender');
+        $user = $request->user();
+        $query = $user->userNotifications()->with('sender');
 
         if ($request->boolean('unread')) {
             $query->whereNull('read_at');
         }
 
         $perPage = $validated['per_page'] ?? 15;
+        $unreadCount = $user->userNotifications()->whereNull('read_at')->count();
 
         $paginator = $query->paginate($perPage)->withQueryString();
 
@@ -38,7 +40,22 @@ class UserNotificationController extends Controller
             status: true,
             message: __('api.notifications_fetched_successfully'),
             data: UserNotificationResource::collection($paginator),
-            statusCode: HttpStatus::HTTP_OK
+            statusCode: HttpStatus::HTTP_OK,
+            additional: [
+                'unread_count' => $unreadCount,
+            ],
+        );
+    }
+
+    public function unreadCount(Request $request): JsonResponse
+    {
+        $count = $request->user()->userNotifications()->whereNull('read_at')->count();
+
+        return sendResponse(
+            status: true,
+            message: __('api.notifications_fetched_successfully'),
+            data: ['unread_count' => $count],
+            statusCode: HttpStatus::HTTP_OK,
         );
     }
 

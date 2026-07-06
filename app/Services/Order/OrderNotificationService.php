@@ -143,6 +143,19 @@ class OrderNotificationService
             );
         }
 
+        $this->dispatchInAppNotification(
+            recipient: $manufacturer,
+            type: 'order.created',
+            title: __('order.notifications.created.manufacturer_title'),
+            body: __('order.notifications.created.manufacturer_body', [
+                'buyerName' => $buyerName,
+                'orderNumber' => $orderNumber,
+            ]),
+            data: $notificationData,
+            actionUrl: $this->manufacturerOrdersUrl((int) $order->id),
+            sender: $manufacturer,
+        );
+
         foreach ($this->adminRecipients() as $admin) {
             $this->dispatchInAppNotification(
                 recipient: $admin,
@@ -189,6 +202,22 @@ class OrderNotificationService
             ]),
             data: $notificationData,
             actionUrl: $this->buyerOrdersUrl((int) $order->id),
+            sender: $manufacturer,
+        );
+
+        $this->dispatchInAppNotification(
+            recipient: $manufacturer,
+            type: $type,
+            title: __('order.notifications.status.manufacturer_title', [
+                'orderNumber' => $orderNumber,
+            ]),
+            body: __('order.notifications.status.manufacturer_body', [
+                'buyerName' => $this->displayName($buyer),
+                'orderNumber' => $orderNumber,
+                'status' => $status->label(),
+            ]),
+            data: $notificationData,
+            actionUrl: $this->manufacturerOrdersUrl((int) $order->id),
             sender: $manufacturer,
         );
 

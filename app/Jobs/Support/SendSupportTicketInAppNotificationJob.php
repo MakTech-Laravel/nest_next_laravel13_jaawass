@@ -6,6 +6,7 @@ namespace App\Jobs\Support;
 
 use App\Models\User;
 use App\Services\UserNotificationService;
+use App\Support\Notifications\UserNotificationPreferenceGate;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -36,6 +37,10 @@ class SendSupportTicketInAppNotificationJob implements ShouldQueue
         $recipient = User::query()->find($this->recipientId);
 
         if ($recipient === null) {
+            return;
+        }
+
+        if (! UserNotificationPreferenceGate::allowsInApp($recipient, $this->type)) {
             return;
         }
 

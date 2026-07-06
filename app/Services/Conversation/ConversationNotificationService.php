@@ -44,7 +44,7 @@ class ConversationNotificationService
                 'ctaLabel' => __('mail.conversation_message_received.cta'),
                 'footerNote' => __('mail.conversation_message_received.footer'),
             ]);
-        });
+        }, 'conversation.message');
 
         SendSupportTicketInAppNotificationJob::dispatch(
             recipientId: $recipient->id,

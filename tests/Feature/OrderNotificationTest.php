@@ -26,7 +26,7 @@ beforeEach(function (): void {
     ]);
 });
 
-test('order created dispatches in-app notifications to buyer and admins', function (): void {
+test('order created dispatches in-app notifications to buyer manufacturer and admins', function (): void {
     ['buyer' => $buyer, 'manufacturer' => $manufacturer, 'product' => $product] = seedManufacturerOrderScenario();
     $admin = User::factory()->admin()->create();
 
@@ -44,7 +44,7 @@ test('order created dispatches in-app notifications to buyer and admins', functi
     $response->assertCreated();
     $orderId = (int) $response->json('data.id');
 
-    Queue::assertPushed(SendOrderInAppNotificationJob::class, 2);
+    Queue::assertPushed(SendOrderInAppNotificationJob::class, 3);
 
     Queue::assertPushed(SendOrderInAppNotificationJob::class, function (SendOrderInAppNotificationJob $job) use ($buyer, $orderId): bool {
         return $job->recipientId === $buyer->id
@@ -56,6 +56,12 @@ test('order created dispatches in-app notifications to buyer and admins', functi
         return $job->recipientId === $admin->id
             && $job->type === 'order.created'
             && $job->actionUrl === "http://localhost:3000/admin/orders/{$orderId}";
+    });
+
+    Queue::assertPushed(SendOrderInAppNotificationJob::class, function (SendOrderInAppNotificationJob $job) use ($manufacturer, $orderId): bool {
+        return $job->recipientId === $manufacturer->id
+            && $job->type === 'order.created'
+            && $job->actionUrl === "http://localhost:3000/dashboard/manufacturer/orders/{$orderId}";
     });
 });
 
@@ -78,7 +84,7 @@ test('order created in-app notifications are persisted for buyer and admin', fun
     $orderId = (int) $response->json('data.id');
 
     $jobs = Queue::pushed(SendOrderInAppNotificationJob::class);
-    expect($jobs)->toHaveCount(2);
+    expect($jobs)->toHaveCount(3);
 
     foreach ($jobs as $job) {
         $job->handle(app(\App\Services\UserNotificationService::class));
@@ -86,6 +92,7 @@ test('order created in-app notifications are persisted for buyer and admin', fun
 
     expect(UserNotification::query()->where('user_id', $buyer->id)->where('type', 'order.created')->exists())->toBeTrue();
     expect(UserNotification::query()->where('user_id', $admin->id)->where('type', 'order.created')->exists())->toBeTrue();
+    expect(UserNotification::query()->where('user_id', $manufacturer->id)->where('type', 'order.created')->exists())->toBeTrue();
 
     $buyerNotification = UserNotification::query()
         ->where('user_id', $buyer->id)
@@ -119,7 +126,7 @@ test('order status update dispatches in-app notifications to buyer and admins', 
         'notes' => 'Package left the warehouse.',
     ])->assertCreated();
 
-    Queue::assertPushed(SendOrderInAppNotificationJob::class, 2);
+    Queue::assertPushed(SendOrderInAppNotificationJob::class, 3);
 
     Queue::assertPushed(SendOrderInAppNotificationJob::class, function (SendOrderInAppNotificationJob $job) use ($buyer, $orderId): bool {
         return $job->recipientId === $buyer->id
@@ -131,5 +138,11 @@ test('order status update dispatches in-app notifications to buyer and admins', 
         return $job->recipientId === $admin->id
             && $job->type === 'order.status.shipped'
             && $job->actionUrl === "http://localhost:3000/admin/orders/{$orderId}";
+    });
+
+    Queue::assertPushed(SendOrderInAppNotificationJob::class, function (SendOrderInAppNotificationJob $job) use ($manufacturer, $orderId): bool {
+        return $job->recipientId === $manufacturer->id
+            && $job->type === 'order.status.shipped'
+            && $job->actionUrl === "http://localhost:3000/dashboard/manufacturer/orders/{$orderId}";
     });
 });
