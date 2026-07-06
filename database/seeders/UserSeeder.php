@@ -25,6 +25,7 @@ class UserSeeder extends Seeder
             'status' => UserStatus::ACTIVE->value,
             'agreed_to_terms' => true,
         ]);
+      
         User::create([
             'first_name' => 'Buyer',
             'last_name' => 'User',
@@ -128,6 +129,16 @@ class UserSeeder extends Seeder
             'password' => Hash::make('suspended-user@dev.com'),
             'role' => UserRole::BUYER->value,
             'status' => UserStatus::SUSPENDED->value,
+        ]);
+
+        User::create([
+            'first_name' => 'Real',
+            'last_name' => 'Admin',
+            'email' => 'monirul.maktech@gmail.com',
+            'password' => Hash::make('monirul.maktech@gmail.com'),
+            'role' => UserRole::ADMIN->value,
+            'status' => UserStatus::ACTIVE->value,
+            'agreed_to_terms' => true,
         ]);
     }
 }

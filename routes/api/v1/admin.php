@@ -97,8 +97,16 @@ Route::controller(ManufacturerController::class)->prefix('manufacturer')->group(
 });
 
 Route::get(
+    '/manufacturer-additional-information',
+    [ManufacturerAdditionalInformationController::class, 'listAll']
+);
+Route::get(
     '/manufacturer-additional-information/{informationRequest}',
     [ManufacturerAdditionalInformationController::class, 'show']
+);
+Route::patch(
+    '/manufacturer-additional-information/{informationRequest}/review',
+    [ManufacturerAdditionalInformationController::class, 'review']
 );
 
 // Category & Subscategory Managment

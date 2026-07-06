@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Jobs\TranslateAboutPageContentJob;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -57,15 +58,35 @@ class AboutPage extends Model
         $locale = $this->normalizeLocale($locale);
         $sourceLocale = (string) config('translation.source_locale', 'en');
 
-        $this->update(['content' => $content]);
+        if ($locale === $sourceLocale) {
+            $this->update(['content' => $content]);
+        }
 
-        $locales = array_unique([$locale, $sourceLocale]);
+        $this->translations()->updateOrCreate(
+            ['locale' => $locale],
+            ['content' => $content]
+        );
 
-        foreach ($locales as $targetLocale) {
-            $this->translations()->updateOrCreate(
-                ['locale' => $targetLocale],
-                ['content' => $content]
+        $this->autoTranslateContent($content, $locale);
+    }
+
+    /**
+     * @param  array<string, mixed>  $sourceContent
+     */
+    public function autoTranslateContent(array $sourceContent, ?string $sourceLocale = null): void
+    {
+        $snapshot = $this->updated_at?->toIso8601String();
+
+        if (config('translation.queue.enabled', true)) {
+            TranslateAboutPageContentJob::dispatch(
+                (int) $this->id,
+                $sourceContent,
+                $sourceLocale,
+                $snapshot,
             );
+        } else {
+            app(\App\Services\Translation\AboutPageContentTranslationService::class)
+                ->handle($this, $sourceContent, $sourceLocale, $snapshot);
         }
     }
 

@@ -16,6 +16,7 @@ use App\Http\Resources\Api\V1\TicketResource;
 use App\Models\Ticket;
 use App\Services\Subscription\PlanEntitlementResolver;
 use App\Services\TicketMessageService;
+use App\Services\Support\SupportTicketNotificationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +27,7 @@ class TicketController extends Controller
     public function __construct(
         private readonly TicketMessageService $ticketMessageService,
         private readonly PlanEntitlementResolver $entitlementResolver,
+        private readonly SupportTicketNotificationService $supportTicketNotificationService,
     ) {}
 
     public function options(): JsonResponse
@@ -94,6 +96,12 @@ class TicketController extends Controller
             'messages' => fn ($query) => $query->orderBy('id')->with(['user', 'attachments', 'translations']),
         ]);
 
+        $this->supportTicketNotificationService->notifyCreated(
+            $ticket,
+            $user,
+            $validated['message'] ?? null,
+        );
+
         return sendResponse(
             status: true,
             message: __('api.ticket_created_successfully'),
@@ -146,6 +154,12 @@ class TicketController extends Controller
             $request->input('message'),
             $request->file('attachments', []),
             $request->input('locale'),
+        );
+
+        $this->supportTicketNotificationService->notifyReply(
+            $ticket->fresh(['user', 'assignee']),
+            $request->user(),
+            $request->input('message'),
         );
 
         if ($ticket->status === TicketStatus::WaitingOnCustomer) {

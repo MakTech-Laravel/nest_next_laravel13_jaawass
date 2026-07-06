@@ -7,6 +7,7 @@ use App\Traits\HasTranslations;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -62,6 +63,20 @@ class TranslateModelJob implements ShouldQueue
             sourceLocale: $this->sourceLocale,
             modelUpdatedAtSnapshot: $this->modelUpdatedAtSnapshot
         );
+    }
+
+    /**
+     * Run one translation job at a time to avoid Google API rate limits.
+     *
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        return [
+            (new WithoutOverlapping('google-translate'))
+                ->releaseAfter(30)
+                ->expireAfter(180),
+        ];
     }
 
     /** Horizon / Telescope tags for observability */

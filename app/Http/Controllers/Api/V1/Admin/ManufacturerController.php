@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Actions\Api\V1\Admin\Users\UpdateManufactureStatusAction;
 use App\Enums\AdditionalInformationRequestStatus;
 use App\Enums\DashboardEventType;
+use App\Enums\UserManuFactureStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Admin\StoreManufacturerRequest;
 use App\Http\Resources\Api\V1\UserResource;
@@ -19,6 +21,7 @@ class ManufacturerController extends Controller
 {
     public function __construct(
         private readonly EventTrackerService $eventTracker,
+        private readonly UpdateManufactureStatusAction $updateManufactureStatusAction,
     ) {}
 
     public function index()
@@ -244,11 +247,21 @@ class ManufacturerController extends Controller
             );
         }
 
-        $manufacturer->update([
-            'manufacture_status' => $validated['manufacture_status'],
-            'manufacture_status_reason' => $validated['manufacture_status_reasonreason'] ?? null,
-            'manufacture_status_at' => now(),
-        ]);
+        $manufactureStatus = UserManuFactureStatus::from($validated['manufacture_status']);
+
+        if (in_array($manufactureStatus, [UserManuFactureStatus::APPROVED, UserManuFactureStatus::REJECTED, UserManuFactureStatus::PENDING], true)) {
+            $manufacturer = $this->updateManufactureStatusAction->handle(
+                $manufacturer,
+                $manufactureStatus,
+                $validated['manufacture_status_reason'] ?? null,
+            );
+        } else {
+            $manufacturer->update([
+                'manufacture_status' => $validated['manufacture_status'],
+                'manufacture_status_reason' => $validated['manufacture_status_reason'] ?? null,
+                'manufacture_status_at' => now(),
+            ]);
+        }
 
         $eventType = match ($validated['manufacture_status']) {
             'approved' => DashboardEventType::SupplierApproved,

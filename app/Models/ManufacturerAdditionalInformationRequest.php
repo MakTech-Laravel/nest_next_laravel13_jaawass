@@ -19,6 +19,9 @@ class ManufacturerAdditionalInformationRequest extends Model
         'status',
         'expires_at',
         'submitted_at',
+        'reviewed_by',
+        'reviewed_at',
+        'review_notes',
     ];
 
     protected function casts(): array
@@ -28,6 +31,7 @@ class ManufacturerAdditionalInformationRequest extends Model
             'status' => AdditionalInformationRequestStatus::class,
             'expires_at' => 'datetime',
             'submitted_at' => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
     }
 
@@ -39,6 +43,11 @@ class ManufacturerAdditionalInformationRequest extends Model
     public function requestedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by');
+    }
+
+    public function reviewedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function ticket(): BelongsTo

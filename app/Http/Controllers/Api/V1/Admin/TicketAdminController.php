@@ -12,6 +12,7 @@ use App\Http\Requests\Api\V1\Admin\UpdateTicketRequest;
 use App\Http\Resources\Api\V1\Admin\TicketAdminResource;
 use App\Models\Ticket;
 use App\Services\TicketMessageService;
+use App\Services\Support\SupportTicketNotificationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
@@ -20,6 +21,7 @@ class TicketAdminController extends Controller
 {
     public function __construct(
         private readonly TicketMessageService $ticketMessageService,
+        private readonly SupportTicketNotificationService $supportTicketNotificationService,
     ) {}
 
     public function index(IndexTicketRequest $request): JsonResponse
@@ -56,7 +58,24 @@ class TicketAdminController extends Controller
 
     public function update(UpdateTicketRequest $request, Ticket $ticket): JsonResponse
     {
+        $previousStatus = $ticket->status instanceof TicketStatus
+            ? $ticket->status
+            : TicketStatus::from((string) $ticket->status);
+
         $ticket->update($request->validated());
+        $ticket->refresh();
+
+        $newStatus = $ticket->status instanceof TicketStatus
+            ? $ticket->status
+            : TicketStatus::from((string) $ticket->status);
+
+        if ($previousStatus !== $newStatus) {
+            $this->supportTicketNotificationService->notifyStatusChanged(
+                $ticket,
+                $newStatus,
+                $request->user(),
+            );
+        }
 
         $ticket->load(['user', 'assignee']);
 
@@ -76,6 +95,12 @@ class TicketAdminController extends Controller
             $request->input('message'),
             $request->file('attachments', []),
             $request->input('locale'),
+        );
+
+        $this->supportTicketNotificationService->notifyReply(
+            $ticket->fresh(['user', 'assignee']),
+            $request->user(),
+            $request->input('message'),
         );
 
         if ($ticket->status !== TicketStatus::Closed) {

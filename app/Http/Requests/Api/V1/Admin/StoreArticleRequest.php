@@ -28,6 +28,7 @@ class StoreArticleRequest extends FormRequest
             'slug' => 'required|string|max:255|unique:articles,slug',
             'excerpt' => 'nullable|string',
             'content' =>  $this->isDraft() ? 'nullable|string' : 'required|string',
+            'content_format' => 'sometimes|string|in:html,plain',
             'tags' => 'nullable|array',
             'author' => $this->isDraft() ? 'nullable|string|max:255' : 'required|string|max:255',
             'is_featured' => 'sometimes|boolean',

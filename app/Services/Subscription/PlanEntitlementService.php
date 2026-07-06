@@ -33,7 +33,11 @@ class PlanEntitlementService
     public function hasFeature(string|PlanFeatureKey $featureKey): bool
     {
         $key = $featureKey instanceof PlanFeatureKey ? $featureKey->value : $featureKey;
+
+      
         $feature = $this->features()->get($key);
+
+       
 
         if ($feature === null) {
             return false;
@@ -51,6 +55,7 @@ class PlanEntitlementService
         $key = $featureKey instanceof PlanFeatureKey ? $featureKey->value : $featureKey;
         $feature = $this->features()->get($key);
 
+       
         return $feature['value'] ?? null;
     }
 

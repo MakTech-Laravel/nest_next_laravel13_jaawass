@@ -56,8 +56,14 @@ class LanguageSeeder extends Seeder
         DB::table('languages')->upsert(
             $rows,
             uniqueBy: ['locale'],
-            update: ['name', 'native_name', 'country_code', 'is_rtl', 'sort_order', 'updated_at'],
+            update: ['name', 'native_name', 'country_code', 'is_rtl', 'is_active', 'sort_order', 'updated_at'],
         );
+
+        $activeLocales = collect($languages)->pluck('locale')->all();
+
+        DB::table('languages')
+            ->whereNotIn('locale', $activeLocales)
+            ->update(['is_active' => false, 'updated_at' => $now]);
 
         // Bust the language cache so Language::allActive() returns fresh data
         Language::clearCache();

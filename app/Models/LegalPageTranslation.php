@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['legal_page_id', 'locale', 'title'])]
+#[Fillable(['legal_page_id', 'locale', 'title', 'last_updated_label'])]
 #[Hidden(['legal_page_id'])]
 class LegalPageTranslation extends Model
 {

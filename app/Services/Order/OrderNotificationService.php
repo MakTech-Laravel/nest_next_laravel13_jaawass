@@ -8,6 +8,7 @@ use App\Jobs\Order\SendOrderInAppNotificationJob;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\Mailing\MailingService;
+use App\Support\Mail\MailNotificationHelper;
 
 class OrderNotificationService
 {
@@ -33,12 +34,82 @@ class OrderNotificationService
             );
         }
 
+        $manufacturer = $order->manufacturer;
+        $orderNumber = $this->orderNumber($order);
+        $buyerName = $this->displayName($buyer);
+
+        MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($order, $orderNumber, $buyerName, $manufacturer): void {
+            $this->mailingService->send($email, MailTemplate::OrderCreatedManufacturer, [
+                'preheader' => __('mail.order_created_manufacturer.preheader', [
+                    'orderNumber' => $orderNumber,
+                    'buyerName' => $buyerName,
+                ]),
+                'headerTitle' => __('mail.order_created_manufacturer.header_title'),
+                'headerSubtitle' => __('mail.order_created_manufacturer.header_subtitle'),
+                'intro' => __('mail.order_created_manufacturer.intro', [
+                    'name' => $this->displayName($manufacturer),
+                    'orderNumber' => $orderNumber,
+                    'buyer' => $buyerName,
+                ]),
+                'ctaUrl' => $this->manufacturerOrdersUrl((int) $order->id),
+                'ctaLabel' => __('mail.order_created_manufacturer.cta'),
+                'referenceId' => $orderNumber,
+                'footerNote' => __('mail.order_created_manufacturer.footer'),
+            ]);
+        });
+
+        foreach (MailNotificationHelper::adminRecipients() as $admin) {
+            MailNotificationHelper::sendIfEmail($admin, function (string $email) use ($order, $orderNumber, $buyerName, $admin): void {
+                $this->mailingService->send($email, MailTemplate::OrderCreatedAdmin, [
+                    'preheader' => __('mail.order_created_admin.preheader', [
+                        'manufacturerName' => $this->manufacturerDisplayName($order),
+                        'orderNumber' => $orderNumber,
+                        'buyerName' => $buyerName,
+                    ]),
+                    'headerTitle' => __('mail.order_created_admin.header_title'),
+                    'headerSubtitle' => __('mail.order_created_admin.header_subtitle'),
+                    'intro' => __('mail.order_created_admin.intro', [
+                        'orderNumber' => $orderNumber,
+                        'manufacturer' => $this->manufacturerDisplayName($order),
+                        'buyer' => $buyerName,
+                    ]),
+                    'ctaUrl' => $this->adminOrdersUrl((int) $order->id),
+                    'ctaLabel' => __('mail.order_created_admin.cta'),
+                    'referenceId' => $orderNumber,
+                    'footerNote' => __('mail.order_created_admin.footer'),
+                ]);
+            });
+        }
+
         $this->dispatchOrderCreatedInAppNotifications($order);
     }
 
     public function sendStatusUpdated(Order $order, OrderStatus $status, User $manufacturer): void
     {
         $order->loadMissing(['buyer.company', 'manufacturer.company']);
+
+        $buyer = $order->buyer;
+        $orderNumber = $this->orderNumber($order);
+        $manufacturerName = $this->manufacturerDisplayName($order);
+        $statusLabel = $status->label();
+
+        if ($buyer !== null && $buyer->email !== null) {
+            $this->mailingService->send($buyer->email, MailTemplate::OrderStatusUpdated, [
+                'preheader' => __('mail.order_status_updated.preheader', ['orderNumber' => $orderNumber]),
+                'headerTitle' => __('mail.order_status_updated.header_title'),
+                'headerSubtitle' => __('mail.order_status_updated.header_subtitle'),
+                'intro' => __('mail.order_status_updated.intro', [
+                    'name' => $this->displayName($buyer),
+                    'orderNumber' => $orderNumber,
+                    'manufacturer' => $manufacturerName,
+                    'status' => $statusLabel,
+                ]),
+                'ctaUrl' => $this->buyerOrdersUrl((int) $order->id),
+                'ctaLabel' => __('mail.order_status_updated.cta'),
+                'referenceId' => $orderNumber,
+                'footerNote' => __('mail.order_status_updated.footer'),
+            ]);
+        }
 
         $this->dispatchStatusUpdatedInAppNotifications($order, $status, $manufacturer);
     }
@@ -71,6 +142,19 @@ class OrderNotificationService
                 sender: $manufacturer,
             );
         }
+
+        $this->dispatchInAppNotification(
+            recipient: $manufacturer,
+            type: 'order.created',
+            title: __('order.notifications.created.manufacturer_title'),
+            body: __('order.notifications.created.manufacturer_body', [
+                'buyerName' => $buyerName,
+                'orderNumber' => $orderNumber,
+            ]),
+            data: $notificationData,
+            actionUrl: $this->manufacturerOrdersUrl((int) $order->id),
+            sender: $manufacturer,
+        );
 
         foreach ($this->adminRecipients() as $admin) {
             $this->dispatchInAppNotification(
@@ -121,6 +205,22 @@ class OrderNotificationService
             sender: $manufacturer,
         );
 
+        $this->dispatchInAppNotification(
+            recipient: $manufacturer,
+            type: $type,
+            title: __('order.notifications.status.manufacturer_title', [
+                'orderNumber' => $orderNumber,
+            ]),
+            body: __('order.notifications.status.manufacturer_body', [
+                'buyerName' => $this->displayName($buyer),
+                'orderNumber' => $orderNumber,
+                'status' => $status->label(),
+            ]),
+            data: $notificationData,
+            actionUrl: $this->manufacturerOrdersUrl((int) $order->id),
+            sender: $manufacturer,
+        );
+
         foreach ($this->adminRecipients() as $admin) {
             $this->dispatchInAppNotification(
                 recipient: $admin,
@@ -167,7 +267,12 @@ class OrderNotificationService
      */
     private function adminRecipients()
     {
-        return User::query()->isAdmin()->get();
+        return MailNotificationHelper::adminRecipients();
+    }
+
+    private function manufacturerOrdersUrl(int $orderId): string
+    {
+        return MailNotificationHelper::frontendUrl('dashboard/manufacturer/orders/'.$orderId);
     }
 
     /**
@@ -243,6 +348,8 @@ class OrderNotificationService
             'notes' => $localized['notes'],
             'items' => $items,
             'ordersUrl' => $this->buyerOrdersUrl((int) $order->id),
+            'referenceId' => $this->orderNumber($order),
+            'footerNote' => __('mail.manufacturer_order_created.footer'),
         ];
     }
 

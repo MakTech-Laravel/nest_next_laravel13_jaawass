@@ -26,7 +26,7 @@ class LegalPage extends Model
 
     public function translatableFields(): array
     {
-        return ['title'];
+        return ['title', 'last_updated_label'];
     }
 
     public function translations(): HasMany
@@ -46,14 +46,18 @@ class LegalPage extends Model
             $this,
             'translations',
             'locale',
-            ['title' => 'title'],
-            ['title'],
+            [
+                'title' => 'title',
+                'last_updated_label' => 'last_updated_label',
+            ],
+            ['title', 'last_updated_label'],
             $locale,
             $fallbackLocale,
         );
 
         return [
             'title' => $fields['title'],
+            'last_updated_label' => $fields['last_updated_label'],
         ];
     }
 
@@ -71,14 +75,7 @@ class LegalPage extends Model
      */
     public function upsertContentTranslations(array $fields, string $locale): void
     {
-        $sourceLocale = (string) config('translation.source_locale', 'en');
-        $payload = [$locale => $fields];
-
-        if ($locale !== $sourceLocale) {
-            $payload[$sourceLocale] = $fields;
-        }
-
-        $this->upsertTranslations($payload);
+        $this->upsertTranslations([$locale => $fields]);
     }
 
     /**

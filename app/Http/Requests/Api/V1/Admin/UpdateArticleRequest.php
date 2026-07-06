@@ -30,6 +30,7 @@ class UpdateArticleRequest extends FormRequest
             'slug' => $this->isDraft() ? 'required|string|max:255|unique:articles,slug,'.$articleId : 'required|string|max:255|unique:articles,slug,'.$articleId,
             'excerpt' => 'nullable|string',
             'content' => $this->isDraft() ? 'sometimes|string' : 'required|string',
+            'content_format' => 'sometimes|string|in:html,plain',
             'tags' => 'nullable|array',
             'author' => $this->isDraft() ? 'sometimes|string|max:255' : 'required|string|max:255',
             'is_featured' => 'sometimes|boolean',
