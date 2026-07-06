@@ -12,7 +12,7 @@ class DeleteUserAction
         $user->update([
             'deleted_at' => now(),
             'deleted_reason' => $reason,
-            'status' => UserStatus::ScheduledDeletion,
+            'status' => UserStatus::SCHEDULED_DELETION,
             'is_permanently_deleted' => false,
         ]);
 
