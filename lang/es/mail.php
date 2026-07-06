@@ -20,5 +20,11 @@ return [
         'subject' => 'Bienvenido a SourceNest',
         'preheader' => 'Tu cuenta de SourceNest ya esta lista. Comienza a explorar proveedores hoy.',
     ],
+    "email_verification" => [
+        "title" => "Verifica tu dirección de correo electrónico",
+        "intro" => "Usa el siguiente código para verificar tu dirección de correo electrónico.",
+        "expires" => "Este código caduca en :minutes minutos.",
+        "subject" => "Verifica tu dirección de correo electrónico",
+    ]
 
 ];
