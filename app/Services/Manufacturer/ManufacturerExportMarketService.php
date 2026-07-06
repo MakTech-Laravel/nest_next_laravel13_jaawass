@@ -9,6 +9,8 @@ use App\Models\Order;
 use App\Models\RfqSubmission;
 use App\Models\User;
 use App\Services\Dashboard\BuildsDashboardMetrics;
+use App\Support\Countries\CountryExportRegionResolver;
+use App\Support\Countries\CountryMapCatalog;
 use App\Support\ExportMarkets\ExportMarketCatalog;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\LengthAwarePaginator as Paginator;
@@ -100,7 +102,7 @@ class ManufacturerExportMarketService
             'suggestions' => $this->suggestions($manufacturer, $markets),
             'meta' => [
                 'regions' => ExportMarketCatalog::regions(),
-                'geographic_regions' => ExportMarketCatalog::geographicRegions(),
+                'geographic_regions' => CountryMapCatalog::groups(),
             ],
         ];
     }
@@ -116,7 +118,7 @@ class ManufacturerExportMarketService
 
         $selectedCodes = $this->selectedCountryCodes($this->loadMarkets($manufacturer));
 
-        $filtered = ExportMarketCatalog::countries()
+        $filtered = CountryMapCatalog::exportCountries()
             ->filter(function (array $country) use ($search, $geographicRegion): bool {
                 if ($geographicRegion !== null && $country['geographic_region'] !== $geographicRegion) {
                     return false;
@@ -235,7 +237,7 @@ class ManufacturerExportMarketService
     {
         $normalizedCodes = collect($countryCodes)
             ->map(function (string $code): ?string {
-                $country = ExportMarketCatalog::findByCode($code);
+                $country = CountryExportRegionResolver::toExportCountry($code);
 
                 return $country['code'] ?? null;
             })
@@ -245,7 +247,7 @@ class ManufacturerExportMarketService
             ->all();
 
         return DB::transaction(function () use ($manufacturer, $normalizedCodes): array {
-            $grouped = ExportMarketCatalog::groupByExportRegion($normalizedCodes);
+            $grouped = CountryMapCatalog::groupByExportRegion($normalizedCodes);
 
             ManufacturerExportMarket::query()
                 ->where('user_id', $manufacturer->id)
@@ -377,7 +379,7 @@ class ManufacturerExportMarketService
     {
         return collect($countryCodes)
             ->map(function (string $code) use ($region): ?string {
-                $country = ExportMarketCatalog::findByCode($code);
+                $country = CountryExportRegionResolver::toExportCountry($code);
 
                 if ($country === null || $country['export_market_region'] !== $region) {
                     return null;
@@ -399,7 +401,7 @@ class ManufacturerExportMarketService
         $market->countries()->delete();
 
         foreach ($countryCodes as $code) {
-            $country = ExportMarketCatalog::findByCode($code);
+            $country = CountryExportRegionResolver::toExportCountry($code);
 
             if ($country === null) {
                 continue;
@@ -479,7 +481,7 @@ class ManufacturerExportMarketService
         }
 
         $scores = $inactiveRegions->map(function (string $region) use ($manufacturer): array {
-            $countryNames = ExportMarketCatalog::countries()
+            $countryNames = CountryMapCatalog::exportCountries()
                 ->filter(fn (array $country): bool => $country['export_market_region'] === $region)
                 ->pluck('name')
                 ->all();
@@ -616,7 +618,7 @@ class ManufacturerExportMarketService
     {
         return collect($countryCodes)
             ->map(function (string $code): ?string {
-                $country = ExportMarketCatalog::findByCode($code);
+                $country = CountryExportRegionResolver::toExportCountry($code);
 
                 return $country['name'] ?? null;
             })

@@ -2,7 +2,6 @@
 
 namespace App\Support\Countries;
 
-use App\Support\ExportMarkets\ExportMarketCatalog;
 use Illuminate\Support\Collection;
 
 class CountryMapCatalog
@@ -67,5 +66,27 @@ class CountryMapCatalog
             ->sort()
             ->values()
             ->all();
+    }
+
+    /**
+     * @return Collection<int, array{code: string, name: string, export_market_region: string, geographic_region: string}>
+     */
+    public static function exportCountries(): Collection
+    {
+        return self::collection()
+            ->map(function (array $country): ?array {
+                return CountryExportRegionResolver::toExportCountry($country['country_code']);
+            })
+            ->filter()
+            ->values();
+    }
+
+    /**
+     * @param  array<int, string>  $codes
+     * @return array<string, array<int, array{code: string, name: string, export_market_region: string, geographic_region: string}>>
+     */
+    public static function groupByExportRegion(array $codes): array
+    {
+        return CountryExportRegionResolver::groupByExportRegion($codes);
     }
 }

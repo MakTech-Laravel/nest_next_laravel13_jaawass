@@ -1,6 +1,34 @@
 <?php
 
 return [
+    'subregion_export_regions' => [
+        'Northern Africa' => 'Africa',
+        'Sub-Saharan Africa' => 'Africa',
+        'North America' => 'North America',
+        'South America' => 'South America',
+        'Central America' => 'Central America',
+        'Caribbean' => 'Caribbean',
+        'Eastern Asia' => 'East Asia',
+        'South-Eastern Asia' => 'Southeast Asia',
+        'Southern Asia' => 'South Asia',
+        'Western Asia' => 'Middle East',
+        'Central Asia' => 'Middle East',
+        'Western Europe' => 'Western Europe',
+        'Eastern Europe' => 'Eastern Europe',
+        'Northern Europe' => 'Western Europe',
+        'Southern Europe' => 'Western Europe',
+        'Australasia' => 'Oceania',
+        'Melanesia' => 'Oceania',
+        'Micronesia' => 'Oceania',
+        'Polynesia' => 'Oceania',
+    ],
+    'group_export_regions' => [
+        'Africa' => 'Africa',
+        'Americas' => 'South America',
+        'Asia' => 'Southeast Asia',
+        'Europe' => 'Western Europe',
+        'Oceania' => 'Oceania',
+    ],
     'legacy_region_aliases' => [
         'Europe' => ['Western Europe', 'Eastern Europe'],
         'Asia' => ['East Asia', 'Southeast Asia', 'South Asia', 'Middle East'],
