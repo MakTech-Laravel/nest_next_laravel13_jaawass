@@ -7,6 +7,15 @@ enum MailTemplate: string
     case Welcome = 'welcome';
     case PasswordResetOtp = 'password-reset-otp';
     case AccountRestoreOtp = 'account-restore-otp';
+    case EmailVerification = 'email-verification';
+    case ManufacturerUnderReview = 'manufacturer-under-review';
+    case BuyerRegistrationReminder = 'buyer-registration-reminder';
+    case RfqSubmittedBuyer = 'rfq-submitted-buyer';
+    case ManufacturerRegistrationReminder = 'manufacturer-registration-reminder';
+    case ManufacturerActivationReminder = 'manufacturer-activation-reminder';
+    case PaymentFailed = 'payment-failed';
+    case PasswordChanged = 'password-changed';
+    case AdminNewInquiry = 'admin-new-inquiry';
     case ManufacturerAdditionalInformation = 'manufacturer-additional-information';
     case AdminManufacturerAdditionalInformationResponse = 'admin-manufacturer-additional-information-response';
     case ManufacturerAdminMessage = 'manufacturer-admin-message';
@@ -21,7 +30,6 @@ enum MailTemplate: string
     case OrderCreatedManufacturer = 'order-created-manufacturer';
     case OrderCreatedAdmin = 'order-created-admin';
     case OrderStatusUpdated = 'order-status-updated';
-    case EmailVerification = 'email-verification';
     case RfqCreatedManufacturer = 'rfq-created-manufacturer';
     case RfqQuotedBuyer = 'rfq-quoted-buyer';
     case RfqStatusUpdated = 'rfq-status-updated';

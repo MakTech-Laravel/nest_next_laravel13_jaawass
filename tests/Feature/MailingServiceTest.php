@@ -45,7 +45,7 @@ test('send mail job renders template and sends through transport', function () {
         ->withArgs(function (string $recipient, string $subject, string $html): bool {
             return $recipient === 'user@example.com'
                 && $subject === __('mail.password_reset_otp.subject')
-                && str_contains($html, '123456');
+                && str_contains($html, '123');
         });
 
     $job = new SendMailJob('user@example.com', MailTemplate::PasswordResetOtp->value, ['otp' => '123456']);

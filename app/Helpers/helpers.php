@@ -55,3 +55,11 @@ if (! function_exists('storage_url')) {
         return Storage::disk('public')->url($trimmed);
     }
 }
+
+
+if (! function_exists('public_url')) {
+    function public_url(?string $path): ?string
+    {
+        return config('app.url') . '/' . $path;
+    }
+}

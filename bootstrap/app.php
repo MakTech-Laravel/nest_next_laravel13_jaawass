@@ -39,6 +39,18 @@ return Application::configure(basePath: dirname(__DIR__))
             ->dailyAt('09:00')
             ->timezone(config('app.timezone'));
 
+        $schedule->command('registration:send-buyer-reminders')
+            ->dailyAt('10:00')
+            ->timezone(config('app.timezone'));
+
+        $schedule->command('registration:send-manufacturer-reminders')
+            ->dailyAt('10:15')
+            ->timezone(config('app.timezone'));
+
+        $schedule->command('manufacturer:send-activation-reminders')
+            ->dailyAt('10:30')
+            ->timezone(config('app.timezone'));
+
         if (config('currency.fx_sync.enabled', false)) {
             $schedule->command('currency:sync-rates')
                 ->dailyAt('00:00')

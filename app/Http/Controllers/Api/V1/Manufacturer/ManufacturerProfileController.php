@@ -7,6 +7,7 @@ use App\Http\Requests\Api\V1\Manufacturer\Profile\UpdateManufacturerProfileReque
 use App\Http\Resources\Api\V1\UserResource;
 use App\Models\User;
 use App\Models\UserFactoryImage;
+use App\Services\Auth\PasswordChangedNotificationService;
 use App\Services\Company\CompanySlugService;
 use App\Services\Manufacturer\ManufacturerExportMarketService;
 use App\Support\Manufacturer\ManufacturerProfileRelations;
@@ -218,7 +219,7 @@ class ManufacturerProfileController extends Controller
         );
     }
 
-    public function changePassword(Request $request)
+    public function changePassword(Request $request, PasswordChangedNotificationService $passwordChangedNotificationService)
     {
         $validated = $request->validate([
             'current_password' => 'required|string',
@@ -239,6 +240,8 @@ class ManufacturerProfileController extends Controller
         $user->update([
             'password' => Hash::make($validated['password']),
         ]);
+
+        $passwordChangedNotificationService->notify($user, $request);
 
         return sendResponse(
             status: true,

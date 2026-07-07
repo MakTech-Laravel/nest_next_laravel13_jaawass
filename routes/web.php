@@ -7,6 +7,11 @@ Route::get('/', function () {
 });
 
 
+
+Route::get('/welcome-email', function () {
+    return view('mail.welcome');
+});
+
 Route::get('/oauth/token-capture', function () {
     return response()->make('
 <!DOCTYPE html>

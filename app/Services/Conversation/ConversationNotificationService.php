@@ -24,25 +24,29 @@ class ConversationNotificationService
         }
 
         $senderName = MailNotificationHelper::displayName($sender);
+        $sender->loadMissing('company');
+        $senderCompany = $sender->company?->company_name;
         $preview = $this->messagePreview($message->body);
         $url = $this->conversationUrl($recipient, $conversation);
 
-        MailNotificationHelper::sendIfEmail($recipient, function (string $email) use ($recipient, $senderName, $preview, $url): void {
+        MailNotificationHelper::sendIfEmail($recipient, function (string $email) use ($recipient, $sender, $senderName, $senderCompany, $preview, $url, $message): void {
             $this->mailingService->send($email, MailTemplate::ConversationMessageReceived, [
-                'preheader' => __('mail.conversation_message_received.preheader', ['senderName' => $senderName]),
-                'headerEyebrow' => __('mail.layout.default_eyebrow'),
-                'headerTitle' => __('mail.conversation_message_received.header_title'),
-                'headerSubtitle' => __('mail.conversation_message_received.header_subtitle'),
+                'recipientName' => MailNotificationHelper::displayName($recipient),
+                'senderName' => $senderName,
+                'senderDisplayName' => $senderCompany ? $senderName.' — '.$senderCompany : $senderName,
+                'senderMeta' => $sender->role?->value === UserRole::MANUFACTURER->value
+                    ? __('mail.demo.badges.manufacturer').($sender->company?->country ? ' · '.$sender->company->country : '')
+                    : null,
+                'senderInitials' => MailNotificationHelper::initials($senderName),
+                'messagePreview' => $preview ? nl2br(e($preview)) : null,
+                'messageTimestamp' => $message->created_at?->format('M j, g:i A') ?? now()->format('M j, g:i A'),
                 'intro' => __('mail.conversation_message_received.intro', [
                     'name' => MailNotificationHelper::displayName($recipient),
                     'sender' => $senderName,
                     'senderName' => $senderName,
                 ]),
-                'messageHeading' => __('mail.conversation_message_received.message_heading'),
-                'messageBody' => $preview ? nl2br(e($preview)) : null,
                 'ctaUrl' => $url,
                 'ctaLabel' => __('mail.conversation_message_received.cta'),
-                'footerNote' => __('mail.conversation_message_received.footer'),
             ]);
         }, 'conversation.message');
 

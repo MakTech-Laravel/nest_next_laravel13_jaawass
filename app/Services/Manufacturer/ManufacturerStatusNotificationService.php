@@ -20,22 +20,17 @@ class ManufacturerStatusNotificationService
         $manufacturer->loadMissing('company');
         $company = $manufacturer->company?->company_name ?? config('app.name');
         $name = MailNotificationHelper::displayName($manufacturer);
-        $dashboardUrl = MailNotificationHelper::frontendUrl('dashboard/manufacturer');
-        $supportUrl = MailNotificationHelper::frontendUrl('dashboard/manufacturer/support-tickets');
+        $subscriptionUrl = MailNotificationHelper::frontendUrl('subscription');
+        $profileUrl = MailNotificationHelper::frontendUrl('dashboard/manufacturer/profile');
 
         if ($status === UserManuFactureStatus::APPROVED) {
-            MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($name, $company, $dashboardUrl): void {
+            MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($name, $company, $subscriptionUrl): void {
                 $this->mailingService->send($email, MailTemplate::ManufacturerApproved, [
-                    'preheader' => __('mail.manufacturer_approved.preheader'),
-                    'headerEyebrow' => __('mail.layout.default_eyebrow'),
-                    'headerTitle' => __('mail.manufacturer_approved.header_title'),
-                    'headerSubtitle' => __('mail.manufacturer_approved.header_subtitle'),
-                    'alertTag' => __('mail.manufacturer_approved.alert_tag'),
-                    'alertHeading' => __('mail.manufacturer_approved.alert_heading'),
+                    'name' => $name,
+                    'company' => $company,
                     'intro' => __('mail.manufacturer_approved.intro', ['name' => $name, 'company' => $company]),
-                    'ctaUrl' => $dashboardUrl,
+                    'ctaUrl' => $subscriptionUrl,
                     'ctaLabel' => __('mail.manufacturer_approved.cta'),
-                    'footerNote' => __('mail.manufacturer_approved.footer'),
                 ]);
             });
 
@@ -44,25 +39,22 @@ class ManufacturerStatusNotificationService
                 'manufacturer.approved',
                 __('mail.manufacturer_approved.notification_title'),
                 __('mail.manufacturer_approved.notification_body'),
-                $dashboardUrl,
+                $subscriptionUrl,
             );
 
             return;
         }
 
         if ($status === UserManuFactureStatus::REJECTED) {
-            MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($name, $company, $reason, $supportUrl): void {
+            MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($name, $company, $reason, $profileUrl): void {
                 $this->mailingService->send($email, MailTemplate::ManufacturerRejected, [
-                    'preheader' => __('mail.manufacturer_rejected.preheader'),
-                    'headerEyebrow' => __('mail.layout.default_eyebrow'),
-                    'headerTitle' => __('mail.manufacturer_rejected.header_title'),
-                    'headerSubtitle' => __('mail.manufacturer_rejected.header_subtitle'),
+                    'name' => $name,
+                    'company' => $company,
+                    'reason' => $reason,
+                    'decisionDate' => now()->format('F j, Y'),
                     'intro' => __('mail.manufacturer_rejected.intro', ['name' => $name, 'company' => $company]),
-                    'messageHeading' => __('mail.manufacturer_rejected.message_heading'),
-                    'messageBody' => $reason ? nl2br(e($reason)) : null,
-                    'ctaUrl' => $supportUrl,
+                    'ctaUrl' => $profileUrl,
                     'ctaLabel' => __('mail.manufacturer_rejected.cta'),
-                    'footerNote' => __('mail.manufacturer_rejected.footer'),
                 ]);
             });
 
@@ -71,7 +63,7 @@ class ManufacturerStatusNotificationService
                 'manufacturer.rejected',
                 __('mail.manufacturer_rejected.notification_title'),
                 __('mail.manufacturer_rejected.notification_body'),
-                $supportUrl,
+                $profileUrl,
             );
         }
     }

@@ -69,10 +69,11 @@ final class MailNotificationHelper
     /**
      * @return array<string, mixed>
      */
-    public static function otpMailPayload(string $otp, string $translationPrefix, ?string $expires = null): array
+    public static function otpMailPayload(string $otp, string $translationPrefix, ?string $expires = null, ?string $variant = null): array
     {
         return [
             'otp' => $otp,
+            'variant' => $variant ?? (str_contains($translationPrefix, 'account_restore') ? 'account-restore' : 'password-reset'),
             'preheader' => __($translationPrefix.'.intro'),
             'intro' => __($translationPrefix.'.intro'),
             'headerEyebrow' => __('mail.layout.otp_eyebrow'),
@@ -81,5 +82,16 @@ final class MailNotificationHelper
             'expires' => $expires,
             'footerNote' => __('mail.layout.footer_default'),
         ];
+    }
+
+    public static function initials(?string $name): string
+    {
+        $parts = preg_split('/\s+/', trim((string) $name)) ?: [];
+
+        if ($parts === []) {
+            return 'SN';
+        }
+
+        return strtoupper(collect($parts)->take(2)->map(fn (string $part): string => mb_substr($part, 0, 1))->implode(''));
     }
 }

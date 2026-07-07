@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1\Buyer;
 
+use App\Services\Auth\PasswordChangedNotificationService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Buyer\UpdateProfileRequest;
 use App\Http\Resources\Api\V1\UserResource;
@@ -82,7 +83,7 @@ class BuyerProfileController extends Controller
         );
     }
 
-    public function changePassword(Request $request)
+    public function changePassword(Request $request, PasswordChangedNotificationService $passwordChangedNotificationService)
     {
         $validated = $request->validate([
             'current_password' => 'required|string',
@@ -104,6 +105,8 @@ class BuyerProfileController extends Controller
         $user->update([
             'password' => Hash::make($validated['password']),
         ]);
+
+        $passwordChangedNotificationService->notify($user, $request);
 
         return sendResponse(
             status: true,

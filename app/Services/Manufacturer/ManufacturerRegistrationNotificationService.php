@@ -41,7 +41,7 @@ class ManufacturerRegistrationNotificationService
     {
         $companyName = MailNotificationHelper::companyOrName($manufacturer);
         $manufacturerName = MailNotificationHelper::displayName($manufacturer);
-        $referenceId = sprintf('SN-MFR-REG-%06d', $manufacturer->id);
+        $referenceId = sprintf('REG-%s-%04d', now()->format('Ymd'), $manufacturer->id);
         $reviewUrl = $this->reviewUrl($manufacturer);
         $notes = trim((string) ($manufacturer->company?->notes ?? ''));
 
@@ -51,30 +51,29 @@ class ManufacturerRegistrationNotificationService
             'email' => (string) $manufacturer->email,
         ];
 
+        $details = array_filter([
+            __('mail.manufacturer_registered_admin.company') => $companyName,
+            __('mail.manufacturer_registered_admin.contact') => $manufacturerName,
+            __('mail.manufacturer_registered_admin.email') => $manufacturer->email,
+            __('mail.manufacturer_registered_admin.country') => $manufacturer->company?->country,
+            __('mail.manufacturer_registered_admin.city') => $manufacturer->company?->city,
+            __('mail.manufacturer_registered_admin.registered_at') => $manufacturer->created_at?->format('F j, Y g:i A'),
+            __('mail.manufacturer_registered_admin.registration_id') => $referenceId,
+        ]);
+
         return [
             'company' => $companyName,
             'name' => $manufacturerName,
             'email' => (string) $manufacturer->email,
             'preheader' => __('mail.manufacturer_registered_admin.preheader', $replacements),
-            'headerEyebrow' => __('mail.layout.default_eyebrow'),
-            'headerTitle' => __('mail.manufacturer_registered_admin.header_title'),
-            'headerSubtitle' => __('mail.manufacturer_registered_admin.header_subtitle'),
             'intro' => __('mail.manufacturer_registered_admin.intro', $replacements),
             'messageHeading' => $notes !== '' ? __('mail.manufacturer_registered_admin.message_heading') : null,
             'messageBody' => $notes !== '' ? nl2br(e($notes)) : null,
-            'detailsHeading' => __('mail.manufacturer_registered_admin.details_heading'),
-            'details' => array_filter([
-                __('mail.manufacturer_registered_admin.company') => $companyName,
-                __('mail.manufacturer_registered_admin.contact') => $manufacturerName,
-                __('mail.manufacturer_registered_admin.email') => $manufacturer->email,
-                __('mail.manufacturer_registered_admin.country') => $manufacturer->company?->country,
-                __('mail.manufacturer_registered_admin.city') => $manufacturer->company?->city,
-                __('mail.manufacturer_registered_admin.registered_at') => $manufacturer->created_at?->format('F j, Y g:i A'),
-            ]),
+            'details' => $details,
             'ctaUrl' => $reviewUrl,
             'ctaLabel' => __('mail.manufacturer_registered_admin.cta'),
+            'allRegistrationsUrl' => MailNotificationHelper::frontendUrl('admin/manufacturer-registrations'),
             'referenceId' => $referenceId,
-            'footerNote' => __('mail.manufacturer_registered_admin.footer'),
         ];
     }
 

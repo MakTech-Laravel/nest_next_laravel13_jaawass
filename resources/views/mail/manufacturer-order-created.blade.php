@@ -1,4 +1,4 @@
-@extends('mail.layouts.sourcenest')
+@extends('mail.layouts.classic')
 
 @section('title', __('mail.manufacturer_order_created.subject', ['orderNumber' => $orderNumber, 'manufacturerName' => $manufacturerName]))
 @section('preheader', __('mail.manufacturer_order_created.preheader', ['manufacturerName' => $manufacturerName]))

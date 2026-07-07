@@ -12,6 +12,7 @@ use App\Http\Requests\Api\V1\Account\RestoreDeleteOtpRequest;
 use App\Http\Requests\Api\V1\Account\RestoreDeleteVerifyRequest;
 use App\Http\Resources\Api\V1\UserLoginHistoryResource;
 use App\Enums\MailTemplate;
+use App\Services\Auth\PasswordChangedNotificationService;
 use App\Services\Mailing\MailingService;
 use App\Support\Mail\MailNotificationHelper;
 use App\Models\User;
@@ -201,13 +202,15 @@ class AccountController extends Controller
         return sendResponse(status: true, message: __('account.restore_success'), data: null, statusCode: HttpStatus::HTTP_OK);
     }
 
-    public function changePassword(ChangePasswordRequest $request): JsonResponse
+    public function changePassword(ChangePasswordRequest $request, PasswordChangedNotificationService $passwordChangedNotificationService): JsonResponse
     {
         $user = $request->user();
 
         $user->forceFill([
             'password' => $request->validated('password'),
         ])->save();
+
+        $passwordChangedNotificationService->notify($user, $request);
 
         return sendResponse(status: true, message: __('account.password_changed'), data: null, statusCode: HttpStatus::HTTP_OK);
     }
