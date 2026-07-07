@@ -8,6 +8,7 @@ use App\Http\Requests\Api\V1\Subscription\Manufacturer\SubcriptionUpdgradeRquest
 use App\Http\Requests\Api\V1\Subscription\Manufacturer\SubscriptionStoreRequest;
 use App\Http\Resources\Api\V1\SubscriptionResource;
 use App\Models\Payment;
+use App\Services\Payment\PaymentFailedNotificationService;
 use App\Services\Subscription\PlanEntitlementResolver;
 use App\Services\Subscription\SubscriptionPurchaseService;
 use App\Services\Subscription\SubscriptionService;
@@ -23,7 +24,7 @@ class SubscriptionController extends Controller
         private readonly PlanEntitlementResolver $entitlementResolver,
     ) {}
 
-    public function subscribe(SubscriptionStoreRequest $request)
+    public function subscribe(SubscriptionStoreRequest $request, PaymentFailedNotificationService $paymentFailedNotificationService)
     {
         $manufacturer = $request->user();
         $validated = $request->validated();
@@ -65,6 +66,8 @@ class SubscriptionController extends Controller
                 ? $this->purchaseService->renewPurchase($manufacturer, $validated)
                 : $this->purchaseService->confirmPurchase($manufacturer, $validated);
         } catch (PaymentVerificationException $exception) {
+            $paymentFailedNotificationService->notify($manufacturer);
+
             return sendResponse(
                 status: false,
                 message: $exception->getMessage(),
@@ -130,7 +133,7 @@ class SubscriptionController extends Controller
         );
     }
 
-    public function upgrade(SubcriptionUpdgradeRquest $request)
+    public function upgrade(SubcriptionUpdgradeRquest $request, PaymentFailedNotificationService $paymentFailedNotificationService)
     {
         try {
             $subscription = $this->purchaseService->upgradePurchase(
@@ -138,6 +141,8 @@ class SubscriptionController extends Controller
                 $request->validated(),
             );
         } catch (PaymentVerificationException $exception) {
+            $paymentFailedNotificationService->notify($request->user());
+
             return sendResponse(
                 status: false,
                 message: $exception->getMessage(),

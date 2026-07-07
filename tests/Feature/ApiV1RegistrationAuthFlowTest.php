@@ -132,6 +132,9 @@ test('manufacturer can register with required files and optional fields', functi
     expect($info->bussiness_license)->not->toBeNull();
     expect(Storage::disk('public')->exists($info->bussiness_license))->toBeTrue();
 
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->recipient === $user->email
+        && $job->template === MailTemplate::ManufacturerUnderReview->value);
+
     Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->recipient === 'admin@example.com'
         && $job->template === MailTemplate::ManufacturerRegisteredAdmin->value);
 

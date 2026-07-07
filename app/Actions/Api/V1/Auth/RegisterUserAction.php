@@ -14,6 +14,7 @@ use App\Services\Auth\EmailVerificationService;
 use App\Services\Mailing\MailingService;
 use App\Services\Manufacturer\ManufacturerRegistrationNotificationService;
 use App\Services\Platform\PlatformSettingsService;
+use App\Support\Mail\MailNotificationHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -70,9 +71,6 @@ class RegisterUserAction
             }
 
             $user = User::query()->create($userAttributes);
-            $this->mailingService->send($user->email, MailTemplate::Welcome, [
-                'firstName' => trim($user->first_name) !== '' ? trim($user->first_name) : 'there',
-            ]);
 
             $informationPayload = [
                 'user_id' => $user->id,
@@ -94,6 +92,21 @@ class RegisterUserAction
             }
 
             Company::query()->create($informationPayload);
+
+            if ($role === UserRole::BUYER->value) {
+                $this->mailingService->send($user->email, MailTemplate::Welcome, [
+                    'firstName' => trim($user->first_name) !== '' ? trim($user->first_name) : 'there',
+                ]);
+            }
+
+            if ($role === UserRole::MANUFACTURER->value) {
+                $this->mailingService->send($user->email, MailTemplate::ManufacturerUnderReview, [
+                    'name' => MailNotificationHelper::displayName($user),
+                    'company' => $validated['company_name'],
+                    'submittedAt' => now()->format('F j, Y'),
+                    'ctaUrl' => MailNotificationHelper::frontendUrl('dashboard/manufacturer'),
+                ]);
+            }
 
             if ($role === UserRole::MANUFACTURER->value) {
                 $manufacturerResult = [

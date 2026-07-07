@@ -19,8 +19,9 @@ class RfqNotificationService
 
     public function notifyCreated(RfqSubmission $rfq): void
     {
-        $rfq->loadMissing(['buyer', 'manufacturer.company', 'product']);
+        $rfq->loadMissing(['buyer.company', 'manufacturer.company', 'product']);
         $manufacturer = $rfq->manufacturer;
+        $buyer = $rfq->buyer;
 
         if ($manufacturer === null) {
             return;
@@ -28,28 +29,42 @@ class RfqNotificationService
 
         $rfqNumber = $this->rfqNumber($rfq);
         $buyerName = MailNotificationHelper::displayName($rfq->buyer);
+        $buyerCompany = $rfq->buyer?->company?->company_name;
         $productName = $rfq->product?->name ?? __('order.product');
-        $url = $this->manufacturerRfqUrl($rfq);
+        $manufacturerUrl = $this->manufacturerRfqUrl($rfq);
+        $buyerUrl = $this->buyerRfqUrl($rfq);
+        $messagePreview = trim((string) ($rfq->additional_requirements ?? ''));
 
-        MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($rfq, $rfqNumber, $buyerName, $productName, $url, $manufacturer): void {
-            $this->mailingService->send($email, MailTemplate::RfqCreatedManufacturer, $this->transactionalMail(
-                prefix: 'mail.rfq_created_manufacturer',
-                recipientName: MailNotificationHelper::displayName($manufacturer),
-                replacements: [
-                    'name' => MailNotificationHelper::displayName($manufacturer),
-                    'buyer' => $buyerName,
-                    'buyerName' => $buyerName,
-                    'rfq' => $rfqNumber,
-                    'rfqNumber' => $rfqNumber,
-                    'product' => $productName,
-                ],
-                details: $this->rfqDetails($rfq),
-                ctaUrl: $url,
-                ctaLabel: __('mail.rfq_created_manufacturer.cta'),
-                referenceId: $rfqNumber,
-                footerNote: __('mail.rfq_created_manufacturer.footer'),
-            ));
+        MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($rfq, $rfqNumber, $buyerName, $buyerCompany, $productName, $manufacturerUrl, $manufacturer, $messagePreview): void {
+            $this->mailingService->send($email, MailTemplate::RfqCreatedManufacturer, [
+                'recipientName' => MailNotificationHelper::displayName($manufacturer),
+                'buyerName' => $buyerName,
+                'buyerDisplayName' => $buyerCompany ? $buyerName.' — '.$buyerCompany : $buyerName,
+                'buyerMeta' => __('mail.demo.badges.buyer').($rfq->buyer?->company?->country ? ' · '.$rfq->buyer->company->country : ''),
+                'buyerInitials' => MailNotificationHelper::initials($buyerName),
+                'rfqNumber' => $rfqNumber,
+                'productName' => $productName,
+                'messagePreview' => $messagePreview !== '' ? nl2br(e(mb_strlen($messagePreview) > 280 ? mb_substr($messagePreview, 0, 277).'...' : $messagePreview)) : null,
+                'inquiryTimestamp' => $rfq->created_at?->format('M j, g:i A'),
+                'inquiryTags' => array_filter([
+                    ['label' => 'Product', 'value' => $productName],
+                    $rfq->quantity !== null ? ['label' => 'Qty', 'value' => $rfq->quantity.' '.($rfq->quantity_unit ?? '')] : null,
+                ]),
+                'details' => $this->rfqDetails($rfq),
+                'ctaUrl' => $manufacturerUrl,
+            ]);
         }, 'rfq.created');
+
+        if ($buyer !== null) {
+            MailNotificationHelper::sendIfEmail($buyer, function (string $email) use ($buyerName, $rfqNumber, $productName, $buyerUrl): void {
+                $this->mailingService->send($email, MailTemplate::RfqSubmittedBuyer, [
+                    'buyerName' => $buyerName,
+                    'rfqNumber' => $rfqNumber,
+                    'productName' => $productName,
+                    'ctaUrl' => $buyerUrl,
+                ]);
+            }, 'rfq.created');
+        }
 
         $this->dispatchInApp(
             recipient: $manufacturer,
@@ -62,7 +77,7 @@ class RfqNotificationService
                 'product' => $productName,
             ]),
             data: ['rfq_id' => $rfq->id, 'rfq_number' => $rfqNumber],
-            actionUrl: $url,
+            actionUrl: $manufacturerUrl,
         );
     }
 

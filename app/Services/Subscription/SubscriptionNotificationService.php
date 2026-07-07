@@ -115,11 +115,16 @@ class SubscriptionNotificationService
         $this->mailingService->send(
             $manufacturer->email,
             MailTemplate::SubscriptionCreated,
-            $this->transactionalMail(
-                'mail.subscription_created',
-                $this->enrollmentMailData($subscription, $paidAmount),
-                ['plan' => $subscription->plan?->name ?? __('subscription.plan')],
-            ),
+            array_merge($this->enrollmentMailData($subscription, $paidAmount), [
+                'manufacturerName' => $this->displayName($subscription->manufacturer),
+                'intro' => __('mail.subscription_created.intro', [
+                    'name' => $this->displayName($subscription->manufacturer),
+                    'plan' => $subscription->plan?->name ?? __('subscription.plan'),
+                ]),
+                'activatedAt' => now()->format('F j, Y'),
+                'ctaUrl' => $this->plansUrl(),
+                'ctaLabel' => __('mail.subscription_created.cta'),
+            ]),
         );
 
         $this->dispatchInAppNotification(

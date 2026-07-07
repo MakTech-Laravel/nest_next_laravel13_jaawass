@@ -8,13 +8,14 @@ use App\Http\Requests\Api\V1\Admin\UpdateContactReadStatusRequest;
 use App\Http\Requests\Api\V1\StoreContactRequest;
 use App\Http\Resources\Api\V1\ContactResource;
 use App\Models\Contact;
+use App\Services\Contact\ContactNotificationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
 class ContactController extends Controller
 {
-    public function store(StoreContactRequest $request): JsonResponse
+    public function store(StoreContactRequest $request, ContactNotificationService $contactNotificationService): JsonResponse
     {
         $validated = $request->validated();
 
@@ -42,6 +43,8 @@ class ContactController extends Controller
         );
 
         $contact->load('translations');
+
+        $contactNotificationService->notifyAdmins($contact);
 
         return sendResponse(
             status: true,

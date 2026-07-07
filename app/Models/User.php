@@ -42,6 +42,9 @@ use Laravel\Passport\HasApiTokens;
     'facebook_id',
     'avatar',
     'email_verified_at',
+    'buyer_registration_reminder_sent_at',
+    'manufacturer_registration_reminder_sent_at',
+    'manufacturer_activation_reminder_sent_at',
     'preferred_currency_id',
     'preferred_language',
     'timezone',
@@ -85,6 +88,9 @@ class User extends Authenticatable implements OAuthenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'buyer_registration_reminder_sent_at' => 'datetime',
+            'manufacturer_registration_reminder_sent_at' => 'datetime',
+            'manufacturer_activation_reminder_sent_at' => 'datetime',
             'password' => 'hashed',
             'role' => UserRole::class,
             'status' => UserStatus::class,

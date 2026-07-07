@@ -1,4 +1,4 @@
-@extends('mail.layouts.sourcenest')
+@extends('mail.layouts.classic')
 
 @section('title', $subjectLine ?? __('mail.layout.otp_title'))
 @section('preheader', $preheader ?? '')

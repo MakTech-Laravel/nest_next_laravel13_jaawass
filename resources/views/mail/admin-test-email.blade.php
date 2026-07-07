@@ -1,4 +1,4 @@
-@extends('mail.layouts.sourcenest')
+@extends('mail.layouts.classic')
 
 @section('title', __('mail.admin_test_email.subject'))
 @section('preheader', __('mail.admin_test_email.preheader'))

@@ -8,6 +8,10 @@ return [
 
   'dispatch_sequence_cache_key' => 'mailing:dispatch_sequence',
 
+  'registration_reminder_days' => (int) env('MAILING_REGISTRATION_REMINDER_DAYS', 3),
+
+  'activation_reminder_days' => (int) env('MAILING_ACTIVATION_REMINDER_DAYS', 3),
+
   'templates' => [
     'welcome' => [
       'view' => 'mail.welcome',
@@ -15,18 +19,58 @@ return [
       'markdown' => false,
     ],
     'password-reset-otp' => [
-      'view' => 'mail.otp',
+      'view' => 'mail.otp-security',
       'subject' => 'mail.password_reset_otp.subject',
       'markdown' => false,
     ],
     'account-restore-otp' => [
-      'view' => 'mail.otp',
+      'view' => 'mail.otp-security',
       'subject' => 'mail.account_restore_otp.subject',
       'markdown' => false,
     ],
     'email-verification' => [
-      'view' => 'mail.otp',
+      'view' => 'mail.otp-verification',
       'subject' => 'mail.email_verification.subject',
+      'markdown' => false,
+    ],
+    'manufacturer-under-review' => [
+      'view' => 'mail.manufacturer-under-review',
+      'subject' => 'mail.manufacturer_under_review.subject',
+      'markdown' => false,
+    ],
+    'buyer-registration-reminder' => [
+      'view' => 'mail.buyer-registration-reminder',
+      'subject' => 'mail.buyer_registration_reminder.subject',
+      'markdown' => false,
+    ],
+    'rfq-submitted-buyer' => [
+      'view' => 'mail.rfq-submitted-buyer',
+      'subject' => 'mail.rfq_submitted_buyer.subject',
+      'markdown' => false,
+    ],
+    'manufacturer-registration-reminder' => [
+      'view' => 'mail.manufacturer-registration-reminder',
+      'subject' => 'mail.manufacturer_registration_reminder.subject',
+      'markdown' => false,
+    ],
+    'manufacturer-activation-reminder' => [
+      'view' => 'mail.manufacturer-activation-reminder',
+      'subject' => 'mail.manufacturer_activation_reminder.subject',
+      'markdown' => false,
+    ],
+    'payment-failed' => [
+      'view' => 'mail.payment-failed',
+      'subject' => 'mail.payment_failed.subject',
+      'markdown' => false,
+    ],
+    'password-changed' => [
+      'view' => 'mail.password-changed',
+      'subject' => 'mail.password_changed.subject',
+      'markdown' => false,
+    ],
+    'admin-new-inquiry' => [
+      'view' => 'mail.admin-new-inquiry',
+      'subject' => 'mail.admin_new_inquiry.subject',
       'markdown' => false,
     ],
     'manufacturer-additional-information' => [
@@ -70,7 +114,7 @@ return [
       'markdown' => false,
     ],
     'subscription-created' => [
-      'view' => 'mail.transactional',
+      'view' => 'mail.subscription-activated',
       'subject' => 'mail.subscription_created.subject',
       'markdown' => false,
     ],
@@ -100,7 +144,7 @@ return [
       'markdown' => false,
     ],
     'rfq-created-manufacturer' => [
-      'view' => 'mail.transactional',
+      'view' => 'mail.rfq-created-manufacturer',
       'subject' => 'mail.rfq_created_manufacturer.subject',
       'markdown' => false,
     ],
@@ -115,7 +159,7 @@ return [
       'markdown' => false,
     ],
     'conversation-message-received' => [
-      'view' => 'mail.transactional',
+      'view' => 'mail.conversation-reply-received',
       'subject' => 'mail.conversation_message_received.subject',
       'markdown' => false,
     ],
@@ -140,17 +184,17 @@ return [
       'markdown' => false,
     ],
     'manufacturer-approved' => [
-      'view' => 'mail.transactional',
+      'view' => 'mail.manufacturer-approved',
       'subject' => 'mail.manufacturer_approved.subject',
       'markdown' => false,
     ],
     'manufacturer-rejected' => [
-      'view' => 'mail.transactional',
+      'view' => 'mail.manufacturer-rejected',
       'subject' => 'mail.manufacturer_rejected.subject',
       'markdown' => false,
     ],
     'manufacturer-registered-admin' => [
-      'view' => 'mail.transactional',
+      'view' => 'mail.admin-manufacturer-registered',
       'subject' => 'mail.manufacturer_registered_admin.subject',
       'markdown' => false,
     ],

@@ -56,6 +56,9 @@ test('rfq created sends email to manufacturer', function () {
 
     Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->recipient === $manufacturer->email
         && $job->template === MailTemplate::RfqCreatedManufacturer->value);
+
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->recipient === $buyer->email
+        && $job->template === MailTemplate::RfqSubmittedBuyer->value);
 });
 
 test('support ticket created sends email to user and admin', function () {
