@@ -60,6 +60,14 @@ if (! function_exists('storage_url')) {
 if (! function_exists('public_url')) {
     function public_url(?string $path): ?string
     {
-        return config('app.url') . '/' . $path;
+        if ($path === null || $path === '') {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        return rtrim((string) config('app.url'), '/').'/'.ltrim($path, '/');
     }
 }
