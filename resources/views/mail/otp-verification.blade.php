@@ -3,6 +3,7 @@
     $logoUrl = public_url('images/mail/sourcenest-logo.png');
     $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
     $supportEmail = config('mail.from.address', 'support@sourcenest.com');
+    $recipientName = trim($firstName ?? '') !== '' ? trim($firstName) : 'there';
 @endphp
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
@@ -63,8 +64,8 @@
                                 style="margin:0 auto 20px;">
                                 <tr>
                                     <td align="center" width="54" height="54" bgcolor="#4A3210"
-                                        style="width:54px;height:54px;background-color:rgba(200,169,106,0.1);border:1.5px solid rgba(200,169,106,0.22);border-radius:12px;text-align:center;vertical-align:middle;">
-                                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'%3E%3Crect x='3' y='8' width='18' height='13' rx='2' stroke='%23C8A96A' stroke-width='1.5'/%3E%3Cpath d='M3 11l9 6 9-6' stroke='%23C8A96A' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+                                        style="width:54px;height:54px; display:flex; justify-content:center; align-items:center; background-color:rgba(200,169,106,0.1);border:1.5px solid rgba(200,169,106,0.22);border-radius:12px;text-align:center;vertical-align:middle;">
+                                        <img src="{{ public_url('images/mail/svg/email.svg') }}"
                                             width="24" height="24" alt=""
                                             style="display:block;border:0;outline:none;text-decoration:none;margin:0 auto;">
                                     </td>
@@ -105,7 +106,7 @@
                             style="padding:28px 30px;background-color:#FFFFFF;border-bottom:1px solid #F0F0F0;">
                             <div
                                 style="font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;margin-bottom:13px;">
-                                Hello there,</div>
+                                Hello {{ $recipientName }},</div>
                             <p
                                 style="margin:0 0 4px 0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">
                                 Please use the verification code below to confirm your email address and activate your
