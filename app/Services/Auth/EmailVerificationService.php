@@ -160,6 +160,8 @@ class EmailVerificationService
 
     private function dispatchOtp(User $user, string $otp, int $ttlMinutes): void
     {
+        $expiresIn = $ttlMinutes.' '.($ttlMinutes === 1 ? 'minute' : 'minutes');
+
         $payload = MailNotificationHelper::otpMailPayload(
             $otp,
             'mail.email_verification',
@@ -169,6 +171,10 @@ class EmailVerificationService
         $payload['firstName'] = trim((string) ($user->first_name ?? '')) !== ''
             ? trim((string) $user->first_name)
             : 'there';
+        $payload['ttlMinutes'] = $ttlMinutes;
+        $payload['expiresIn'] = $expiresIn;
+        $payload['formattedOtp'] = preg_replace('/(\d{3})(?=\d)/', '$1 ', $otp);
+        $payload['ignoreNotice'] = __('mail.email_verification.ignore_notice');
 
         $this->mailingService->send($user->email, MailTemplate::EmailVerification, $payload);
     }
