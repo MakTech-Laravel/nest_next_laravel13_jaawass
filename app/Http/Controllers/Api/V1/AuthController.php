@@ -228,6 +228,10 @@ class AuthController extends Controller
             );
         }
 
+        if ($emailVerificationResponse = $this->emailVerificationRequiredLoginResponse($user)) {
+            return $emailVerificationResponse;
+        }
+
         if ($user->hasEnabledTwoFactorAuthentication()) {
             $plainToken = (string) Str::uuid();
             Cache::put('api_2fa_login:'.$plainToken, [
@@ -328,8 +332,39 @@ class AuthController extends Controller
         return $this->issueLoginTokenResponse($request, $user, $deviceName);
     }
 
+    protected function emailVerificationRequiredLoginResponse(User $user): ?JsonResponse
+    {
+        if (! $this->platformSettings->requiresEmailVerification()) {
+            return null;
+        }
+
+        if (! $user->role->isBuyer() && ! $user->role->isManufacturer()) {
+            return null;
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return null;
+        }
+
+        $challenge = app(EmailVerificationService::class)->sendChallenge($user);
+
+        return sendResponse(
+            status: true,
+            message: __('api.email_verification_required'),
+            data: [
+                'verification_token' => $challenge['verification_token'],
+                'code_expiry_time' => $challenge['code_expiry_time'],
+            ],
+            statusCode: HttpStatus::HTTP_OK,
+        );
+    }
+
     protected function issueLoginTokenResponse(Request $request, User $user, ?string $deviceName = null): JsonResponse
     {
+        if ($emailVerificationResponse = $this->emailVerificationRequiredLoginResponse($user)) {
+            return $emailVerificationResponse;
+        }
+
         $resolvedDevice = $deviceName ?? $request->string('device_name')->toString();
 
         $accessToken = app(IssuePersonalAccessTokenAction::class)->handle(
