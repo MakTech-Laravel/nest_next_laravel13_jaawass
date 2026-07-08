@@ -4,6 +4,11 @@
     $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
     $supportEmail = config('mail.from.address', 'support@sourcenest.com');
     $recipientName = trim($firstName ?? '') !== '' ? trim($firstName) : 'there';
+    $ttlMinutes = (int) ($ttlMinutes ?? config('account.email_verification_token_ttl_minutes', 5));
+    $expiresIn = $expiresIn ?? ($ttlMinutes.' '.($ttlMinutes === 1 ? 'minute' : 'minutes'));
+    $formattedOtp = $formattedOtp ?? preg_replace('/(\d{3})(?=\d)/', '$1 ', trim((string) ($otp ?? '')));
+    $introText = $intro ?? __('mail.email_verification.intro');
+    $ignoreNotice = $ignoreNotice ?? __('mail.email_verification.ignore_notice');
 @endphp
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
@@ -64,9 +69,9 @@
                                 style="margin:0 auto 20px;">
                                 <tr>
                                     <td align="center" width="54" height="54" bgcolor="#4A3210"
-                                        style="width:54px;height:54px; display:flex; justify-content:center; align-items:center; background-color:rgba(200,169,106,0.1);border:1.5px solid rgba(200,169,106,0.22);border-radius:12px;text-align:center;vertical-align:middle;">
-                                        <img src="{{ public_url('images/mail/svg/email.svg') }}"
-                                            width="24" height="24" alt=""
+                                        style="width:54px;height:54px;background-color:rgba(200,169,106,0.1);border:1.5px solid rgba(200,169,106,0.22);border-radius:12px;text-align:center;vertical-align:middle;">
+                                        <img src="{{ public_url('images/mail/svg/email.svg') }}" width="24"
+                                            height="24" alt=""
                                             style="display:block;border:0;outline:none;text-decoration:none;margin:0 auto;">
                                     </td>
                                 </tr>
@@ -109,8 +114,7 @@
                                 Hello {{ $recipientName }},</div>
                             <p
                                 style="margin:0 0 4px 0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">
-                                Please use the verification code below to confirm your email address and activate your
-                                {{ $platformName }} account.</p>
+                                {{ $introText }}</p>
 
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
                                 style="margin:4px 0;background-color:#F8F8F8;border:2px dashed #E8D5A8;border-radius:12px;border-collapse:separate;">
@@ -118,13 +122,13 @@
                                     <td align="center" style="padding:26px 20px;">
                                         <div
                                             style="font-weight:900;font-size:10px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:2px;text-transform:uppercase;color:#9A7A3A;margin-bottom:14px;">
-                                            Your verification code</div>
+                                            {{ __('mail.layout.otp_code_label') }}</div>
                                         <div
                                             style="font-weight:900;font-size:54px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#3B2800;letter-spacing:14px;">
-                                            847 291</div>
+                                            {{ $formattedOtp }}</div>
                                         <div
                                             style="font-weight:600;font-size:12px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;margin-top:12px;letter-spacing:0.2px;">
-                                            Use this code to continue · Valid for 10 minutes</div>
+                                            Use this code to continue · Valid for {{ $expiresIn }}</div>
                                     </td>
                                 </tr>
                             </table>
@@ -142,8 +146,9 @@
                                                         <tr>
                                                             <td align="center" width="22" height="22"
                                                                 bgcolor="#FBF7EE"
-                                                                style="width:22px;height:22px; display:flex; justify-content:center; align-items:center; background-color:#FBF7EE;border:1px solid #E8D5A8;border-radius:6px;text-align:center;vertical-align:middle;">
-                                                                <img src="{{ public_url('images/mail/svg/clock-icon.svg') }}" width="12" height="12" alt="Clock">
+                                                                style="width:22px;height:22px; background-color:#FBF7EE;border:1px solid #E8D5A8;border-radius:6px;text-align:center;vertical-align:middle;">
+                                                                <img src="{{ public_url('images/mail/svg/clock.svg') }}"
+                                                                    width="12" height="12" alt="Clock">
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -153,7 +158,7 @@
                                                     Expires in</td>
                                                 <td valign="middle"
                                                     style="padding-left:8px;font-weight:900;font-size:13px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#3B2800;">
-                                                    10 minutes</td>
+                                                    {{ $expiresIn }}</td>
                                             </tr>
                                         </table>
                                     </td>
@@ -195,17 +200,17 @@
                                                                     <tr>
                                                                         <td align="center" width="26"
                                                                             height="26" bgcolor="#FFFFFF"
-                                                                            style="display:flex; justify-content:center; display:flex; justify-content:center; align-items:center; width:26px;height:26px;background-color:#FFFFFF;border:1.5px solid #D6D6D6;border-radius:7px;text-align:center;vertical-align:middle;">
-                                                                            <img src="{{ public_url('images/mail/svg/info.svg') }}" width="12" height="12" alt="">
+                                                                            style="width:26px; height:26px; background-color:#FFFFFF;border:1.5px solid #D6D6D6;border-radius:7px;text-align:center;vertical-align:middle;">
+                                                                            <img src="{{ public_url('images/mail/svg/info.svg') }}"
+                                                                                width="12" height="12"
+                                                                                alt="">
                                                                         </td>
                                                                     </tr>
                                                                 </table>
                                                             </td>
                                                             <td valign="top"
                                                                 style="font-weight:400;font-size:12px;line-height:1.65;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">
-                                                                <strong style="font-weight:700;color:#2E2E2E;">Didn't
-                                                                    create an account?</strong> Simply ignore this email
-                                                                — no account will be created without verification.
+                                                                {{ $ignoreNotice }}
                                                             </td>
                                                         </tr>
                                                     </table>
