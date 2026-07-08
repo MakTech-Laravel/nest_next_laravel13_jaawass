@@ -171,3 +171,67 @@ test('buyer registration skips verification challenge when platform setting is d
         ->assertJsonPath('data.token_type', 'Bearer')
         ->assertJsonMissingPath('data.verification_token');
 });
+
+test('buyer login with unverified email returns verification token instead of access token', function (): void {
+    $password = 'secret123';
+    $user = User::factory()->unverified()->create([
+        'password' => $password,
+        'role' => UserRole::BUYER->value,
+    ]);
+
+    $response = $this->postJson('/api/v1/login', [
+        'email' => $user->email,
+        'password' => $password,
+        'role' => UserRole::BUYER->value,
+        'device_name' => 'iphone',
+    ])->assertOk()
+        ->assertJsonPath('message', __('api.email_verification_required'))
+        ->assertJsonPath('data.verification_token', fn ($token) => is_string($token) && $token !== '')
+        ->assertJsonPath('data.code_expiry_time', fn ($ttl) => is_int($ttl) && $ttl > 0)
+        ->assertJsonMissingPath('data.access_token')
+        ->assertJsonMissingPath('data.token_type');
+
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job): bool => $job->recipient === $user->email
+        && $job->template === 'email-verification');
+});
+
+test('manufacturer login with unverified email returns verification token instead of access token', function (): void {
+    $password = 'secret123';
+    $user = User::factory()->manufacturerApproved()->unverified()->create([
+        'password' => $password,
+    ]);
+
+    $response = $this->postJson('/api/v1/login', [
+        'email' => $user->email,
+        'password' => $password,
+        'role' => UserRole::MANUFACTURER->value,
+        'device_name' => 'iphone',
+    ])->assertOk()
+        ->assertJsonPath('message', __('api.email_verification_required'))
+        ->assertJsonPath('data.verification_token', fn ($token) => is_string($token) && $token !== '')
+        ->assertJsonPath('data.code_expiry_time', fn ($ttl) => is_int($ttl) && $ttl > 0)
+        ->assertJsonMissingPath('data.access_token')
+        ->assertJsonMissingPath('data.token_type');
+
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job): bool => $job->recipient === $user->email
+        && $job->template === 'email-verification');
+});
+
+test('buyer login with unverified email skips verification when platform setting is disabled', function (): void {
+    disableEmailVerificationRequirement();
+
+    $password = 'secret123';
+    $user = User::factory()->unverified()->create([
+        'password' => $password,
+        'role' => UserRole::BUYER->value,
+    ]);
+
+    $this->postJson('/api/v1/login', [
+        'email' => $user->email,
+        'password' => $password,
+        'role' => UserRole::BUYER->value,
+        'device_name' => 'iphone',
+    ])->assertOk()
+        ->assertJsonPath('data.token_type', 'Bearer')
+        ->assertJsonMissingPath('data.verification_token');
+});
