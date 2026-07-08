@@ -21,8 +21,11 @@ class BuyerRegistrationReminderService
         }
 
         MailNotificationHelper::sendIfEmail($user, function (string $email) use ($user): void {
+            $firstName = trim((string) ($user->first_name ?? ''));
+
             $this->mailingService->send($email, MailTemplate::BuyerRegistrationReminder, [
                 'name' => MailNotificationHelper::displayName($user),
+                'firstName' => $firstName !== '' ? $firstName : 'there',
                 'ctaUrl' => MailNotificationHelper::frontendUrl($user->hasVerifiedEmail() ? 'dashboard/buyer' : 'verify'),
             ]);
         });
