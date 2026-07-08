@@ -28,7 +28,7 @@ class EmailVerificationService
         $ttlMinutes = $this->ttlMinutes();
 
         $this->storeChallenge($plainToken, $user->id, $otp, $ttlMinutes);
-        $this->dispatchOtp($user->email, $otp, $ttlMinutes);
+        $this->dispatchOtp($user, $otp, $ttlMinutes);
 
         return [
             'verification_token' => $plainToken,
@@ -106,7 +106,7 @@ class EmailVerificationService
         $ttlMinutes = $this->ttlMinutes();
 
         $this->storeChallenge($verificationToken, $user->id, $otp, $ttlMinutes);
-        $this->dispatchOtp($user->email, $otp, $ttlMinutes);
+        $this->dispatchOtp($user, $otp, $ttlMinutes);
         $this->applyResendCooldown($user->id);
 
         return [
@@ -158,13 +158,19 @@ class EmailVerificationService
         ], now()->addMinutes($ttlMinutes));
     }
 
-    private function dispatchOtp(string $email, string $otp, int $ttlMinutes): void
+    private function dispatchOtp(User $user, string $otp, int $ttlMinutes): void
     {
-        $this->mailingService->send($email, MailTemplate::EmailVerification, MailNotificationHelper::otpMailPayload(
+        $payload = MailNotificationHelper::otpMailPayload(
             $otp,
             'mail.email_verification',
             __('mail.email_verification.expires', ['time' => now()->addMinutes($ttlMinutes)->format('g:i A')]),
-        ));
+        );
+
+        $payload['firstName'] = trim((string) ($user->first_name ?? '')) !== ''
+            ? trim((string) $user->first_name)
+            : 'there';
+
+        $this->mailingService->send($user->email, MailTemplate::EmailVerification, $payload);
     }
 
     private function forgetChallenge(string $verificationToken, int $userId): void
