@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Actions\Api\V1\Auth\RevokePassportTokensAction;
-use App\Enums\UserManuFactureStatus;
 use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Account\AccountPasswordReasonRequest;
@@ -11,20 +10,18 @@ use App\Http\Requests\Api\V1\Account\ChangePasswordRequest;
 use App\Http\Requests\Api\V1\Account\RestoreDeleteOtpRequest;
 use App\Http\Requests\Api\V1\Account\RestoreDeleteVerifyRequest;
 use App\Http\Resources\Api\V1\UserLoginHistoryResource;
-use App\Enums\MailTemplate;
+use App\Services\Account\AccountRestoreService;
 use App\Services\Auth\PasswordChangedNotificationService;
-use App\Services\Mailing\MailingService;
-use App\Support\Mail\MailNotificationHelper;
-use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
 class AccountController extends Controller
 {
+    public function __construct(
+        private readonly AccountRestoreService $accountRestoreService,
+    ) {}
+
     public function deactivate(AccountPasswordReasonRequest $request): JsonResponse
     {
         $user = $request->user();
@@ -98,108 +95,36 @@ class AccountController extends Controller
         );
     }
 
-    public function requestRestoreOtp(RestoreDeleteOtpRequest $request, MailingService $mailingService): JsonResponse
+    public function requestRestoreOtp(RestoreDeleteOtpRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $user = User::query()->where('email', $validated['email'])->first();
-
-        if (! $user || ! Hash::check($validated['password'], $user->password)) {
-            return sendResponse(status: false, message: __('auth.invalid_credentials'), data: null, statusCode: HttpStatus::HTTP_UNAUTHORIZED);
-        }
-
-        if ($user->role->isAdmin()) {
-            return sendResponse(
-                status: false,
-                message: __('account.admin_cannot_modify'),
-                // message: __('Invalid credentials.'),
-                data: null,
-                statusCode: HttpStatus::HTTP_FORBIDDEN
-                // statusCode: HttpStatus::HTTP_UNAUTHORIZED
-            );
-        }
-
-        if ($user->deleted_at === null) {
-            return sendResponse(status: false, message: __('account.no_scheduled_deletion'), data: null, statusCode: HttpStatus::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        if ($user->isAwaitingPermanentDeletionPurge()) {
-            return sendResponse(status: false, message: __('account.deletion_processing'), data: null, statusCode: HttpStatus::HTTP_FORBIDDEN);
-        }
-
-        $cooldownKey = $this->restoreOtpCooldownCacheKey($user->id);
-
-        if (Cache::has($cooldownKey)) {
-            $availableAtTs = (int) Cache::get($cooldownKey);
-            $retryAfterSeconds = max(0, $availableAtTs - now()->timestamp);
-            $availableAt = Carbon::createFromTimestamp($availableAtTs);
-
-            return sendResponse(
-                status: false,
-                message: __('account.restore_otp_resend_wait'),
-                data: [
-                    'retry_after_seconds' => $retryAfterSeconds,
-                    'available_at' => $availableAt->toIso8601String(),
-                ],
-                statusCode: HttpStatus::HTTP_TOO_MANY_REQUESTS
-            );
-        }
-
-        $otp = (string) random_int(100000, 999999);
-        $cacheKey = $this->restoreOtpCacheKey($user->id);
-        Cache::put($cacheKey, Hash::make($otp), now()->addMinutes(config('account.restore_otp_ttl_minutes')));
-
-        $mailingService->send(
-            $user->email,
-            MailTemplate::AccountRestoreOtp,
-            MailNotificationHelper::otpMailPayload(
-                $otp,
-                'mail.account_restore_otp',
-                __('mail.account_restore_otp.expires', ['minutes' => config('account.restore_otp_ttl_minutes')]),
-            ),
+        $result = $this->accountRestoreService->requestOtp(
+            $validated['email'],
+            $validated['password'],
         );
 
-        $resendSeconds = config('account.restore_otp_resend_seconds');
-        $availableAt = now()->addSeconds($resendSeconds);
-        Cache::put($cooldownKey, $availableAt->timestamp, $resendSeconds);
-
-        return sendResponse(status: true, message: __('account.restore_otp_sent'), data: null, statusCode: HttpStatus::HTTP_OK);
+        return sendResponse(
+            status: $result->success,
+            message: $result->message,
+            data: $result->data,
+            statusCode: $result->statusCode,
+        );
     }
 
     public function verifyRestoreOtp(RestoreDeleteVerifyRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $user = User::query()->where('email', $validated['email'])->first();
+        $result = $this->accountRestoreService->verifyOtp(
+            $validated['email'],
+            $validated['otp'],
+        );
 
-        if (! $user) {
-            return sendResponse(status: false, message: __('account.restore_invalid_otp'), data: null, statusCode: HttpStatus::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        if ($user->role->isAdmin()) {
-            return sendResponse(
-                status: false,
-                message: __('account.admin_cannot_modify'),
-                data: null,
-                statusCode: HttpStatus::HTTP_FORBIDDEN
-            );
-        }
-
-        $cacheKey = $this->restoreOtpCacheKey($user->id);
-        $hash = Cache::get($cacheKey);
-
-        if (! is_string($hash) || ! Hash::check($validated['otp'], $hash)) {
-            return sendResponse(status: false, message: __('account.restore_invalid_otp'), data: null, statusCode: HttpStatus::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        Cache::forget($cacheKey);
-        Cache::forget($this->restoreOtpCooldownCacheKey($user->id));
-
-        $user->forceFill([
-            'deleted_at' => null,
-            'deleted_reason' => null,
-            'status' => $this->restoredUserStatus($user),
-        ])->save();
-
-        return sendResponse(status: true, message: __('account.restore_success'), data: null, statusCode: HttpStatus::HTTP_OK);
+        return sendResponse(
+            status: $result->success,
+            message: $result->message,
+            data: $result->data,
+            statusCode: $result->statusCode,
+        );
     }
 
     public function changePassword(ChangePasswordRequest $request, PasswordChangedNotificationService $passwordChangedNotificationService): JsonResponse
@@ -242,24 +167,5 @@ class AccountController extends Controller
             data: UserLoginHistoryResource::collection($paginator),
             statusCode: HttpStatus::HTTP_OK
         );
-    }
-
-    protected function restoreOtpCacheKey(int $userId): string
-    {
-        return 'account_restore_otp:'.$userId;
-    }
-
-    protected function restoreOtpCooldownCacheKey(int $userId): string
-    {
-        return 'account_restore_otp_cooldown:'.$userId;
-    }
-
-    protected function restoredUserStatus(User $user): UserStatus
-    {
-        if ($user->role->isManufacturer() && $user->manufacture_status === UserManuFactureStatus::PENDING) {
-            return UserStatus::PENDING;
-        }
-
-        return UserStatus::ACTIVE;
     }
 }

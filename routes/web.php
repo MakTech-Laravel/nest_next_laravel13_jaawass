@@ -6,14 +6,55 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/account-restore-email', function () {
+    $ttlMinutes = (int) config('account.restore_otp_ttl_minutes', 15);
 
+    return view('mail.account-restore-otp', [
+        'otp' => '736194',
+        'formattedOtp' => '736 194',
+        'recipientName' => 'Sarah',
+        'ttlMinutes' => $ttlMinutes,
+        'expiresIn' => $ttlMinutes.' minutes',
+        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('auth/restore-account'),
+    ]);
+});
+
+Route::get('/password-reset-email', function () {
+    $ttlMinutes = (int) config('account.password_reset_otp_ttl_minutes', 15);
+
+    return view('mail.otp-security', [
+        'otp' => '582047',
+        'formattedOtp' => '582 047',
+        'recipientName' => 'Sarah',
+        'ttlMinutes' => $ttlMinutes,
+        'expiresIn' => $ttlMinutes.' minutes',
+        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('auth/restore-account'),
+    ]);
+});
 
 Route::get('/welcome-email', function () {
-    return view('mail.manufacturer-registration-reminder', [
-        'name' => 'Mehmet',
-        'company' => 'Atlas Manufacturing Co.',
-        'submittedAt' => now()->format('F j, Y'),
-        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer'),
+    $receivedAt = now();
+
+    return view('mail.admin-new-inquiry', [
+        'contactName' => 'James Chen — Global Parts Co.',
+        'contactSubline' => 'general · james@globalpartsco.de',
+        'message' => 'Looking for M6–M20 stainless steel fasteners. Monthly bulk order ~50,000 units. Samples required before commitment. Requesting capacity and lead time info…',
+        'receivedAt' => $receivedAt->format('M j · g:i A'),
+        'inquiryTags' => [
+            ['label' => 'Type', 'value' => 'general'],
+            ['label' => 'Status', 'value' => 'New'],
+        ],
+        'details' => [
+            'Inquiry ID' => '#INQ-'.$receivedAt->format('Ymd').'-0847',
+            'Name' => 'James Chen',
+            'Email' => 'james@globalpartsco.de',
+            'Company' => 'Global Parts Co.',
+            'Type' => 'general',
+            'Received' => $receivedAt->format('F j, Y · g:i A T'),
+            'Status' => 'New',
+        ],
+        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('admin/contacts/1'),
+        'contactsListUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('admin/contacts'),
     ]);
 });
 

@@ -20,17 +20,19 @@ class ManufacturerStatusNotificationService
         $manufacturer->loadMissing('company');
         $company = $manufacturer->company?->company_name ?? config('app.name');
         $name = MailNotificationHelper::displayName($manufacturer);
-        $subscriptionUrl = MailNotificationHelper::frontendUrl('subscription');
-        $profileUrl = MailNotificationHelper::frontendUrl('dashboard/manufacturer/profile');
+        $pricingUrl = MailNotificationHelper::frontendUrl('pricing');
+        $loginUrl = MailNotificationHelper::frontendUrl('auth/signin');
 
         if ($status === UserManuFactureStatus::APPROVED) {
-            MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($name, $company, $subscriptionUrl): void {
+            MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($name, $company, $pricingUrl): void {
                 $this->mailingService->send($email, MailTemplate::ManufacturerApproved, [
                     'name' => $name,
                     'company' => $company,
+                    'approvedDate' => now()->format('F j, Y'),
                     'intro' => __('mail.manufacturer_approved.intro', ['name' => $name, 'company' => $company]),
-                    'ctaUrl' => $subscriptionUrl,
+                    'ctaUrl' => $pricingUrl,
                     'ctaLabel' => __('mail.manufacturer_approved.cta'),
+                    'planDetailsUrl' => $pricingUrl,
                 ]);
             });
 
@@ -39,21 +41,21 @@ class ManufacturerStatusNotificationService
                 'manufacturer.approved',
                 __('mail.manufacturer_approved.notification_title'),
                 __('mail.manufacturer_approved.notification_body'),
-                $subscriptionUrl,
+                $pricingUrl,
             );
 
             return;
         }
 
         if ($status === UserManuFactureStatus::REJECTED) {
-            MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($name, $company, $reason, $profileUrl): void {
+            MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($name, $company, $reason, $loginUrl): void {
                 $this->mailingService->send($email, MailTemplate::ManufacturerRejected, [
                     'name' => $name,
                     'company' => $company,
                     'reason' => $reason,
                     'decisionDate' => now()->format('F j, Y'),
                     'intro' => __('mail.manufacturer_rejected.intro', ['name' => $name, 'company' => $company]),
-                    'ctaUrl' => $profileUrl,
+                    'ctaUrl' => $loginUrl,
                     'ctaLabel' => __('mail.manufacturer_rejected.cta'),
                 ]);
             });
@@ -63,7 +65,7 @@ class ManufacturerStatusNotificationService
                 'manufacturer.rejected',
                 __('mail.manufacturer_rejected.notification_title'),
                 __('mail.manufacturer_rejected.notification_body'),
-                $profileUrl,
+                $loginUrl,
             );
         }
     }

@@ -24,7 +24,7 @@ return [
       'markdown' => false,
     ],
     'account-restore-otp' => [
-      'view' => 'mail.otp-security',
+      'view' => 'mail.account-restore-otp',
       'subject' => 'mail.account_restore_otp.subject',
       'markdown' => false,
     ],
