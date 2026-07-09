@@ -9,7 +9,12 @@ Route::get('/', function () {
 
 
 Route::get('/welcome-email', function () {
-    return view('mail.rfq-submitted-buyer', ['firstName' => 'Sarah']);
+    return view('mail.manufacturer-registration-reminder', [
+        'name' => 'Mehmet',
+        'company' => 'Atlas Manufacturing Co.',
+        'submittedAt' => now()->format('F j, Y'),
+        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer'),
+    ]);
 });
 
 Route::get('/oauth/token-capture', function () {

@@ -149,7 +149,7 @@ return [
       'markdown' => false,
     ],
     'rfq-quoted-buyer' => [
-      'view' => 'mail.transactional',
+      'view' => 'mail.rfq-quoted-buyer',
       'subject' => 'mail.rfq_quoted_buyer.subject',
       'markdown' => false,
     ],

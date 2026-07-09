@@ -4,14 +4,14 @@
     $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
     $mailIconStyle = 'display:block;border:0;outline:none;text-decoration:none;margin:0 auto;';
     $recipientName = trim($recipientName ?? $name ?? '') !== '' ? trim($recipientName ?? $name ?? '') : 'there';
-    $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer/inquiries');
-    $inboxUrl = $inboxUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer/inquiries');
-    $heroIconUrl = public_url('images/mail/svg/inquiry-pencil-hero.svg');
+    $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/buyer/rfqs');
+    $inboxUrl = $inboxUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/buyer/rfqs');
+    $heroIconUrl = public_url('images/mail/svg/check-success-hero.svg');
     $inquiryTags = $inquiryTags ?? [];
     $steps = [
-        ['title' => __('mail.rfq_created_manufacturer.step_1_title'), 'body' => __('mail.rfq_created_manufacturer.step_1_body', ['product' => $productName ?? __('order.product')])],
-        ['title' => __('mail.rfq_created_manufacturer.step_2_title'), 'body' => __('mail.rfq_created_manufacturer.step_2_body')],
-        ['title' => __('mail.rfq_created_manufacturer.step_3_title'), 'body' => __('mail.rfq_created_manufacturer.step_3_body')],
+        ['title' => __('mail.rfq_quoted_buyer.step_1_title'), 'body' => __('mail.rfq_quoted_buyer.step_1_body', ['manufacturer' => $manufacturerDisplayName ?? $manufacturerName ?? __('order.manufacturer')])],
+        ['title' => __('mail.rfq_quoted_buyer.step_2_title'), 'body' => __('mail.rfq_quoted_buyer.step_2_body')],
+        ['title' => __('mail.rfq_quoted_buyer.step_3_title'), 'body' => __('mail.rfq_quoted_buyer.step_3_body')],
     ];
 @endphp
 <!DOCTYPE html>
@@ -20,7 +20,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>{{ __('mail.rfq_created_manufacturer.subject') }}</title>
+    <title>{{ __('mail.rfq_quoted_buyer.subject', ['rfqNumber' => $rfqNumber ?? '']) }}</title>
     <!--[if mso]>
     <noscript>
         <xml>
@@ -32,7 +32,7 @@
     <![endif]-->
 </head>
 <body style="margin:0;padding:0;background-color:#F0F0F0;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
-    <span style="display:none !important;visibility:hidden;mso-hide:all;font-size:1px;color:#F0F0F0;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">{{ __('mail.rfq_created_manufacturer.preheader') }}</span>
+    <span style="display:none !important;visibility:hidden;mso-hide:all;font-size:1px;color:#F0F0F0;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">{{ __('mail.rfq_quoted_buyer.preheader', ['manufacturer' => $manufacturerName ?? '']) }}</span>
 
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background-color:#F0F0F0;">
         <tr>
@@ -52,7 +52,7 @@
                                         @endif
                                     </td>
                                     <td align="right" valign="middle">
-                                        <span style="display:inline-block;padding:4px 12px;border-radius:20px;border:1.5px solid #E6E6E6;background-color:#F8F8F8;font-weight:700;font-size:9px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.4px;text-transform:uppercase;color:#8A8A8A;">{{ __('mail.rfq_created_manufacturer.badge') }}</span>
+                                        <span style="display:inline-block;padding:4px 12px;border-radius:20px;border:1.5px solid #E6E6E6;background-color:#F8F8F8;font-weight:700;font-size:9px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.4px;text-transform:uppercase;color:#8A8A8A;">{{ __('mail.rfq_quoted_buyer.badge') }}</span>
                                     </td>
                                 </tr>
                             </table>
@@ -79,24 +79,24 @@
                                                 <td width="20" valign="middle" style="line-height:0;font-size:0;padding-right:8px;">
                                                     <span style="display:block;width:20px;height:2px;border-radius:1px;background-color:#E8D5A8;">&nbsp;</span>
                                                 </td>
-                                                <td valign="middle" style="font-weight:800;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:2px;text-transform:uppercase;color:#9A7A3A;">{{ __('mail.rfq_created_manufacturer.pill') }}</td>
+                                                <td valign="middle" style="font-weight:800;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:2px;text-transform:uppercase;color:#9A7A3A;">{{ __('mail.rfq_quoted_buyer.pill') }}</td>
                                             </tr>
                                         </table>
                                         <div style="font-weight:500;font-size:22px;line-height:1.17;font-family:Georgia,'Times New Roman',serif;color:#3B2800;letter-spacing:-0.2px;">
-                                            {!! __('mail.rfq_created_manufacturer.hero_headline') !!}
+                                            {!! __('mail.rfq_quoted_buyer.hero_headline') !!}
                                         </div>
-                                        <div style="padding-top:6px;font-weight:400;font-size:13px;line-height:1.78;font-family:Arial,Helvetica,sans-serif;color:#666666;">{{ __('mail.rfq_created_manufacturer.hero_subheadline') }}</div>
+                                        <div style="padding-top:6px;font-weight:400;font-size:13px;line-height:1.78;font-family:Arial,Helvetica,sans-serif;color:#666666;">{{ __('mail.rfq_quoted_buyer.hero_subheadline') }}</div>
                                     </td>
                                 </tr>
                             </table>
                         </td>
                     </tr>
 
-                    {{-- Intro + inquiry card --}}
+                    {{-- Intro + quote card --}}
                     <tr>
                         <td bgcolor="#FFFFFF" style="padding:28px 30px;background-color:#FFFFFF;border-bottom:1px solid #F0F0F0;">
-                            <div style="font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;margin-bottom:13px;">{{ __('mail.rfq_created_manufacturer.greeting', ['name' => $recipientName]) }}</div>
-                            <p style="margin:0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">{{ __('mail.rfq_created_manufacturer.intro') }}</p>
+                            <div style="font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;margin-bottom:13px;">{{ __('mail.rfq_quoted_buyer.greeting', ['name' => $recipientName]) }}</div>
+                            <p style="margin:0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">{{ __('mail.rfq_quoted_buyer.intro', ['manufacturer' => $manufacturerName ?? '', 'rfq' => $rfqNumber ?? '']) }}</p>
 
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:20px;border:1.5px solid #E6E6E6;border-radius:12px;overflow:hidden;border-collapse:separate;">
                                 <tr>
@@ -104,12 +104,12 @@
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
                                                 <td width="44" valign="top">
-                                                    <div style="width:40px;height:40px;border-radius:10px;background-color:#3B2800;color:#FFFFFF;font-weight:800;font-size:13px;line-height:40px;font-family:Arial,Helvetica,sans-serif;text-align:center;">{{ $buyerInitials ?? 'BY' }}</div>
+                                                    <div style="width:40px;height:40px;border-radius:10px;background-color:#3B2800;color:#FFFFFF;font-weight:800;font-size:13px;line-height:40px;font-family:Arial,Helvetica,sans-serif;text-align:center;">{{ $manufacturerInitials ?? 'SP' }}</div>
                                                 </td>
                                                 <td valign="top" style="padding-left:12px;">
-                                                    <div style="font-weight:800;font-size:13px;line-height:1.3;font-family:Arial,Helvetica,sans-serif;color:#1C1C1C;">{{ $buyerDisplayName ?? $buyerName ?? 'Buyer' }}</div>
-                                                    @if (!empty($buyerMeta))
-                                                        <div style="font-weight:600;font-size:11px;line-height:1.4;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;margin-top:3px;">{{ $buyerMeta }}</div>
+                                                    <div style="font-weight:800;font-size:13px;line-height:1.3;font-family:Arial,Helvetica,sans-serif;color:#1C1C1C;">{{ $manufacturerDisplayName ?? $manufacturerName ?? 'Supplier' }}</div>
+                                                    @if (!empty($manufacturerMeta))
+                                                        <div style="font-weight:600;font-size:11px;line-height:1.4;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;margin-top:3px;">{{ $manufacturerMeta }}</div>
                                                     @endif
                                                 </td>
                                                 @if (!empty($inquiryTimestamp))
@@ -140,8 +140,8 @@
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:16px;background-color:#EAFAF2;border:1.5px solid #6ECFA0;border-radius:10px;border-collapse:separate;">
                                 <tr>
                                     <td style="padding:15px 16px;">
-                                        <div style="font-weight:900;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#0A5C32;margin-bottom:5px;">{{ __('mail.rfq_created_manufacturer.opportunity_label') }}</div>
-                                        <div style="font-weight:400;font-size:13px;line-height:1.65;font-family:Arial,Helvetica,sans-serif;color:#464646;">{!! __('mail.rfq_created_manufacturer.opportunity_body') !!}</div>
+                                        <div style="font-weight:900;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#0A5C32;margin-bottom:5px;">{{ __('mail.rfq_quoted_buyer.opportunity_label') }}</div>
+                                        <div style="font-weight:400;font-size:13px;line-height:1.65;font-family:Arial,Helvetica,sans-serif;color:#464646;">{!! __('mail.rfq_quoted_buyer.opportunity_body', ['validUntil' => $validUntil ?? '']) !!}</div>
                                     </td>
                                 </tr>
                             </table>
@@ -154,7 +154,7 @@
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8" style="background-color:#E8D5A8;border-radius:2px;">&nbsp;</td>
-                                    <td style="padding-left:9px;font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;">{!! __('mail.rfq_created_manufacturer.steps_title') !!}</td>
+                                    <td style="padding-left:9px;font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;">{!! __('mail.rfq_quoted_buyer.steps_title') !!}</td>
                                 </tr>
                             </table>
 
@@ -186,8 +186,8 @@
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:16px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-left:4px solid #9A7A3A;border-radius:8px;border-collapse:separate;">
                                 <tr>
                                     <td style="padding:14px 16px;">
-                                        <div style="font-weight:900;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#9A7A3A;margin-bottom:5px;">{{ __('mail.rfq_created_manufacturer.tip_label') }}</div>
-                                        <div style="font-weight:400;font-size:13px;line-height:1.65;font-family:Arial,Helvetica,sans-serif;color:#464646;">{{ __('mail.rfq_created_manufacturer.tip_body') }}</div>
+                                        <div style="font-weight:900;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#9A7A3A;margin-bottom:5px;">{{ __('mail.rfq_quoted_buyer.tip_label') }}</div>
+                                        <div style="font-weight:400;font-size:13px;line-height:1.65;font-family:Arial,Helvetica,sans-serif;color:#464646;">{{ __('mail.rfq_quoted_buyer.tip_body') }}</div>
                                     </td>
                                 </tr>
                             </table>
@@ -200,12 +200,12 @@
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
                                     <td>
-                                        <a href="{{ $ctaUrl }}" style="display:inline-block;padding:14px 30px;background-color:#3B2800;color:#FFFFFF;font-weight:900;font-size:12px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.6px;text-transform:uppercase;text-decoration:none;border-radius:8px;">{{ __('mail.rfq_created_manufacturer.cta') }}</a>
+                                        <a href="{{ $ctaUrl }}" style="display:inline-block;padding:14px 30px;background-color:#3B2800;color:#FFFFFF;font-weight:900;font-size:12px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.6px;text-transform:uppercase;text-decoration:none;border-radius:8px;">{{ __('mail.rfq_quoted_buyer.cta') }}</a>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td style="padding-top:10px;">
-                                        <a href="{{ $inboxUrl }}" style="font-weight:600;font-size:12.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;text-decoration:none;">{{ __('mail.rfq_created_manufacturer.cta_secondary') }}</a>
+                                        <a href="{{ $inboxUrl }}" style="font-weight:600;font-size:12.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;text-decoration:none;">{{ __('mail.rfq_quoted_buyer.cta_secondary') }}</a>
                                     </td>
                                 </tr>
                             </table>
@@ -218,7 +218,7 @@
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
                                     <td style="font-weight:900;font-size:13px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#3B2800;letter-spacing:-0.4px;">sourcenest</td>
-                                    <td align="right" style="font-weight:700;font-size:8px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.8px;text-transform:uppercase;color:#B4B4B4;">{{ __('mail.rfq_created_manufacturer.footer_tag') }}</td>
+                                    <td align="right" style="font-weight:700;font-size:8px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.8px;text-transform:uppercase;color:#B4B4B4;">{{ __('mail.rfq_quoted_buyer.footer_tag') }}</td>
                                 </tr>
                             </table>
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:10px 0;">
