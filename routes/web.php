@@ -9,13 +9,12 @@ Route::get('/', function () {
 
 
 Route::get('/welcome-email', function () {
-    return view('mail.manufacturer-approved', [
+    return view('mail.manufacturer-rejected', [
         'name' => 'Mehmet Yilmaz',
         'company' => 'Atlas Manufacturing Co.',
-        'approvedDate' => now()->format('F j, Y'),
-        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing'),
-        'planDetailsUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing'),
-        'planAmount' => '$199',
+        'reason' => 'Business license document was missing or could not be verified.',
+        'decisionDate' => now()->format('F j, Y'),
+        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('auth/signin'),
     ]);
 });
 
