@@ -28,9 +28,11 @@ class ManufacturerStatusNotificationService
                 $this->mailingService->send($email, MailTemplate::ManufacturerApproved, [
                     'name' => $name,
                     'company' => $company,
+                    'approvedDate' => now()->format('F j, Y'),
                     'intro' => __('mail.manufacturer_approved.intro', ['name' => $name, 'company' => $company]),
                     'ctaUrl' => $subscriptionUrl,
                     'ctaLabel' => __('mail.manufacturer_approved.cta'),
+                    'planDetailsUrl' => MailNotificationHelper::frontendUrl('subscription/details'),
                 ]);
             });
 
