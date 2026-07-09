@@ -243,7 +243,7 @@ class RfqNotificationService
 
     private function manufacturerRfqUrl(RfqSubmission $rfq): string
     {
-        return MailNotificationHelper::frontendUrl('dashboard/manufacturer/rfqs/'.$rfq->id);
+        return MailNotificationHelper::frontendUrl('dashboard/manufacturer/inquiries/'.$rfq->id);
     }
 
     private function buyerRfqUrl(RfqSubmission $rfq): string

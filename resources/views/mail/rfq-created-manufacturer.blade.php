@@ -5,7 +5,7 @@
     $mailIconStyle = 'display:block;border:0;outline:none;text-decoration:none;margin:0 auto;';
     $recipientName = trim($recipientName ?? $name ?? '') !== '' ? trim($recipientName ?? $name ?? '') : 'there';
     $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer/inquiries');
-    $inboxUrl = $inboxUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer/rfqs');
+    $inboxUrl = $inboxUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer/inquiries');
     $heroIconUrl = public_url('images/mail/svg/inquiry-pencil-hero.svg');
     $inquiryTags = $inquiryTags ?? [];
     $steps = [
