@@ -7,7 +7,7 @@
     $recipientName = trim($name ?? ($firstName ?? '')) !== '' ? trim($name ?? ($firstName ?? '')) : 'there';
     $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('register');
     $deleteAccountUrl = $deleteAccountUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('account/delete');
-    $globeWatermarkUrl = public_url('images/mail/svg/globe-large.svg');
+    $globeWatermarkUrl = public_url('images/mail/svg/globe-hero-watermark.svg');
     $iconMap = [
         'user' => public_url('images/mail/svg/user.svg'),
         'globe' => public_url('images/mail/svg/globe.svg'),
@@ -92,10 +92,16 @@
                     {{-- Hero H1: tinted with globe watermark --}}
                     <tr>
                         <td bgcolor="#FBF7EE"
-                            style="padding:34px 30px 40px;background-color:#FBF7EE;border-bottom:1.5px solid #E8D5A8;">
+                            background="{{ $globeWatermarkUrl }}"
+                            style="padding:34px 30px 40px;background-color:#FBF7EE;background-image:url('{{ $globeWatermarkUrl }}');background-repeat:no-repeat;background-position:right -24px top -24px;background-size:210px 210px;border-bottom:1.5px solid #E8D5A8;">
+                            <!--[if gte mso 9]>
+                            <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="position:absolute;width:600px;height:220px;">
+                                <v:fill type="frame" src="{{ $globeWatermarkUrl }}" color="#FBF7EE" />
+                            </v:rect>
+                            <![endif]-->
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
-                                    <td valign="top" style="padding-right:16px;">
+                                    <td valign="top" style="padding-right:0;">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0"
                                             style="margin-bottom:14px;">
                                             <tr>
@@ -131,18 +137,12 @@
                                             </tr>
                                         </table>
                                         <div
-                                            style="font-weight:500;font-size:31px;line-height:1.17;font-family:Georgia,'Times New Roman',serif;color:#3B2800;letter-spacing:-0.2px;">
+                                            style="font-weight:500;font-size:31px;line-height:1.17;font-family:Georgia,'Times New Roman',serif;color:#3B2800;letter-spacing:-0.2px;max-width:380px;">
                                             {!! __('mail.manufacturer_registration_reminder.hero_headline') !!}
                                         </div>
                                         <div
                                             style="padding-top:12px;font-weight:400;font-size:13.5px;line-height:1.78;font-family:Arial,Helvetica,sans-serif;color:#666666;max-width:380px;">
                                             {{ __('mail.manufacturer_registration_reminder.hero_subheadline') }}</div>
-                                    </td>
-                                    <td width="120" align="right" valign="top" style="line-height:0;font-size:0;">
-                                        @if (!empty($globeWatermarkUrl))
-                                            <img src="{{ $globeWatermarkUrl }}" width="110" height="110" alt=""
-                                                style="display:block;border:0;outline:none;opacity:0.06;">
-                                        @endif
                                     </td>
                                 </tr>
                             </table>
@@ -204,12 +204,12 @@
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
                                     @if (!$loop->last) style="margin-bottom:12px;" @endif>
                                     <tr>
-                                        <td width="22" valign="top" style="width:22px;padding-top:2px;">
+                                        <td width="32" valign="top" style="width:32px;padding-top:1px;">
                                             <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                                 <tr>
-                                                    <td width="16" height="16" align="center" valign="middle"
-                                                        bgcolor="#FFFFFF"
-                                                        style="width:16px;height:16px;background-color:#FFFFFF;border:1.5px solid #D6D6D6;border-radius:4px;font-size:0;line-height:0;">
+                                                    <td width="22" height="22" align="center" valign="middle"
+                                                        bgcolor="#FFF8E4"
+                                                        style="width:22px;height:22px;background-color:#FFF8E4;border:1.5px dashed #F0C040;border-radius:50%;font-size:0;line-height:0;">
                                                         &nbsp;</td>
                                                 </tr>
                                             </table>
@@ -231,7 +231,7 @@
                                 <tr>
                                     <td style="padding:14px 16px;">
                                         <div
-                                            style="font-weight:900;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#5C3D10;margin-bottom:5px;">
+                                            style="font-weight:900;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#9A7A3A;margin-bottom:5px;">
                                             {{ __('mail.manufacturer_registration_reminder.alert_heading') }}</div>
                                         <div
                                             style="font-weight:400;font-size:13px;line-height:1.65;font-family:Arial,Helvetica,sans-serif;color:#464646;">
@@ -332,10 +332,17 @@
                                 </tr>
                                 <tr>
                                     <td style="padding-top:12px;">
-                                        <div
-                                            style="font-weight:400;font-size:11.5px;line-height:1.6;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;">
-                                            {!! __('mail.manufacturer_registration_reminder.cta_note', ['delete_url' => $deleteAccountUrl]) !!}
-                                        </div>
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
+                                            border="0" style="border-top:1px solid #F0F0F0;">
+                                            <tr>
+                                                <td style="padding-top:18px;">
+                                                    <div
+                                                        style="font-weight:400;font-size:12px;line-height:1.75;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">
+                                                        {!! __('mail.manufacturer_registration_reminder.cta_note', ['delete_url' => $deleteAccountUrl]) !!}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
                                     </td>
                                 </tr>
                             </table>

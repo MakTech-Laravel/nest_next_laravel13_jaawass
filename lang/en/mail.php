@@ -690,12 +690,12 @@ return [
         'badge' => 'Registration Incomplete',
         'pill' => 'Manufacturer Account',
         'eyebrow' => 'Complete Registration',
-        'hero_headline' => 'You started registering.<br><em>Finish to get discovered.</em>',
+        'hero_headline' => 'You started registering.<br><em style="font-style:italic;color:#9A7A3A;">Finish to get discovered.</em>',
         'hero_subheadline' => 'Buyers are actively searching SourceNest for manufacturers in your category. Your profile isn\'t visible yet — finish registration to change that.',
         'greeting' => 'Dear :name,',
         'intro' => 'You began registering your business on SourceNest but didn\'t complete the process. <strong>Your profile currently doesn\'t exist for buyers</strong> — no one can find you, contact you, or send inquiries until your registration is submitted and reviewed.',
         'status_label' => 'Registration Incomplete — Not Submitted for Review',
-        'checklist_title' => 'What\'s still <em>missing</em>',
+        'checklist_title' => 'What\'s still <em style="font-style:italic;color:#9A7A3A;">missing</em>',
         'check_1_title' => 'Complete your company profile',
         'check_1_body' => 'Business name, description, country, and contact information.',
         'check_2_title' => 'Add your products or manufacturing capabilities',
@@ -704,7 +704,7 @@ return [
         'check_3_body' => 'Submit so our team can review and approve your listing within 1–3 business days.',
         'alert_heading' => 'Ready when you are',
         'alert_body' => 'Your account is saved exactly where you left off. Log in and pick up right where you stopped — the whole process takes less than 10 minutes.',
-        'benefits_title' => 'What you\'re missing <em>right now</em>',
+        'benefits_title' => 'What you\'re missing <em style="font-style:italic;color:#9A7A3A;">right now</em>',
         'benefits' => [
             [
                 'icon' => 'user',
@@ -729,7 +729,7 @@ return [
         ],
         'cta' => 'Continue Registration',
         'cta_ghost' => 'Questions? :email',
-        'cta_note' => 'If you no longer wish to register, you can <a href=":delete_url" style="color:#B4B4B4;text-decoration:underline;">delete your account here</a>. We won\'t send further reminders.',
+        'cta_note' => 'If you no longer wish to register, you can <a href=":delete_url" style="color:#9A7A3A;text-decoration:none;border-bottom:1px solid rgba(154,122,58,0.28);">delete your account here</a>. We won\'t send further reminders.',
         'footer_tag' => 'Global Sourcing Platform',
     ],
 
