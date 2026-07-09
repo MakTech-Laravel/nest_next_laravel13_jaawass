@@ -92,31 +92,57 @@ class RfqNotificationService
 
         $rfqNumber = $this->rfqNumber($rfq);
         $manufacturerName = MailNotificationHelper::companyOrName($rfq->manufacturer);
+        $manufacturerPersonName = MailNotificationHelper::displayName($rfq->manufacturer);
+        $manufacturerCompany = $rfq->manufacturer?->company?->company_name;
+        $manufacturerDisplayName = $manufacturerCompany
+            ? $manufacturerPersonName.' — '.$manufacturerCompany
+            : $manufacturerName;
+        $productName = $rfq->product?->name ?? __('order.product');
+        $validUntil = $rfq->quote_valid_until?->format('F j, Y');
+        $quoteFormatted = $rfq->quoted_price !== null
+            ? strtoupper((string) $rfq->quote_currency_code).' '.number_format((float) $rfq->quoted_price, 2)
+            : null;
         $url = $this->buyerRfqUrl($rfq);
+        $inboxUrl = MailNotificationHelper::frontendUrl('dashboard/buyer/rfqs');
+        $messagePreview = trim((string) ($rfq->manufacturer_reply ?? $rfq->quote_notes ?? ''));
+        $messagePreview = $messagePreview !== ''
+            ? nl2br(e(mb_strlen($messagePreview) > 280 ? mb_substr($messagePreview, 0, 277).'...' : $messagePreview))
+            : null;
 
-        MailNotificationHelper::sendIfEmail($buyer, function (string $email) use ($rfq, $rfqNumber, $manufacturerName, $url, $buyer): void {
-            $this->mailingService->send($email, MailTemplate::RfqQuotedBuyer, $this->transactionalMail(
-                prefix: 'mail.rfq_quoted_buyer',
-                recipientName: MailNotificationHelper::displayName($buyer),
-                replacements: [
-                    'name' => MailNotificationHelper::displayName($buyer),
-                    'manufacturer' => $manufacturerName,
-                    'manufacturerName' => $manufacturerName,
-                    'rfq' => $rfqNumber,
-                    'rfqNumber' => $rfqNumber,
-                ],
-                details: array_filter([
-                    'RFQ' => $rfqNumber,
-                    'Quote' => $rfq->quoted_price !== null
-                        ? strtoupper((string) $rfq->quote_currency_code).' '.number_format((float) $rfq->quoted_price, 2)
-                        : null,
-                    'Valid until' => $rfq->quote_valid_until?->format('F j, Y'),
+        MailNotificationHelper::sendIfEmail($buyer, function (string $email) use (
+            $rfq,
+            $rfqNumber,
+            $manufacturerName,
+            $manufacturerDisplayName,
+            $manufacturerPersonName,
+            $productName,
+            $validUntil,
+            $quoteFormatted,
+            $url,
+            $inboxUrl,
+            $buyer,
+            $messagePreview,
+        ): void {
+            $this->mailingService->send($email, MailTemplate::RfqQuotedBuyer, [
+                'recipientName' => MailNotificationHelper::displayName($buyer),
+                'manufacturerName' => $manufacturerName,
+                'manufacturerDisplayName' => $manufacturerDisplayName,
+                'manufacturerMeta' => __('mail.rfq_quoted_buyer.supplier_meta').($rfq->manufacturer?->company?->country ? ' · '.$rfq->manufacturer->company->country : ''),
+                'manufacturerInitials' => MailNotificationHelper::initials($manufacturerPersonName !== 'there' ? $manufacturerPersonName : $manufacturerName),
+                'rfqNumber' => $rfqNumber,
+                'productName' => $productName,
+                'validUntil' => $validUntil,
+                'messagePreview' => $messagePreview,
+                'inquiryTimestamp' => $rfq->quoted_at?->format('M j, g:i A'),
+                'inquiryTags' => array_filter([
+                    ['label' => 'RFQ', 'value' => $rfqNumber],
+                    $quoteFormatted !== null ? ['label' => 'Quote', 'value' => $quoteFormatted] : null,
+                    $validUntil !== null ? ['label' => 'Valid until', 'value' => $validUntil] : null,
+                    ['label' => 'Product', 'value' => $productName],
                 ]),
-                ctaUrl: $url,
-                ctaLabel: __('mail.rfq_quoted_buyer.cta'),
-                referenceId: $rfqNumber,
-                footerNote: __('mail.rfq_quoted_buyer.footer'),
-            ));
+                'ctaUrl' => $url,
+                'inboxUrl' => $inboxUrl,
+            ]);
         }, 'rfq.quoted');
 
         $this->dispatchInApp(
