@@ -41,7 +41,7 @@ class ManufacturerRegistrationNotificationService
     {
         $companyName = MailNotificationHelper::companyOrName($manufacturer);
         $manufacturerName = MailNotificationHelper::displayName($manufacturer);
-        $referenceId = sprintf('REG-%s-%04d', now()->format('Ymd'), $manufacturer->id);
+        $referenceId = sprintf('#REG-%s-%04d', now()->format('Ymd'), $manufacturer->id);
         $reviewUrl = $this->reviewUrl($manufacturer);
         $notes = trim((string) ($manufacturer->company?->notes ?? ''));
 
