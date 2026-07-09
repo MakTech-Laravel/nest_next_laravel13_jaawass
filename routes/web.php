@@ -9,11 +9,15 @@ Route::get('/', function () {
 
 
 Route::get('/welcome-email', function () {
-    return view('mail.manufacturer-registration-reminder', [
-        'name' => 'Mehmet',
-        'company' => 'Atlas Manufacturing Co.',
-        'submittedAt' => now()->format('F j, Y'),
-        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer'),
+    return view('mail.manufacturer-additional-information', [
+        'manufacturerName' => 'Mehmet Yilmaz',
+        'companyName' => 'Atlas Manufacturing Co.',
+        'adminMessage' => 'Please upload your updated business license and provide a brief description of your primary product lines.',
+        'allowedTypes' => ['Text message', 'Document', 'Image'],
+        'submissionUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('review?token=preview-token'),
+        'requestedAt' => now()->format('F j, Y'),
+        'expiresAt' => now()->addDays(7)->format('F j, Y'),
+        'referenceId' => 'SN-MFR-000042',
     ]);
 });
 
