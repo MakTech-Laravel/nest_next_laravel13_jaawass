@@ -9,7 +9,7 @@ Route::get('/', function () {
 
 
 Route::get('/welcome-email', function () {
-    return view('mail.manufacturer-under-review', [
+    return view('mail.manufacturer-registration-reminder', [
         'name' => 'Mehmet',
         'company' => 'Atlas Manufacturing Co.',
         'submittedAt' => now()->format('F j, Y'),
