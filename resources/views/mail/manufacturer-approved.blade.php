@@ -7,8 +7,8 @@
     $recipientName = trim($name ?? ($firstName ?? '')) !== '' ? trim($name ?? ($firstName ?? '')) : 'there';
     $companyName = trim($company ?? '') !== '' ? trim($company ?? '') : $platformName;
     $approvedDate = $approvedDate ?? ($decisionDate ?? now()->format('F j, Y'));
-    $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('subscription');
-    $planDetailsUrl = $planDetailsUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('subscription/details');
+    $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing');
+    $planDetailsUrl = $planDetailsUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing');
     $planAmount = $planAmount ?? '$199';
     $globeWatermarkUrl = public_url('images/mail/svg/globe-hero-watermark.svg');
     $checkFlowIconUrl = public_url('images/mail/svg/check-flow.svg');

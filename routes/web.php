@@ -13,8 +13,8 @@ Route::get('/welcome-email', function () {
         'name' => 'Mehmet Yilmaz',
         'company' => 'Atlas Manufacturing Co.',
         'approvedDate' => now()->format('F j, Y'),
-        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('subscription'),
-        'planDetailsUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('subscription/details'),
+        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing'),
+        'planDetailsUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing'),
         'planAmount' => '$199',
     ]);
 });
