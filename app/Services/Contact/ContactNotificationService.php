@@ -16,8 +16,13 @@ class ContactNotificationService
     public function notifyAdmins(Contact $contact): void
     {
         $contact->loadMissing('translations');
-        $inquiryId = sprintf('#INQ-%s-%04d', $contact->created_at?->format('Ymd') ?? now()->format('Ymd'), $contact->id);
+        $receivedAt = $contact->created_at ?? now();
+        $inquiryId = sprintf('#INQ-%s-%04d', $receivedAt->format('Ymd'), $contact->id);
         $adminPanelUrl = MailNotificationHelper::frontendUrl('admin/contacts/'.$contact->id);
+        $contactsListUrl = MailNotificationHelper::frontendUrl('admin/contacts');
+        $statusLabel = $contact->is_read
+            ? __('mail.admin_new_inquiry.status_read')
+            : __('mail.admin_new_inquiry.status_new');
 
         $details = array_filter([
             'Inquiry ID' => $inquiryId,
@@ -25,18 +30,49 @@ class ContactNotificationService
             'Email' => $contact->email,
             'Company' => $contact->company_name,
             'Type' => $contact->inquiry_type,
-            'Status' => $contact->is_read ? 'Read' : 'New',
+            'Received' => $receivedAt->format('F j, Y · g:i A T'),
+            'Status' => $statusLabel,
         ]);
 
+        $contactSubline = collect([
+            $contact->inquiry_type,
+            $contact->email,
+        ])->filter(fn ($value) => is_string($value) && trim($value) !== '')->implode(' · ');
+
+        $inquiryTags = array_values(array_filter([
+            $contact->inquiry_type ? [
+                'label' => __('mail.admin_new_inquiry.tag_type'),
+                'value' => $contact->inquiry_type,
+            ] : null,
+            [
+                'label' => __('mail.admin_new_inquiry.tag_status'),
+                'value' => $statusLabel,
+            ],
+        ]));
+
         foreach (MailNotificationHelper::adminRecipients() as $admin) {
-            MailNotificationHelper::sendIfEmail($admin, function (string $email) use ($contact, $details, $adminPanelUrl, $inquiryId): void {
+            MailNotificationHelper::sendIfEmail($admin, function (string $email) use (
+                $contact,
+                $details,
+                $adminPanelUrl,
+                $contactsListUrl,
+                $contactSubline,
+                $inquiryTags,
+                $receivedAt,
+            ): void {
                 $this->mailingService->send($email, MailTemplate::AdminNewInquiry, [
                     'initials' => MailNotificationHelper::initials($contact->name),
                     'contactName' => $contact->name.($contact->company_name ? ' — '.$contact->company_name : ''),
+                    'contactSubline' => $contactSubline,
                     'contactMeta' => $contact->inquiry_type,
                     'message' => $contact->message,
                     'details' => $details,
+                    'inquiryTags' => $inquiryTags,
+                    'receivedAt' => $receivedAt->format('M j · g:i A'),
                     'adminPanelUrl' => $adminPanelUrl,
+                    'contactsListUrl' => $contactsListUrl,
+                    'ctaUrl' => $adminPanelUrl,
+                    'ctaLabel' => __('mail.admin_new_inquiry.cta'),
                 ]);
             });
         }

@@ -9,12 +9,29 @@ Route::get('/', function () {
 
 
 Route::get('/welcome-email', function () {
-    return view('mail.manufacturer-rejected', [
-        'name' => 'Mehmet Yilmaz',
-        'company' => 'Atlas Manufacturing Co.',
-        'reason' => 'Business license document was missing or could not be verified.',
-        'decisionDate' => now()->format('F j, Y'),
-        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('auth/signin'),
+    $receivedAt = now();
+
+    return view('mail.admin-new-inquiry', [
+        'initials' => 'JC',
+        'contactName' => 'James Chen — Global Parts Co.',
+        'contactSubline' => 'general · james@globalpartsco.de',
+        'message' => 'Looking for M6–M20 stainless steel fasteners. Monthly bulk order ~50,000 units. Samples required before commitment. Requesting capacity and lead time info…',
+        'receivedAt' => $receivedAt->format('M j · g:i A'),
+        'inquiryTags' => [
+            ['label' => 'Type', 'value' => 'general'],
+            ['label' => 'Status', 'value' => 'New'],
+        ],
+        'details' => [
+            'Inquiry ID' => '#INQ-'.$receivedAt->format('Ymd').'-0847',
+            'Name' => 'James Chen',
+            'Email' => 'james@globalpartsco.de',
+            'Company' => 'Global Parts Co.',
+            'Type' => 'general',
+            'Received' => $receivedAt->format('F j, Y · g:i A T'),
+            'Status' => 'New',
+        ],
+        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('admin/contacts/1'),
+        'contactsListUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('admin/contacts'),
     ]);
 });
 
