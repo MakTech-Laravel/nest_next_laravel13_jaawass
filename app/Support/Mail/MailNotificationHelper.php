@@ -69,11 +69,28 @@ final class MailNotificationHelper
     /**
      * @return array<string, mixed>
      */
-    public static function otpMailPayload(string $otp, string $translationPrefix, ?string $expires = null, ?string $variant = null): array
+    public static function passwordResetOtpMailPayload(User $user, string $otp): array
+    {
+        $ttlMinutes = (int) config('account.password_reset_otp_ttl_minutes', 15);
+        $expiresIn = $ttlMinutes.' '.($ttlMinutes === 1 ? 'minute' : 'minutes');
+
+        return [
+            'otp' => $otp,
+            'formattedOtp' => preg_replace('/(\d{3})(?=\d)/', '$1 ', $otp),
+            'recipientName' => self::displayName($user),
+            'ttlMinutes' => $ttlMinutes,
+            'expiresIn' => $expiresIn,
+            'ctaUrl' => self::frontendUrl('auth/restore-account'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function otpMailPayload(string $otp, string $translationPrefix, ?string $expires = null): array
     {
         return [
             'otp' => $otp,
-            'variant' => $variant ?? (str_contains($translationPrefix, 'account_restore') ? 'account-restore' : 'password-reset'),
             'preheader' => __($translationPrefix.'.intro'),
             'intro' => __($translationPrefix.'.intro'),
             'headerEyebrow' => __('mail.layout.otp_eyebrow'),

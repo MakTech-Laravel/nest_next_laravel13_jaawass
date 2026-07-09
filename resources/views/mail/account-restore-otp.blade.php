@@ -4,7 +4,7 @@
     $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
     $supportEmail = config('mail.from.address', 'support@sourcenest.com');
     $recipientName = trim($recipientName ?? '') !== '' ? trim($recipientName) : 'there';
-    $ttlMinutes = (int) ($ttlMinutes ?? config('account.password_reset_otp_ttl_minutes', 15));
+    $ttlMinutes = (int) ($ttlMinutes ?? config('account.restore_otp_ttl_minutes', 15));
     $expiresIn = $expiresIn ?? ($ttlMinutes.' '.($ttlMinutes === 1 ? 'minute' : 'minutes'));
     $formattedOtp = $formattedOtp ?? preg_replace('/(\d{3})(?=\d)/', '$1 ', trim((string) ($otp ?? '')));
     $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('auth/restore-account');
@@ -17,7 +17,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>{{ __('mail.password_reset_otp.subject') }}</title>
+    <title>{{ __('mail.account_restore_otp.subject') }}</title>
     <!--[if mso]>
     <noscript>
         <xml>
@@ -32,7 +32,7 @@
 <body
     style="margin:0;padding:0;background-color:#C8C2B6;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
     <span
-        style="display:none !important;visibility:hidden;mso-hide:all;font-size:1px;color:#C8C2B6;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">{{ __('mail.password_reset_otp.preheader') }}</span>
+        style="display:none !important;visibility:hidden;mso-hide:all;font-size:1px;color:#C8C2B6;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">{{ __('mail.account_restore_otp.preheader') }}</span>
 
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
         style="background-color:#C8C2B6;">
@@ -55,7 +55,7 @@
                             @endif
                             <div
                                 style="font-weight:800;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.8px;text-transform:uppercase;color:#9A7A3A;margin-top:10px;">
-                                {{ __('mail.password_reset_otp.context_label') }}</div>
+                                {{ __('mail.account_restore_otp.context_label') }}</div>
                         </td>
                     </tr>
 
@@ -68,7 +68,7 @@
                                 <tr>
                                     <td align="center" width="54" height="54" bgcolor="#4A3210"
                                         style="width:54px;height:54px;background-color:rgba(200,169,106,0.1);border:1.5px solid rgba(200,169,106,0.22);border-radius:12px;text-align:center;vertical-align:middle;">
-                                        <img src="{{ public_url('images/mail/svg/lock.svg') }}" width="24"
+                                        <img src="{{ public_url('images/mail/svg/shield.svg') }}" width="24"
                                             height="24" alt=""
                                             style="display:block;border:0;outline:none;text-decoration:none;margin:0 auto;">
                                     </td>
@@ -84,7 +84,7 @@
                                     </td>
                                     <td valign="middle"
                                         style="padding:0 8px;font-weight:800;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:2px;text-transform:uppercase;color:rgba(200,169,106,0.7);">
-                                        {{ __('mail.password_reset_otp.hero_eyebrow') }}</td>
+                                        {{ __('mail.account_restore_otp.hero_eyebrow') }}</td>
                                     <td width="20" valign="middle" style="line-height:0;font-size:0;">
                                         <span
                                             style="display:block;width:20px;height:2px;border-radius:1px;background-color:rgba(200,169,106,0.4);">&nbsp;</span>
@@ -94,11 +94,11 @@
 
                             <div
                                 style="font-weight:500;font-size:30px;line-height:1.17;font-family:Georgia,'Times New Roman',serif;color:#FFFFFF;letter-spacing:-0.2px;text-align:center;">
-                                {!! __('mail.password_reset_otp.hero_headline') !!}
+                                {!! __('mail.account_restore_otp.hero_headline') !!}
                             </div>
                             <div
                                 style="max-width:320px;margin:10px auto 0;font-weight:400;font-size:13px;line-height:1.78;font-family:Arial,Helvetica,sans-serif;color:rgba(255,255,255,0.4);text-align:center;">
-                                {{ __('mail.password_reset_otp.hero_subheadline', ['minutes' => $ttlMinutes]) }}</div>
+                                {{ __('mail.account_restore_otp.hero_subheadline') }}</div>
                         </td>
                     </tr>
 
@@ -108,10 +108,10 @@
                             style="padding:28px 30px;background-color:#FFFFFF;border-bottom:1px solid #F0F0F0;">
                             <div
                                 style="font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;margin-bottom:13px;">
-                                {{ __('mail.password_reset_otp.greeting', ['name' => $recipientName]) }}</div>
+                                {{ __('mail.account_restore_otp.greeting', ['name' => $recipientName]) }}</div>
                             <p
                                 style="margin:0 0 4px 0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">
-                                {!! __('mail.password_reset_otp.intro', ['minutes' => $ttlMinutes]) !!}</p>
+                                {!! __('mail.account_restore_otp.intro', ['minutes' => $ttlMinutes]) !!}</p>
 
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
                                 style="margin:16px 0 4px;background-color:#F8F8F8;border:2px dashed #E8D5A8;border-radius:12px;border-collapse:separate;">
@@ -119,13 +119,13 @@
                                     <td align="center" style="padding:26px 20px;">
                                         <div
                                             style="font-weight:900;font-size:10px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:2px;text-transform:uppercase;color:#9A7A3A;margin-bottom:14px;">
-                                            {{ __('mail.password_reset_otp.otp_label') }}</div>
+                                            {{ __('mail.account_restore_otp.otp_label') }}</div>
                                         <div
                                             style="font-weight:900;font-size:54px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#3B2800;letter-spacing:14px;">
                                             {{ $formattedOtp }}</div>
                                         <div
                                             style="font-weight:600;font-size:12px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;margin-top:12px;letter-spacing:0.2px;">
-                                            {{ __('mail.password_reset_otp.otp_note', ['minutes' => $ttlMinutes]) }}
+                                            {{ __('mail.account_restore_otp.otp_note', ['minutes' => $ttlMinutes]) }}
                                         </div>
                                     </td>
                                 </tr>
@@ -153,7 +153,7 @@
                                                 </td>
                                                 <td valign="middle"
                                                     style="font-weight:500;font-size:11px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">
-                                                    {{ __('mail.password_reset_otp.expires_in_label') }}</td>
+                                                    {{ __('mail.account_restore_otp.expires_in_label') }}</td>
                                                 <td valign="middle"
                                                     style="padding-left:8px;font-weight:900;font-size:13px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#3B2800;">
                                                     {{ $expiresIn }}</td>
@@ -190,15 +190,15 @@
                                                 </td>
                                                 <td valign="middle"
                                                     style="font-weight:800;font-size:11px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.3px;color:#666666;">
-                                                    {{ __('mail.password_reset_otp.security_heading') }}</td>
+                                                    {{ __('mail.account_restore_otp.security_heading') }}</td>
                                             </tr>
                                         </table>
                                     </td>
                                 </tr>
                                 @foreach ([
-                                    __('mail.password_reset_otp.security_row_1'),
-                                    __('mail.password_reset_otp.security_row_2', ['minutes' => $ttlMinutes]),
-                                    __('mail.password_reset_otp.security_row_3', ['email' => $supportEmail]),
+                                    __('mail.account_restore_otp.security_row_1'),
+                                    __('mail.account_restore_otp.security_row_2', ['minutes' => $ttlMinutes]),
+                                    __('mail.account_restore_otp.security_row_3', ['email' => $supportEmail]),
                                 ] as $securityRow)
                                     <tr>
                                         <td style="padding:12px 16px;border-top:1px solid #F5F5F5;">
@@ -240,10 +240,10 @@
                                                 <td valign="top">
                                                     <div
                                                         style="font-weight:800;font-size:13px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#991B1B;margin-bottom:3px;">
-                                                        {{ __('mail.password_reset_otp.alert_title') }}</div>
+                                                        {{ __('mail.account_restore_otp.alert_title') }}</div>
                                                     <div
                                                         style="font-weight:400;font-size:12px;line-height:1.6;font-family:Arial,Helvetica,sans-serif;color:#991B1B;opacity:0.85;">
-                                                        {!! __('mail.password_reset_otp.alert_body', ['email' => $supportEmail]) !!}
+                                                        {!! __('mail.account_restore_otp.alert_body', ['email' => $supportEmail]) !!}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -262,7 +262,7 @@
                                 <tr>
                                     <td>
                                         <a href="{{ $ctaUrl }}"
-                                            style="display:inline-block;padding:14px 30px;background-color:#3B2800;color:#FFFFFF;font-weight:900;font-size:12px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.6px;text-transform:uppercase;text-decoration:none;border-radius:8px;">{{ __('mail.password_reset_otp.cta') }}</a>
+                                            style="display:inline-block;padding:14px 30px;background-color:#3B2800;color:#FFFFFF;font-weight:900;font-size:12px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.6px;text-transform:uppercase;text-decoration:none;border-radius:8px;">{{ __('mail.account_restore_otp.cta') }}</a>
                                     </td>
                                 </tr>
                             </table>
@@ -280,7 +280,7 @@
                                         sourcenest</td>
                                     <td align="right"
                                         style="font-weight:700;font-size:8px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.8px;text-transform:uppercase;color:#B4B4B4;">
-                                        {{ __('mail.password_reset_otp.footer_tag') }}</td>
+                                        {{ __('mail.account_restore_otp.footer_tag') }}</td>
                                 </tr>
                             </table>
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"

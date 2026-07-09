@@ -6,13 +6,36 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/account-restore-email', function () {
+    $ttlMinutes = (int) config('account.restore_otp_ttl_minutes', 15);
 
+    return view('mail.account-restore-otp', [
+        'otp' => '736194',
+        'formattedOtp' => '736 194',
+        'recipientName' => 'Sarah',
+        'ttlMinutes' => $ttlMinutes,
+        'expiresIn' => $ttlMinutes.' minutes',
+        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('auth/restore-account'),
+    ]);
+});
+
+Route::get('/password-reset-email', function () {
+    $ttlMinutes = (int) config('account.password_reset_otp_ttl_minutes', 15);
+
+    return view('mail.otp-security', [
+        'otp' => '582047',
+        'formattedOtp' => '582 047',
+        'recipientName' => 'Sarah',
+        'ttlMinutes' => $ttlMinutes,
+        'expiresIn' => $ttlMinutes.' minutes',
+        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('auth/restore-account'),
+    ]);
+});
 
 Route::get('/welcome-email', function () {
     $receivedAt = now();
 
     return view('mail.admin-new-inquiry', [
-        'initials' => 'JC',
         'contactName' => 'James Chen — Global Parts Co.',
         'contactSubline' => 'general · james@globalpartsco.de',
         'message' => 'Looking for M6–M20 stainless steel fasteners. Monthly bulk order ~50,000 units. Samples required before commitment. Requesting capacity and lead time info…',

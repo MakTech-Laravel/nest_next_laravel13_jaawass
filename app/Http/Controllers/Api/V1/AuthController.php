@@ -444,11 +444,7 @@ class AuthController extends Controller
         $mailingService->send(
             $user->email,
             MailTemplate::PasswordResetOtp,
-            MailNotificationHelper::otpMailPayload(
-                $otp,
-                'mail.password_reset_otp',
-                __('mail.password_reset_otp.expires', ['minutes' => config('account.password_reset_otp_ttl_minutes')]),
-            ),
+            MailNotificationHelper::passwordResetOtpMailPayload($user, $otp),
         );
 
         $resendSeconds = config('account.password_reset_otp_resend_seconds');
