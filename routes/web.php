@@ -9,7 +9,7 @@ Route::get('/', function () {
 
 
 Route::get('/welcome-email', function () {
-    return view('mail.rfq-submitted-buyer', ['firstName' => 'Sarah']);
+    return view('mail.conversation-reply-received', ['firstName' => 'Sarah']);
 });
 
 Route::get('/oauth/token-capture', function () {
