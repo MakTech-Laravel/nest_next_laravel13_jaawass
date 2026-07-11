@@ -19,6 +19,17 @@ Route::get('/account-restore-email', function () {
     ]);
 });
 
+Route::get('/first-payment-reminder-email', function () {
+    return view('mail.manufacturer-first-payment-reminder', [
+        'recipientName' => 'Sarah',
+        'company' => 'Global Parts Co.',
+        'approvedAt' => now()->subDay()->format('F j, Y'),
+        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing'),
+        'detailsUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing'),
+        'closeAccountUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('account/close'),
+    ]);
+});
+
 Route::get('/password-reset-email', function () {
     $ttlMinutes = (int) config('account.password_reset_otp_ttl_minutes', 15);
 

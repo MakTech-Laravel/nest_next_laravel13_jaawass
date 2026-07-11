@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Auth\PasswordChangedNotificationService;
 use App\Services\Contact\ContactNotificationService;
 use App\Services\Manufacturer\ManufacturerActivationReminderService;
+use App\Services\Manufacturer\ManufacturerFirstPaymentReminderService;
 use App\Services\Registration\BuyerRegistrationReminderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -89,6 +90,39 @@ test('manufacturer activation reminder command queues email for approved manufac
 
     Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->recipient === $manufacturer->email
         && $job->template === MailTemplate::ManufacturerActivationReminder->value);
+});
+
+test('manufacturer first payment reminder queues email once for approved manufacturers without subscription', function () {
+    $manufacturer = User::factory()->create([
+        'role' => UserRole::MANUFACTURER->value,
+        'manufacture_status' => UserManuFactureStatus::APPROVED,
+        'manufacture_status_at' => now()->subDays(5),
+        'manufacturer_first_payment_reminder_sent_at' => null,
+    ]);
+
+    app(ManufacturerFirstPaymentReminderService::class)->sendReminder($manufacturer);
+
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->recipient === $manufacturer->email
+        && $job->template === MailTemplate::ManufacturerFirstPaymentReminder->value);
+
+    expect($manufacturer->fresh()->manufacturer_first_payment_reminder_sent_at)->not->toBeNull();
+
+    Queue::fake([SendMailJob::class]);
+    app(ManufacturerFirstPaymentReminderService::class)->sendReminder($manufacturer->fresh());
+    Queue::assertNothingPushed();
+});
+
+test('manufacturer first payment reminders artisan command dispatches eligible reminders', function () {
+    User::factory()->create([
+        'role' => UserRole::MANUFACTURER->value,
+        'manufacture_status' => UserManuFactureStatus::APPROVED,
+        'manufacture_status_at' => now()->subDays(5),
+        'manufacturer_first_payment_reminder_sent_at' => null,
+    ]);
+
+    Artisan::call('manufacturer:send-first-payment-reminders');
+
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->template === MailTemplate::ManufacturerFirstPaymentReminder->value);
 });
 
 test('buyer registration reminders artisan command dispatches eligible reminders', function () {
