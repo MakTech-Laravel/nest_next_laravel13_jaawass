@@ -116,7 +116,7 @@ test('manufacturer activation reminders artisan command dispatches eligible remi
     Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->template === MailTemplate::ManufacturerActivationReminder->value);
 });
 
-test('subscription created sends payment confirmation only when first payment status is false', function () {
+test('subscription created always sends payment confirmation email', function () {
     Queue::fake([SendMailJob::class, SendSubscriptionInAppNotificationJob::class]);
 
     $manufacturer = User::factory()->create([
@@ -154,7 +154,7 @@ test('subscription created sends payment confirmation only when first payment st
 
     Queue::fake([SendMailJob::class, SendSubscriptionInAppNotificationJob::class]);
     app(SubscriptionNotificationService::class)->sendSubscriptionCreated($subscription->fresh(['manufacturer', 'plan']), 99.0);
-    Queue::assertNotPushed(SendMailJob::class, fn (SendMailJob $job) => $job->template === MailTemplate::SubscriptionCreated->value);
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->template === MailTemplate::SubscriptionCreated->value);
 });
 
 test('buyer registration reminders artisan command dispatches eligible reminders', function () {

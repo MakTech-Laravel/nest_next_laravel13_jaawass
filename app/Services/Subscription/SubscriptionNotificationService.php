@@ -9,6 +9,7 @@ use App\Jobs\Subscription\SendSubscriptionInAppNotificationJob;
 use App\Models\Subscription;
 use App\Models\User;
 use App\Services\Mailing\MailingService;
+use App\Support\Mail\MailNotificationHelper;
 use Illuminate\Support\Facades\Lang;
 
 class SubscriptionNotificationService
@@ -112,27 +113,9 @@ class SubscriptionNotificationService
             return;
         }
 
-        // manufacturer_first_payment_reminder_sent_at = first payment confirmation already sent (null = false).
-        $shouldSendFirstPaymentConfirmation = $manufacturer->manufacturer_first_payment_reminder_sent_at === null;
+        $this->sendActivatedMail($manufacturer, $subscription, $paidAmount);
 
-        if ($shouldSendFirstPaymentConfirmation) {
-            $this->mailingService->send(
-                $manufacturer->email,
-                MailTemplate::SubscriptionCreated,
-                array_merge($this->enrollmentMailData($subscription, $paidAmount), [
-                    'manufacturerName' => $this->displayName($subscription->manufacturer),
-                    'intro' => __('mail.subscription_created.intro', [
-                        'name' => $this->displayName($subscription->manufacturer),
-                        'plan' => $subscription->plan?->name ?? __('subscription.plan'),
-                    ]),
-                    'activatedAt' => now()->format('F j, Y'),
-                    'ctaUrl' => $this->plansUrl(),
-                    'ctaLabel' => __('mail.subscription_created.cta'),
-                ]),
-            );
-
-            $manufacturer->forceFill(['manufacturer_first_payment_reminder_sent_at' => now()])->save();
-        }
+        $manufacturer->forceFill(['manufacturer_first_payment_reminder_sent_at' => now()])->save();
 
         $this->dispatchInAppNotification(
             $manufacturer,
@@ -159,15 +142,8 @@ class SubscriptionNotificationService
             return;
         }
 
-        $this->mailingService->send(
-            $manufacturer->email,
-            MailTemplate::SubscriptionRenewed,
-            $this->transactionalMail(
-                'mail.subscription_renewed',
-                $this->enrollmentMailData($subscription, $paidAmount),
-                ['plan' => $subscription->plan?->name ?? __('subscription.plan')],
-            ),
-        );
+        // For now always use the subscription-activated template on any payment.
+        $this->sendActivatedMail($manufacturer, $subscription, $paidAmount);
 
         $this->dispatchInAppNotification(
             $manufacturer,
@@ -182,6 +158,33 @@ class SubscriptionNotificationService
                 'event_type' => SubscriptionEventType::SUBSCRIPTION_RENEWED->value,
             ],
             $this->plansUrl(),
+        );
+    }
+
+    private function sendActivatedMail(User $manufacturer, Subscription $subscription, ?float $paidAmount): void
+    {
+        $enrollment = $this->enrollmentMailData($subscription, $paidAmount);
+        $paidRaw = $enrollment['paidAmount'] ?? null;
+        $paidAmountDisplay = $paidRaw !== null && $paidRaw !== ''
+            ? '$'.ltrim((string) $paidRaw, '$').' USD'
+            : null;
+
+        $this->mailingService->send(
+            $manufacturer->email,
+            MailTemplate::SubscriptionCreated,
+            array_merge($enrollment, [
+                'manufacturerName' => $this->displayName($manufacturer),
+                'intro' => __('mail.subscription_created.intro', [
+                    'name' => $this->displayName($manufacturer),
+                    'plan' => $subscription->plan?->name ?? __('subscription.plan'),
+                ]),
+                'activatedAt' => now()->format('F j, Y'),
+                'paidAmountDisplay' => $paidAmountDisplay,
+                'ctaUrl' => MailNotificationHelper::frontendUrl('dashboard/manufacturer'),
+                'productsUrl' => MailNotificationHelper::frontendUrl('dashboard/manufacturer/products'),
+                'billingUrl' => MailNotificationHelper::frontendUrl('settings/billing'),
+                'ctaLabel' => __('mail.subscription_created.cta'),
+            ]),
         );
     }
 
