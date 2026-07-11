@@ -47,10 +47,6 @@ return Application::configure(basePath: dirname(__DIR__))
             ->dailyAt('10:15')
             ->timezone(config('app.timezone'));
 
-        $schedule->command('manufacturer:send-first-payment-reminders')
-            ->dailyAt('10:20')
-            ->timezone(config('app.timezone'));
-
         $schedule->command('manufacturer:send-activation-reminders')
             ->dailyAt('10:30')
             ->timezone(config('app.timezone'));

@@ -188,7 +188,7 @@ class SubscriptionPurchaseService
         $newPlan = Plan::query()->findOrFail($payload['plan_id']);
         $subscriptionData = $this->buildSubscriptionData($manufacturer->id, $payload);
 
-        return DB::transaction(function () use ($manufacturer, $subscription, $verified, $oldPlan, $newPlan, $subscriptionData): Subscription {
+        $subscription = DB::transaction(function () use ($manufacturer, $subscription, $verified, $oldPlan, $newPlan, $subscriptionData): Subscription {
             $updated = $this->subscriptionService->updateSubscription($subscription->id, $subscriptionData);
 
             Payment::query()->create([
@@ -214,6 +214,10 @@ class SubscriptionPurchaseService
 
             return $updated->load(['manufacturer', 'plan']);
         });
+
+        $this->notificationService->sendSubscriptionCreated($subscription, (float) $verified->amount);
+
+        return $subscription;
     }
 
     public function cancelPurchase(User $manufacturer): Subscription

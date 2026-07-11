@@ -4,13 +4,18 @@ use App\Enums\MailTemplate;
 use App\Enums\UserManuFactureStatus;
 use App\Enums\UserRole;
 use App\Jobs\SendMailJob;
+use App\Jobs\Subscription\SendSubscriptionInAppNotificationJob;
 use App\Models\Contact;
 use App\Models\User;
 use App\Services\Auth\PasswordChangedNotificationService;
 use App\Services\Contact\ContactNotificationService;
 use App\Services\Manufacturer\ManufacturerActivationReminderService;
-use App\Services\Manufacturer\ManufacturerFirstPaymentReminderService;
 use App\Services\Registration\BuyerRegistrationReminderService;
+use App\Services\Subscription\SubscriptionNotificationService;
+use App\Models\Plan;
+use App\Models\Subscription;
+use App\Enums\Api\V1\SubscriptionStatus;
+use App\Enums\Api\V1\SubscriptionSource;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -78,7 +83,7 @@ test('buyer registration reminder command queues email once', function () {
     expect($user->fresh()->buyer_registration_reminder_sent_at)->not->toBeNull();
 });
 
-test('manufacturer activation reminder command queues email for approved manufacturers', function () {
+test('manufacturer activation reminder queues email once for approved manufacturers without subscription', function () {
     $manufacturer = User::factory()->create([
         'role' => UserRole::MANUFACTURER->value,
         'manufacture_status' => UserManuFactureStatus::APPROVED,
@@ -90,39 +95,66 @@ test('manufacturer activation reminder command queues email for approved manufac
 
     Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->recipient === $manufacturer->email
         && $job->template === MailTemplate::ManufacturerActivationReminder->value);
-});
 
-test('manufacturer first payment reminder queues email once for approved manufacturers without subscription', function () {
-    $manufacturer = User::factory()->create([
-        'role' => UserRole::MANUFACTURER->value,
-        'manufacture_status' => UserManuFactureStatus::APPROVED,
-        'manufacture_status_at' => now()->subDays(5),
-        'manufacturer_first_payment_reminder_sent_at' => null,
-    ]);
-
-    app(ManufacturerFirstPaymentReminderService::class)->sendReminder($manufacturer);
-
-    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->recipient === $manufacturer->email
-        && $job->template === MailTemplate::ManufacturerFirstPaymentReminder->value);
-
-    expect($manufacturer->fresh()->manufacturer_first_payment_reminder_sent_at)->not->toBeNull();
+    expect($manufacturer->fresh()->manufacturer_activation_reminder_sent_at)->not->toBeNull();
 
     Queue::fake([SendMailJob::class]);
-    app(ManufacturerFirstPaymentReminderService::class)->sendReminder($manufacturer->fresh());
+    app(ManufacturerActivationReminderService::class)->sendReminder($manufacturer->fresh());
     Queue::assertNothingPushed();
 });
 
-test('manufacturer first payment reminders artisan command dispatches eligible reminders', function () {
+test('manufacturer activation reminders artisan command dispatches eligible reminders', function () {
     User::factory()->create([
         'role' => UserRole::MANUFACTURER->value,
         'manufacture_status' => UserManuFactureStatus::APPROVED,
         'manufacture_status_at' => now()->subDays(5),
+        'manufacturer_activation_reminder_sent_at' => null,
+    ]);
+
+    Artisan::call('manufacturer:send-activation-reminders');
+
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->template === MailTemplate::ManufacturerActivationReminder->value);
+});
+
+test('subscription created always sends payment confirmation email', function () {
+    Queue::fake([SendMailJob::class, SendSubscriptionInAppNotificationJob::class]);
+
+    $manufacturer = User::factory()->create([
+        'role' => UserRole::MANUFACTURER->value,
+        'manufacture_status' => UserManuFactureStatus::APPROVED,
         'manufacturer_first_payment_reminder_sent_at' => null,
     ]);
 
-    Artisan::call('manufacturer:send-first-payment-reminders');
+    $plan = Plan::query()->create([
+        'name' => 'Starter',
+        'description' => 'Test plan',
+        'button_text' => 'Subscribe',
+        'monthly_price' => 99,
+        'yearly_price' => 990,
+        'is_popular' => false,
+        'status' => true,
+    ]);
 
-    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->template === MailTemplate::ManufacturerFirstPaymentReminder->value);
+    $subscription = Subscription::query()->create([
+        'manufacturer_id' => $manufacturer->id,
+        'plan_id' => $plan->id,
+        'billing_interval' => 'month',
+        'status' => SubscriptionStatus::ACTIVE,
+        'source' => SubscriptionSource::PURCHASE,
+        'starts_at' => now(),
+        'ends_at' => now()->addMonth(),
+        'auto_renew' => true,
+    ]);
+
+    app(SubscriptionNotificationService::class)->sendSubscriptionCreated($subscription, 99.0);
+
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->recipient === $manufacturer->email
+        && $job->template === MailTemplate::SubscriptionCreated->value);
+    expect($manufacturer->fresh()->manufacturer_first_payment_reminder_sent_at)->not->toBeNull();
+
+    Queue::fake([SendMailJob::class, SendSubscriptionInAppNotificationJob::class]);
+    app(SubscriptionNotificationService::class)->sendSubscriptionCreated($subscription->fresh(['manufacturer', 'plan']), 99.0);
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->template === MailTemplate::SubscriptionCreated->value);
 });
 
 test('buyer registration reminders artisan command dispatches eligible reminders', function () {

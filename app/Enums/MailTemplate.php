@@ -13,7 +13,6 @@ enum MailTemplate: string
     case RfqSubmittedBuyer = 'rfq-submitted-buyer';
     case ManufacturerRegistrationReminder = 'manufacturer-registration-reminder';
     case ManufacturerActivationReminder = 'manufacturer-activation-reminder';
-    case ManufacturerFirstPaymentReminder = 'manufacturer-first-payment-reminder';
     case PaymentFailed = 'payment-failed';
     case PasswordChanged = 'password-changed';
     case AdminNewInquiry = 'admin-new-inquiry';

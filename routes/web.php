@@ -6,68 +6,24 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/account-restore-email', function () {
-    $ttlMinutes = (int) config('account.restore_otp_ttl_minutes', 15);
 
-    return view('mail.account-restore-otp', [
-        'otp' => '736194',
-        'formattedOtp' => '736 194',
-        'recipientName' => 'Sarah',
-        'ttlMinutes' => $ttlMinutes,
-        'expiresIn' => $ttlMinutes.' minutes',
-        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('auth/restore-account'),
+
+
+Route::get('/subscription-activated-email', function () {
+    return view('mail.subscription-activated', [
+        'manufacturerName' => 'Mehmet',
+        'planName' => 'Annual Supplier Listing',
+        'paidAmount' => '199.00',
+        'paidAmountDisplay' => '$199.00 USD',
+        'startsAt' => now()->format('F j, Y'),
+        'endsAt' => now()->addYear()->format('F j, Y'),
+        'status' => 'active',
+        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer'),
+        'productsUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer/products'),
+        'billingUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('settings/billing'),
     ]);
 });
 
-Route::get('/first-payment-reminder-email', function () {
-    return view('mail.manufacturer-first-payment-reminder', [
-        'recipientName' => 'Sarah',
-        'company' => 'Global Parts Co.',
-        'approvedAt' => now()->subDay()->format('F j, Y'),
-        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing'),
-        'detailsUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing'),
-        'closeAccountUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('account/close'),
-    ]);
-});
-
-Route::get('/password-reset-email', function () {
-    $ttlMinutes = (int) config('account.password_reset_otp_ttl_minutes', 15);
-
-    return view('mail.otp-security', [
-        'otp' => '582047',
-        'formattedOtp' => '582 047',
-        'recipientName' => 'Sarah',
-        'ttlMinutes' => $ttlMinutes,
-        'expiresIn' => $ttlMinutes.' minutes',
-        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('auth/restore-account'),
-    ]);
-});
-
-Route::get('/welcome-email', function () {
-    $receivedAt = now();
-
-    return view('mail.admin-new-inquiry', [
-        'contactName' => 'James Chen — Global Parts Co.',
-        'contactSubline' => 'general · james@globalpartsco.de',
-        'message' => 'Looking for M6–M20 stainless steel fasteners. Monthly bulk order ~50,000 units. Samples required before commitment. Requesting capacity and lead time info…',
-        'receivedAt' => $receivedAt->format('M j · g:i A'),
-        'inquiryTags' => [
-            ['label' => 'Type', 'value' => 'general'],
-            ['label' => 'Status', 'value' => 'New'],
-        ],
-        'details' => [
-            'Inquiry ID' => '#INQ-'.$receivedAt->format('Ymd').'-0847',
-            'Name' => 'James Chen',
-            'Email' => 'james@globalpartsco.de',
-            'Company' => 'Global Parts Co.',
-            'Type' => 'general',
-            'Received' => $receivedAt->format('F j, Y · g:i A T'),
-            'Status' => 'New',
-        ],
-        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('admin/contacts/1'),
-        'contactsListUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('admin/contacts'),
-    ]);
-});
 
 Route::get('/oauth/token-capture', function () {
     return response()->make('

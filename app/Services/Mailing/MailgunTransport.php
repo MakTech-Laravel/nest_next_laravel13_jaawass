@@ -36,6 +36,8 @@ class MailgunTransport
             ? "{$fromName} <{$fromAddress}>"
             : $fromAddress;
 
+        [$html, $inline] = $this->extractInlineImagesFromDataUris($html);
+
         $payload = [
             'from' => $from,
             'to' => $recipient,
@@ -45,6 +47,10 @@ class MailgunTransport
 
         if ($text !== null && $text !== '') {
             $payload['text'] = $text;
+        }
+
+        if ($inline !== []) {
+            $payload['inline'] = $inline;
         }
 
         try {
@@ -60,5 +66,47 @@ class MailgunTransport
 
             throw $exception;
         }
+    }
+
+    /**
+     * Gmail/Outlook strip data:image URIs. Convert them to Mailgun CID inline attachments.
+     *
+     * @return array{0: string, 1: list<array{fileContent: string, filename: string}>}
+     */
+    private function extractInlineImagesFromDataUris(string $html): array
+    {
+        $inline = [];
+        $index = 0;
+
+        $converted = preg_replace_callback(
+            '/src=(["\'])data:image\/([a-zA-Z0-9+.-]+);base64,([A-Za-z0-9+\/=]+)\1/i',
+            function (array $matches) use (&$inline, &$index): string {
+                $quote = $matches[1];
+                $mimeSubtype = strtolower($matches[2]);
+                $binary = base64_decode($matches[3], true);
+
+                if ($binary === false || $binary === '') {
+                    return $matches[0];
+                }
+
+                $extension = match ($mimeSubtype) {
+                    'jpeg', 'jpg' => 'jpg',
+                    'svg+xml' => 'svg',
+                    'x-icon' => 'ico',
+                    default => preg_replace('/[^a-z0-9]/', '', $mimeSubtype) ?: 'png',
+                };
+
+                $filename = 'inline-'.(++$index).'.'.$extension;
+                $inline[] = [
+                    'fileContent' => $binary,
+                    'filename' => $filename,
+                ];
+
+                return 'src='.$quote.'cid:'.$filename.$quote;
+            },
+            $html,
+        );
+
+        return [(string) $converted, $inline];
     }
 }
