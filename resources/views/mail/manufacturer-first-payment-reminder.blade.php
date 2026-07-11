@@ -12,24 +12,36 @@
     $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing');
     $detailsUrl = $detailsUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing');
     $closeAccountUrl = $closeAccountUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('account/close');
+
+    // Local preview: embed PNGs (APP_URL points at remote where new icons may 404).
+    // Production/queued mail: use absolute public_url so Gmail/Outlook can fetch hosted images.
+    $mailIconUrl = static function (string $relativePath): string {
+        $absolute = public_path($relativePath);
+        if (app()->environment('local') && is_file($absolute)) {
+            return 'data:image/png;base64,'.base64_encode((string) file_get_contents($absolute));
+        }
+
+        return (string) public_url($relativePath);
+    };
+
     $whyCards = [
         [
-            'icon' => public_url('images/mail/svg/why-user.svg'),
+            'icon' => $mailIconUrl('images/mail/icons/why-user.png'),
             'title' => __('mail.manufacturer_first_payment_reminder.why_1_title'),
             'body' => __('mail.manufacturer_first_payment_reminder.why_1_body'),
         ],
         [
-            'icon' => public_url('images/mail/svg/why-globe.svg'),
+            'icon' => $mailIconUrl('images/mail/icons/why-globe.png'),
             'title' => __('mail.manufacturer_first_payment_reminder.why_2_title'),
             'body' => __('mail.manufacturer_first_payment_reminder.why_2_body'),
         ],
         [
-            'icon' => public_url('images/mail/svg/why-diamond.svg'),
+            'icon' => $mailIconUrl('images/mail/icons/why-diamond.png'),
             'title' => __('mail.manufacturer_first_payment_reminder.why_3_title'),
             'body' => __('mail.manufacturer_first_payment_reminder.why_3_body'),
         ],
         [
-            'icon' => public_url('images/mail/svg/why-calendar.svg'),
+            'icon' => $mailIconUrl('images/mail/icons/why-calendar.png'),
             'title' => __('mail.manufacturer_first_payment_reminder.why_4_title'),
             'body' => __('mail.manufacturer_first_payment_reminder.why_4_body'),
         ],
