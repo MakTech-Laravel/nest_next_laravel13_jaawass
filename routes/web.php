@@ -19,8 +19,8 @@ Route::get('/account-restore-email', function () {
     ]);
 });
 
-Route::get('/first-payment-reminder-email', function () {
-    return view('mail.manufacturer-first-payment-reminder', [
+Route::get('/activation-reminder-email', function () {
+    return view('mail.manufacturer-activation-reminder', [
         'recipientName' => 'Sarah',
         'company' => 'Global Parts Co.',
         'approvedAt' => now()->subDay()->format('F j, Y'),

@@ -45,6 +45,7 @@ use Laravel\Passport\HasApiTokens;
     'buyer_registration_reminder_sent_at',
     'manufacturer_registration_reminder_sent_at',
     'manufacturer_activation_reminder_sent_at',
+    // Null = first payment confirmation not sent yet; timestamp = confirmation already sent.
     'manufacturer_first_payment_reminder_sent_at',
     'preferred_currency_id',
     'preferred_language',

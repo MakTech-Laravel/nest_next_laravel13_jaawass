@@ -27,12 +27,19 @@ class ManufacturerActivationReminderService
             return;
         }
 
+        if ($user->manufacturer_activation_reminder_sent_at !== null) {
+            return;
+        }
+
         MailNotificationHelper::sendIfEmail($user, function (string $email) use ($user): void {
             $this->mailingService->send($email, MailTemplate::ManufacturerActivationReminder, [
+                'recipientName' => MailNotificationHelper::displayName($user),
                 'name' => MailNotificationHelper::displayName($user),
                 'company' => MailNotificationHelper::companyOrName($user),
                 'approvedAt' => $user->manufacture_status_at?->format('F j, Y'),
-                'ctaUrl' => MailNotificationHelper::frontendUrl('subscription'),
+                'ctaUrl' => MailNotificationHelper::frontendUrl('pricing'),
+                'detailsUrl' => MailNotificationHelper::frontendUrl('pricing'),
+                'closeAccountUrl' => MailNotificationHelper::frontendUrl('account/close'),
             ]);
         });
 

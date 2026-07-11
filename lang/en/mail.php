@@ -834,16 +834,6 @@ return [
     ],
 
     'manufacturer_activation_reminder' => [
-        'subject' => 'Your account is approved but still inactive — activate now',
-        'preheader' => 'Complete your subscription to go live on SourceNest.',
-        'hero_headline' => 'Buyers are searching. <em>They can\'t find you yet.</em>',
-        'intro' => 'Hello :name, your application for :company has been approved. Activate your subscription to make your profile visible to buyers.',
-        'status_label' => 'Approved — Not Active',
-        'urgency_body' => 'Buyers cannot discover your profile until your subscription is active.',
-        'cta' => 'Activate Your Account',
-    ],
-
-    'manufacturer_first_payment_reminder' => [
         'subject' => 'Activate your SourceNest account — buyers can\'t find you yet',
         'preheader' => 'Your account is approved but not active. Activate to become visible to buyers.',
         'badge' => 'Action Required',

@@ -112,20 +112,27 @@ class SubscriptionNotificationService
             return;
         }
 
-        $this->mailingService->send(
-            $manufacturer->email,
-            MailTemplate::SubscriptionCreated,
-            array_merge($this->enrollmentMailData($subscription, $paidAmount), [
-                'manufacturerName' => $this->displayName($subscription->manufacturer),
-                'intro' => __('mail.subscription_created.intro', [
-                    'name' => $this->displayName($subscription->manufacturer),
-                    'plan' => $subscription->plan?->name ?? __('subscription.plan'),
+        // manufacturer_first_payment_reminder_sent_at = first payment confirmation already sent (null = false).
+        $shouldSendFirstPaymentConfirmation = $manufacturer->manufacturer_first_payment_reminder_sent_at === null;
+
+        if ($shouldSendFirstPaymentConfirmation) {
+            $this->mailingService->send(
+                $manufacturer->email,
+                MailTemplate::SubscriptionCreated,
+                array_merge($this->enrollmentMailData($subscription, $paidAmount), [
+                    'manufacturerName' => $this->displayName($subscription->manufacturer),
+                    'intro' => __('mail.subscription_created.intro', [
+                        'name' => $this->displayName($subscription->manufacturer),
+                        'plan' => $subscription->plan?->name ?? __('subscription.plan'),
+                    ]),
+                    'activatedAt' => now()->format('F j, Y'),
+                    'ctaUrl' => $this->plansUrl(),
+                    'ctaLabel' => __('mail.subscription_created.cta'),
                 ]),
-                'activatedAt' => now()->format('F j, Y'),
-                'ctaUrl' => $this->plansUrl(),
-                'ctaLabel' => __('mail.subscription_created.cta'),
-            ]),
-        );
+            );
+
+            $manufacturer->forceFill(['manufacturer_first_payment_reminder_sent_at' => now()])->save();
+        }
 
         $this->dispatchInAppNotification(
             $manufacturer,

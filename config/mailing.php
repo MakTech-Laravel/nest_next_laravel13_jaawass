@@ -12,8 +12,6 @@ return [
 
   'activation_reminder_days' => (int) env('MAILING_ACTIVATION_REMINDER_DAYS', 3),
 
-  'first_payment_reminder_days' => (int) env('MAILING_FIRST_PAYMENT_REMINDER_DAYS', 3),
-
   'templates' => [
     'welcome' => [
       'view' => 'mail.welcome',
@@ -58,11 +56,6 @@ return [
     'manufacturer-activation-reminder' => [
       'view' => 'mail.manufacturer-activation-reminder',
       'subject' => 'mail.manufacturer_activation_reminder.subject',
-      'markdown' => false,
-    ],
-    'manufacturer-first-payment-reminder' => [
-      'view' => 'mail.manufacturer-first-payment-reminder',
-      'subject' => 'mail.manufacturer_first_payment_reminder.subject',
       'markdown' => false,
     ],
     'payment-failed' => [
