@@ -35,10 +35,13 @@ class SubscriptionResource extends JsonResource
             'ends_at' => $this->ends_at,
             'trial_ends_at' => $this->trial_ends_at,
             'auto_renew' => $this->auto_renew,
+            'payment_method' => $this->payment_method,
+            'has_reusable_payment_method' => filled($this->paypal_vault_id),
             'is_active' => $this->isEntitlementActive(),
             'source' => $this->source?->value ?? $this->source,
             'promotion_id' => $this->promotion_id,
             'days_remaining' => $daysRemaining,
+            'last_renewed_at' => $this->last_renewed_at,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

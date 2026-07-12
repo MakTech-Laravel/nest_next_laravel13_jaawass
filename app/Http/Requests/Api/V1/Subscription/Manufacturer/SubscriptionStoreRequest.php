@@ -30,6 +30,7 @@ class SubscriptionStoreRequest extends FormRequest
                 'yearly',
             ])],
             'payment_id' => ['required', 'string', 'max:255'],
+            'paypal_vault_id' => ['nullable', 'string', 'max:255'],
             'auto_renew' => ['required', 'boolean'],
             'paid_amount' => ['required', 'numeric', 'min:0'],
             'trial_ends_at' => ['nullable', 'date'],

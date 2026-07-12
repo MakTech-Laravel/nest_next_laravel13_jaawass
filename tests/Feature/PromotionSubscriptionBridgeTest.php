@@ -4,6 +4,8 @@ use App\Enums\Api\V1\SubscriptionSource;
 use App\Enums\Api\V1\SubscriptionStatus;
 use App\Enums\PromotionUserStatus;
 use App\Enums\UserRole;
+use App\Jobs\SendMailJob;
+use App\Jobs\Subscription\SendSubscriptionInAppNotificationJob;
 use App\Models\Company;
 use App\Models\Plan;
 use App\Models\Promotion;
@@ -11,6 +13,7 @@ use App\Models\Subscription;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Queue;
 use Laravel\Passport\ClientRepository;
 use Laravel\Passport\Passport;
 use Tests\TestCase;
@@ -18,6 +21,8 @@ use Tests\TestCase;
 uses(RefreshDatabase::class);
 
 beforeEach(function (): void {
+    Queue::fake([SendMailJob::class, SendSubscriptionInAppNotificationJob::class]);
+
     app(ClientRepository::class)->createPersonalAccessGrantClient(
         name: 'Test Personal Access Client',
         provider: config('auth.guards.api.provider')
@@ -71,18 +76,34 @@ beforeEach(function (): void {
             'access_token' => 'test-access-token',
             'token_type' => 'Bearer',
         ]),
-        'https://api-m.sandbox.paypal.com/v2/checkout/orders/*' => Http::response([
-            'id' => 'ORDER-TEST-123',
-            'status' => 'COMPLETED',
-            'purchase_units' => [
-                [
-                    'amount' => [
-                        'value' => '299.00',
-                        'currency_code' => 'USD',
+        'https://api-m.sandbox.paypal.com/v2/checkout/orders/*' => function ($request) {
+            $orderId = basename((string) parse_url($request->url(), PHP_URL_PATH));
+
+            return Http::response([
+                'id' => $orderId,
+                'status' => 'COMPLETED',
+                'payer' => [
+                    'payer_id' => 'PAYER-TEST-1',
+                ],
+                'payment_source' => [
+                    'paypal' => [
+                        'attributes' => [
+                            'vault' => [
+                                'id' => 'VAULT-TEST-123',
+                            ],
+                        ],
                     ],
                 ],
-            ],
-        ]),
+                'purchase_units' => [
+                    [
+                        'amount' => [
+                            'value' => '299.00',
+                            'currency_code' => 'USD',
+                        ],
+                    ],
+                ],
+            ]);
+        },
     ]);
 });
 

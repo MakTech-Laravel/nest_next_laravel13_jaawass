@@ -31,6 +31,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withSchedule(function (Schedule $schedule): void {
         $schedule->command('users:finalize-scheduled-deletions')->dailyAt('00:00');
 
+        $schedule->command('subscriptions:auto-renew')
+            ->hourly()
+            ->timezone(config('app.timezone'));
+
         $schedule->command('subscriptions:process-expired')
             ->hourly()
             ->timezone(config('app.timezone'));

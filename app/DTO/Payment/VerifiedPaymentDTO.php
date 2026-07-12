@@ -10,5 +10,7 @@ readonly class VerifiedPaymentDTO
         public string $currency,
         public string $status,
         public string $paymentMethod,
+        public ?string $vaultId = null,
+        public ?string $payerId = null,
     ) {}
 }

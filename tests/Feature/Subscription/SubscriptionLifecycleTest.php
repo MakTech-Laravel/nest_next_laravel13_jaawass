@@ -188,6 +188,18 @@ test('renewal resets expiry reminder timestamp', function () {
         'https://api-m.sandbox.paypal.com/v2/checkout/orders/*' => \Illuminate\Support\Facades\Http::response([
             'id' => 'ORDER-RENEW-LIFECYCLE',
             'status' => 'COMPLETED',
+            'payer' => [
+                'payer_id' => 'PAYER-TEST-1',
+            ],
+            'payment_source' => [
+                'paypal' => [
+                    'attributes' => [
+                        'vault' => [
+                            'id' => 'VAULT-TEST-123',
+                        ],
+                    ],
+                ],
+            ],
             'purchase_units' => [
                 ['amount' => ['value' => '99.00', 'currency_code' => 'USD']],
             ],

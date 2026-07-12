@@ -47,6 +47,43 @@ test('paypal verifier accepts checkout order ids', function (): void {
         ->and($verified->status)->toBe('completed');
 });
 
+test('paypal verifier extracts vault id from completed order', function (): void {
+    Http::fake([
+        'https://api-m.sandbox.paypal.com/v1/oauth2/token' => Http::response([
+            'access_token' => 'test-access-token',
+            'token_type' => 'Bearer',
+        ]),
+        'https://api-m.sandbox.paypal.com/v2/checkout/orders/ORDER-VAULT-1' => Http::response([
+            'id' => 'ORDER-VAULT-1',
+            'status' => 'COMPLETED',
+            'payment_source' => [
+                'paypal' => [
+                    'attributes' => [
+                        'vault' => [
+                            'id' => 'VAULT-FROM-ORDER',
+                        ],
+                    ],
+                ],
+            ],
+            'purchase_units' => [
+                [
+                    'amount' => [
+                        'value' => '99.00',
+                        'currency_code' => 'USD',
+                    ],
+                ],
+            ],
+        ]),
+    ]);
+
+    $verified = app(PaypalPaymentVerifier::class)->verify([
+        'payment_id' => 'ORDER-VAULT-1',
+        'paid_amount' => 99.00,
+    ]);
+
+    expect($verified->vaultId)->toBe('VAULT-FROM-ORDER');
+});
+
 test('paypal verifier resolves capture ids to their parent order', function (): void {
     Http::fake([
         'https://api-m.sandbox.paypal.com/v1/oauth2/token' => Http::response([

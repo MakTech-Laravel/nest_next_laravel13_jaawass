@@ -35,18 +35,34 @@ beforeEach(function () {
             'access_token' => 'test-access-token',
             'token_type' => 'Bearer',
         ]),
-        'https://api-m.sandbox.paypal.com/v2/checkout/orders/*' => Http::response([
-            'id' => 'ORDER-TEST-123',
-            'status' => 'COMPLETED',
-            'purchase_units' => [
-                [
-                    'amount' => [
-                        'value' => '99.00',
-                        'currency_code' => 'USD',
+        'https://api-m.sandbox.paypal.com/v2/checkout/orders/*' => function ($request) {
+            $orderId = basename((string) parse_url($request->url(), PHP_URL_PATH));
+
+            return Http::response([
+                'id' => $orderId,
+                'status' => 'COMPLETED',
+                'payer' => [
+                    'payer_id' => 'PAYER-TEST-1',
+                ],
+                'payment_source' => [
+                    'paypal' => [
+                        'attributes' => [
+                            'vault' => [
+                                'id' => 'VAULT-TEST-123',
+                            ],
+                        ],
                     ],
                 ],
-            ],
-        ]),
+                'purchase_units' => [
+                    [
+                        'amount' => [
+                            'value' => '99.00',
+                            'currency_code' => 'USD',
+                        ],
+                    ],
+                ],
+            ]);
+        },
     ]);
 });
 
@@ -81,12 +97,16 @@ test('manufacturer can subscribe with verified paypal payment', function () {
 
     $response->assertCreated()
         ->assertJsonPath('data.status', 'active')
-        ->assertJsonPath('data.auto_renew', true);
+        ->assertJsonPath('data.auto_renew', true)
+        ->assertJsonPath('data.payment_method', 'paypal')
+        ->assertJsonPath('data.has_reusable_payment_method', true);
 
     $this->assertDatabaseHas('subscriptions', [
         'manufacturer_id' => $manufacturer->id,
         'plan_id' => $plan->id,
         'status' => 'active',
+        'payment_method' => 'paypal',
+        'paypal_vault_id' => 'VAULT-TEST-123',
     ]);
 
     $this->assertDatabaseHas('payments', [

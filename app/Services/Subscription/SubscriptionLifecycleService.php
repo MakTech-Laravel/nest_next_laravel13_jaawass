@@ -13,6 +13,7 @@ class SubscriptionLifecycleService
         private readonly SubscriptionLogService $subscriptionLogService,
         private readonly SubscriptionNotificationService $notificationService,
         private readonly PlanEntitlementResolver $entitlementResolver,
+        private readonly SubscriptionAutoRenewService $autoRenewService,
     ) {}
 
     public function sendExpiryReminder(Subscription $subscription): bool
@@ -109,6 +110,14 @@ class SubscriptionLifecycleService
             return false;
         }
 
-        return $subscription->ends_at !== null && $subscription->ends_at->isPast();
+        if ($subscription->ends_at === null || ! $subscription->ends_at->isPast()) {
+            return false;
+        }
+
+        if ($this->autoRenewService->shouldDeferExpiry($subscription)) {
+            return false;
+        }
+
+        return true;
     }
 }

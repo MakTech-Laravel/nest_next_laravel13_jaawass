@@ -6,12 +6,15 @@ use App\Contracts\Payment\PaymentVerifierInterface;
 use App\DTO\Payment\VerifiedPaymentDTO;
 use App\Enums\Api\V1\Payment\RegisterPaymentManager;
 use App\Exceptions\Payment\PaymentVerificationException;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
+use App\Services\Payment\Paypal\PaypalApiClient;
 use Symfony\Component\HttpFoundation\Response;
 
 class PaypalPaymentVerifier implements PaymentVerifierInterface
 {
+    public function __construct(
+        private readonly PaypalApiClient $paypal,
+    ) {}
+
     /**
      * @param  array<string, mixed>  $paymentData
      */
@@ -24,9 +27,7 @@ class PaypalPaymentVerifier implements PaymentVerifierInterface
             throw new PaymentVerificationException(__('subscription.payment_id_required'));
         }
 
-        $baseUrl = $this->apiBaseUrl();
-        $accessToken = $this->accessToken($baseUrl);
-        $order = $this->fetchOrder($baseUrl, $accessToken, $paymentId);
+        $order = $this->fetchOrder($paymentId);
         $orderId = (string) ($order['id'] ?? $paymentId);
         $status = strtoupper((string) ($order['status'] ?? ''));
 
@@ -41,47 +42,36 @@ class PaypalPaymentVerifier implements PaymentVerifierInterface
             throw new PaymentVerificationException(__('subscription.fraudulent_payment'));
         }
 
+        $vaultId = $this->paypal->extractVaultId($order);
+        $payloadVaultId = (string) ($paymentData['paypal_vault_id'] ?? '');
+
+        if ($vaultId === null && $payloadVaultId !== '') {
+            $vaultId = $payloadVaultId;
+        }
+
         return new VerifiedPaymentDTO(
             externalId: $orderId,
             amount: $amountValue,
             currency: $currency,
             status: strtolower($status),
             paymentMethod: RegisterPaymentManager::PAYPAL->value,
+            vaultId: $vaultId,
+            payerId: $this->paypal->extractPayerId($order),
         );
     }
 
     /**
      * @return array<string, mixed>
      */
-    private function fetchOrder(string $baseUrl, string $accessToken, string $paymentId): array
+    private function fetchOrder(string $paymentId): array
     {
-        $orderResponse = Http::withToken($accessToken)
-            ->acceptJson()
-            ->get("{$baseUrl}/v2/checkout/orders/{$paymentId}");
+        $order = $this->paypal->findOrder($paymentId);
 
-        if ($orderResponse->successful()) {
-            return $orderResponse->json();
+        if ($order !== null) {
+            return $order;
         }
 
-        if ($orderResponse->status() !== Response::HTTP_NOT_FOUND) {
-            throw new PaymentVerificationException(
-                __('subscription.paypal_verification_failed'),
-                Response::HTTP_BAD_GATEWAY,
-            );
-        }
-
-        $captureResponse = Http::withToken($accessToken)
-            ->acceptJson()
-            ->get("{$baseUrl}/v2/payments/captures/{$paymentId}");
-
-        if (! $captureResponse->successful()) {
-            throw new PaymentVerificationException(
-                __('subscription.paypal_verification_failed'),
-                Response::HTTP_BAD_GATEWAY,
-            );
-        }
-
-        $capture = $captureResponse->json();
+        $capture = $this->paypal->getCapture($paymentId);
         $captureStatus = strtoupper((string) ($capture['status'] ?? ''));
 
         if ($captureStatus !== 'COMPLETED') {
@@ -97,52 +87,7 @@ class PaypalPaymentVerifier implements PaymentVerifierInterface
             );
         }
 
-        $resolvedOrderResponse = Http::withToken($accessToken)
-            ->acceptJson()
-            ->get("{$baseUrl}/v2/checkout/orders/{$orderId}");
-
-        if (! $resolvedOrderResponse->successful()) {
-            throw new PaymentVerificationException(
-                __('subscription.paypal_verification_failed'),
-                Response::HTTP_BAD_GATEWAY,
-            );
-        }
-
-        return $resolvedOrderResponse->json();
-    }
-
-    private function apiBaseUrl(): string
-    {
-        return config('services.paypal.mode', 'sandbox') === 'live'
-            ? 'https://api-m.paypal.com'
-            : 'https://api-m.sandbox.paypal.com';
-    }
-
-    private function accessToken(string $baseUrl): string
-    {
-        return Cache::remember('paypal_access_token', 3000, function () use ($baseUrl): string {
-            $clientId = (string) config('services.paypal.client_id');
-            $clientSecret = (string) config('services.paypal.client_secret');
-
-            if ($clientId === '' || $clientSecret === '') {
-                throw new PaymentVerificationException(__('subscription.paypal_not_configured'));
-            }
-
-            $response = Http::asForm()
-                ->withBasicAuth($clientId, $clientSecret)
-                ->post("{$baseUrl}/v1/oauth2/token", [
-                    'grant_type' => 'client_credentials',
-                ]);
-
-            if (! $response->successful()) {
-                throw new PaymentVerificationException(
-                    __('subscription.paypal_auth_failed'),
-                    Response::HTTP_BAD_GATEWAY,
-                );
-            }
-
-            return (string) $response->json('access_token');
-        });
+        return $this->paypal->getOrder($orderId);
     }
 
     private function amountsMatch(float $actual, float $expected): bool
