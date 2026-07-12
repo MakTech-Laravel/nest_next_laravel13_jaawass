@@ -9,19 +9,8 @@ Route::get('/', function () {
 
 
 
-Route::get('/subscription-activated-email', function () {
-    return view('mail.subscription-activated', [
-        'manufacturerName' => 'Mehmet',
-        'planName' => 'Annual Supplier Listing',
-        'paidAmount' => '199.00',
-        'paidAmountDisplay' => '$199.00 USD',
-        'startsAt' => now()->format('F j, Y'),
-        'endsAt' => now()->addYear()->format('F j, Y'),
-        'status' => 'active',
-        'ctaUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer'),
-        'productsUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer/products'),
-        'billingUrl' => \App\Support\Mail\MailNotificationHelper::frontendUrl('settings/billing'),
-    ]);
+Route::get('/test-email', function () {
+    return view('mail.password-changed');
 });
 
 

@@ -19,6 +19,7 @@ use App\Http\Resources\Api\V1\UserResource;
 use App\Enums\MailTemplate;
 use App\Exceptions\Auth\EmailVerificationException;
 use App\Services\Auth\EmailVerificationService;
+use App\Services\Auth\PasswordChangedNotificationService;
 use App\Services\Mailing\MailingService;
 use App\Support\Mail\MailNotificationHelper;
 use App\Models\User;
@@ -459,8 +460,10 @@ class AuthController extends Controller
         );
     }
 
-    public function resetPassword(ResetPasswordRequest $request): JsonResponse
-    {
+    public function resetPassword(
+        ResetPasswordRequest $request,
+        PasswordChangedNotificationService $passwordChangedNotificationService,
+    ): JsonResponse {
         $validated = $request->validated();
         $user = User::query()->where('email', $validated['email'])->first();
 
@@ -494,6 +497,8 @@ class AuthController extends Controller
         ])->save();
 
         event(new PasswordReset($user));
+
+        $passwordChangedNotificationService->notify($user, $request);
 
         return sendResponse(
             status: true,
