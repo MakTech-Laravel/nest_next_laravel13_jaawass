@@ -29,6 +29,12 @@ return [
     'payment_without_subscription' => 'Payment was recorded but no subscription was found',
     'invalid_billing_interval' => 'Billing interval must be month or year',
     'plan' => 'your plan',
+    'auto_renew_enabled' => 'Auto-renew has been enabled for your current plan',
+    'auto_renew_disabled' => 'Auto-renew has been disabled. You can still use your plan until the current period ends',
+    'auto_renew_vault_required' => 'Save a PayPal payment method before enabling auto-renew',
+    'auto_renew_not_manageable' => 'Auto-renew can only be managed on an active subscription',
+    'paypal_setup_token_failed' => 'Failed to start PayPal payment method setup',
+    'paypal_payment_token_failed' => 'Failed to save PayPal payment method for auto-renew',
 
     'features' => [
         'product_limit' => 'Product listings',

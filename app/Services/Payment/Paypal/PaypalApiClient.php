@@ -158,6 +158,78 @@ class PaypalApiClient
     }
 
     /**
+     * Create a PayPal vault setup token (save payment method without charging).
+     *
+     * @return array<string, mixed>
+     */
+    public function createSetupToken(string $returnUrl, string $cancelUrl): array
+    {
+        $baseUrl = $this->apiBaseUrl();
+        $payload = [
+            'payment_source' => [
+                'paypal' => [
+                    'usage_type' => 'MERCHANT',
+                    'experience_context' => [
+                        'return_url' => $returnUrl,
+                        'cancel_url' => $cancelUrl,
+                        'shipping_preference' => 'NO_SHIPPING',
+                    ],
+                ],
+            ],
+        ];
+
+        $response = Http::withToken($this->accessToken())
+            ->acceptJson()
+            ->withHeaders([
+                'PayPal-Request-Id' => (string) \Illuminate\Support\Str::uuid(),
+            ])
+            ->post("{$baseUrl}/v3/vault/setup-tokens", $payload);
+
+        if (! $response->successful()) {
+            throw new PaymentVerificationException(
+                __('subscription.paypal_setup_token_failed'),
+                Response::HTTP_BAD_GATEWAY,
+            );
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Exchange a vault setup token for a reusable payment token (vault id).
+     *
+     * @return array<string, mixed>
+     */
+    public function createPaymentTokenFromSetupToken(string $setupTokenId): array
+    {
+        $baseUrl = $this->apiBaseUrl();
+        $payload = [
+            'payment_source' => [
+                'token' => [
+                    'id' => $setupTokenId,
+                    'type' => 'SETUP_TOKEN',
+                ],
+            ],
+        ];
+
+        $response = Http::withToken($this->accessToken())
+            ->acceptJson()
+            ->withHeaders([
+                'PayPal-Request-Id' => (string) \Illuminate\Support\Str::uuid(),
+            ])
+            ->post("{$baseUrl}/v3/vault/payment-tokens", $payload);
+
+        if (! $response->successful()) {
+            throw new PaymentVerificationException(
+                __('subscription.paypal_payment_token_failed'),
+                Response::HTTP_BAD_GATEWAY,
+            );
+        }
+
+        return $response->json();
+    }
+
+    /**
      * @param  array<string, mixed>  $order
      */
     public function extractVaultId(array $order): ?string
@@ -187,5 +259,26 @@ class PaypalApiClient
             ?? data_get($order, 'payment_source.paypal.account_id');
 
         return is_string($payerId) && $payerId !== '' ? $payerId : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $paymentToken
+     */
+    public function extractPaymentTokenId(array $paymentToken): ?string
+    {
+        $id = $paymentToken['id'] ?? null;
+
+        return is_string($id) && $id !== '' ? $id : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $paymentToken
+     */
+    public function extractPaymentTokenCustomerId(array $paymentToken): ?string
+    {
+        $customerId = data_get($paymentToken, 'customer.id')
+            ?? data_get($paymentToken, 'payment_source.paypal.payer_id');
+
+        return is_string($customerId) && $customerId !== '' ? $customerId : null;
     }
 }
