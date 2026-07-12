@@ -2,7 +2,9 @@
 
 namespace App\Services\Subscription;
 
+use App\DTO\Payment\VerifiedPaymentDTO;
 use App\Enums\Api\V1\BillingInterval;
+use App\Enums\Api\V1\Payment\RegisterPaymentManager;
 use App\Enums\Api\V1\SubscriptionEventType;
 use App\Enums\Api\V1\SubscriptionSource;
 use App\Enums\Api\V1\SubscriptionStatus;
@@ -46,7 +48,7 @@ class SubscriptionPurchaseService
         );
 
         $plan = Plan::query()->findOrFail($payload['plan_id']);
-        $subscriptionData = $this->buildSubscriptionData($manufacturer->id, $payload);
+        $subscriptionData = $this->buildSubscriptionData($manufacturer->id, $payload, $verified);
 
         $subscription = DB::transaction(function () use ($manufacturer, $verified, $plan, $subscriptionData): Subscription {
             $subscription = $this->subscriptionService->createSubscription($subscriptionData);
@@ -112,7 +114,7 @@ class SubscriptionPurchaseService
 
         $plan = Plan::query()->findOrFail($payload['plan_id']);
         $fromPlanId = $subscription->plan_id;
-        $subscriptionData = $this->buildSubscriptionData($manufacturer->id, $payload);
+        $subscriptionData = $this->buildSubscriptionData($manufacturer->id, $payload, $verified);
 
         $subscription = DB::transaction(function () use ($manufacturer, $subscription, $verified, $plan, $fromPlanId, $subscriptionData): Subscription {
             $updated = $this->subscriptionService->updateSubscription($subscription->id, $subscriptionData);
@@ -186,7 +188,7 @@ class SubscriptionPurchaseService
 
         $oldPlan = Plan::query()->findOrFail($subscription->plan_id);
         $newPlan = Plan::query()->findOrFail($payload['plan_id']);
-        $subscriptionData = $this->buildSubscriptionData($manufacturer->id, $payload);
+        $subscriptionData = $this->buildSubscriptionData($manufacturer->id, $payload, $verified);
 
         $subscription = DB::transaction(function () use ($manufacturer, $subscription, $verified, $oldPlan, $newPlan, $subscriptionData): Subscription {
             $updated = $this->subscriptionService->updateSubscription($subscription->id, $subscriptionData);
@@ -273,13 +275,28 @@ class SubscriptionPurchaseService
      * @param  array<string, mixed>  $payload
      * @return array<string, mixed>
      */
-    private function buildSubscriptionData(int $manufacturerId, array $payload): array
-    {
+    private function buildSubscriptionData(
+        int $manufacturerId,
+        array $payload,
+        VerifiedPaymentDTO $verified,
+    ): array {
         $billingInterval = $this->normalizeBillingInterval((string) $payload['billing_interval']);
         $startsAt = Carbon::now();
         $endsAt = $billingInterval === BillingInterval::YEAR
             ? $startsAt->copy()->addYear()
             : $startsAt->copy()->addMonth();
+
+        $vaultId = $verified->vaultId;
+        $wantsAutoRenew = (bool) $payload['auto_renew'];
+        $paymentMethod = $verified->paymentMethod;
+
+        if (
+            $wantsAutoRenew
+            && $paymentMethod === RegisterPaymentManager::PAYPAL->value
+            && ! filled($vaultId)
+        ) {
+            $wantsAutoRenew = false;
+        }
 
         return [
             'manufacturer_id' => $manufacturerId,
@@ -289,7 +306,13 @@ class SubscriptionPurchaseService
             'starts_at' => $startsAt,
             'ends_at' => $endsAt,
             'trial_ends_at' => null,
-            'auto_renew' => (bool) $payload['auto_renew'],
+            'auto_renew' => $wantsAutoRenew,
+            'payment_method' => $paymentMethod,
+            'paypal_vault_id' => $paymentMethod === RegisterPaymentManager::PAYPAL->value ? $vaultId : null,
+            'paypal_payer_id' => $paymentMethod === RegisterPaymentManager::PAYPAL->value ? $verified->payerId : null,
+            'renew_attempts' => 0,
+            'last_renew_attempt_at' => null,
+            'last_renewed_at' => null,
             'expiry_reminder_sent_at' => null,
             'source' => SubscriptionSource::PURCHASE->value,
             'promotion_id' => null,

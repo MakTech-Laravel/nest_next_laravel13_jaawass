@@ -5,11 +5,14 @@ namespace App\Http\Controllers\Api\V1\Manufacturer;
 use App\Exceptions\Payment\PaymentVerificationException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Subscription\Manufacturer\SubcriptionUpdgradeRquest;
+use App\Http\Requests\Api\V1\Subscription\Manufacturer\SubscriptionAutoRenewToggleRequest;
 use App\Http\Requests\Api\V1\Subscription\Manufacturer\SubscriptionStoreRequest;
+use App\Http\Requests\Api\V1\Subscription\Manufacturer\SubscriptionVaultSetupTokenRequest;
 use App\Http\Resources\Api\V1\SubscriptionResource;
 use App\Models\Payment;
 use App\Services\Payment\PaymentFailedNotificationService;
 use App\Services\Subscription\PlanEntitlementResolver;
+use App\Services\Subscription\SubscriptionAutoRenewToggleService;
 use App\Services\Subscription\SubscriptionPurchaseService;
 use App\Services\Subscription\SubscriptionService;
 use Illuminate\Http\Request;
@@ -22,6 +25,7 @@ class SubscriptionController extends Controller
         private readonly SubscriptionPurchaseService $purchaseService,
         private readonly SubscriptionService $subscriptionService,
         private readonly PlanEntitlementResolver $entitlementResolver,
+        private readonly SubscriptionAutoRenewToggleService $autoRenewToggleService,
     ) {}
 
     public function subscribe(SubscriptionStoreRequest $request, PaymentFailedNotificationService $paymentFailedNotificationService)
@@ -158,6 +162,65 @@ class SubscriptionController extends Controller
         return sendResponse(
             status: true,
             message: __('subscription.subscription_updated'),
+            data: new SubscriptionResource($subscription),
+            statusCode: HttpStatus::HTTP_OK,
+        );
+    }
+
+    public function createVaultSetupToken(SubscriptionVaultSetupTokenRequest $request)
+    {
+        try {
+            $token = $this->autoRenewToggleService->createVaultSetupToken(
+                $request->user(),
+                (string) $request->validated('return_url'),
+                (string) $request->validated('cancel_url'),
+            );
+        } catch (PaymentVerificationException $exception) {
+            return sendResponse(
+                status: false,
+                message: $exception->getMessage(),
+                data: null,
+                statusCode: $exception->statusCode,
+            );
+        } catch (ValidationException $exception) {
+            throw $exception;
+        }
+
+        return sendResponse(
+            status: true,
+            message: __('common.success'),
+            data: $token,
+            statusCode: HttpStatus::HTTP_OK,
+        );
+    }
+
+    public function toggleAutoRenew(SubscriptionAutoRenewToggleRequest $request)
+    {
+        $validated = $request->validated();
+        $enabled = (bool) $validated['enabled'];
+
+        try {
+            $subscription = $enabled
+                ? $this->autoRenewToggleService->enable($request->user(), $validated)
+                : $this->autoRenewToggleService->disable($request->user());
+        } catch (PaymentVerificationException $exception) {
+            return sendResponse(
+                status: false,
+                message: $exception->getMessage(),
+                data: null,
+                statusCode: $exception->statusCode,
+            );
+        } catch (ValidationException $exception) {
+            throw $exception;
+        }
+
+        $this->entitlementResolver->forget($request->user());
+
+        return sendResponse(
+            status: true,
+            message: $enabled
+                ? __('subscription.auto_renew_enabled')
+                : __('subscription.auto_renew_disabled'),
             data: new SubscriptionResource($subscription),
             statusCode: HttpStatus::HTTP_OK,
         );

@@ -22,6 +22,8 @@ Route::prefix('')->group(function () {
         Route::post('/subscribe', 'subscribe');
         Route::post('/cancel', 'cancel');
         Route::post('/upgrade', 'upgrade');
+        Route::post('/auto-renew', 'toggleAutoRenew');
+        Route::post('/vault-setup-token', 'createVaultSetupToken');
     });
 
     Route::get('/review-center', [ManufacturerReviewCenterController::class, 'show']);
