@@ -214,6 +214,11 @@ test('forgot and reset password endpoints work', function () {
         ->assertJsonPath('message', __('passwords.reset'));
 
     expect(Hash::check('new-password', $user->fresh()->password))->toBeTrue();
+
+    Queue::assertPushed(SendMailJob::class, function (SendMailJob $job) use ($user): bool {
+        return $job->recipient === $user->email
+            && $job->template === 'password-changed';
+    });
 });
 
 test('forgot password returns same generic message for unknown email', function () {

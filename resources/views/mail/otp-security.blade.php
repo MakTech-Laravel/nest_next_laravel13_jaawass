@@ -68,7 +68,7 @@
                                 <tr>
                                     <td align="center" width="54" height="54" bgcolor="#4A3210"
                                         style="width:54px;height:54px;background-color:rgba(200,169,106,0.1);border:1.5px solid rgba(200,169,106,0.22);border-radius:12px;text-align:center;vertical-align:middle;">
-                                        <img src="{{ public_url('images/mail/svg/lock.svg') }}" width="24"
+                                        <img src="{{ public_url('images/mail/svg/lock-gold.svg') }}" width="24"
                                             height="24" alt=""
                                             style="display:block;border:0;outline:none;text-decoration:none;margin:0 auto;">
                                     </td>
@@ -94,7 +94,8 @@
 
                             <div
                                 style="font-weight:500;font-size:30px;line-height:1.17;font-family:Georgia,'Times New Roman',serif;color:#FFFFFF;letter-spacing:-0.2px;text-align:center;">
-                                {!! __('mail.password_reset_otp.hero_headline') !!}
+                                {{ __('mail.password_reset_otp.hero_headline_line1') }}<br>
+                                <em style="font-style:italic;color:#C8A96A;">{{ __('mail.password_reset_otp.hero_headline_line2') }}</em>
                             </div>
                             <div
                                 style="max-width:320px;margin:10px auto 0;font-weight:400;font-size:13px;line-height:1.78;font-family:Arial,Helvetica,sans-serif;color:rgba(255,255,255,0.4);text-align:center;">
@@ -219,32 +220,27 @@
                             </table>
 
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-top:16px;background-color:#FEF2F2;border:1.5px solid #FECACA;border-radius:10px;border-collapse:separate;">
+                                style="margin-top:16px;background-color:#F8F8F8;border:1.5px solid #E6E6E6;border-radius:8px;border-collapse:separate;">
                                 <tr>
-                                    <td style="padding:15px;">
+                                    <td style="padding:13px 15px;">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
-                                                <td width="30" valign="top" style="padding-right:12px;">
+                                                <td width="26" valign="top" style="padding-right:11px;">
                                                     <table role="presentation" cellspacing="0" cellpadding="0"
                                                         border="0">
                                                         <tr>
-                                                            <td align="center" width="30" height="30"
+                                                            <td align="center" width="26" height="26"
                                                                 bgcolor="#FFFFFF"
-                                                                style="width:30px;height:30px;background-color:#FFFFFF;border:1.5px solid #FECACA;border-radius:8px;text-align:center;vertical-align:middle;">
-                                                                <img src="{{ public_url('images/mail/svg/lock-warn.svg') }}"
-                                                                    width="13" height="13" alt="">
+                                                                style="width:26px;height:26px;background-color:#FFFFFF;border:1.5px solid #D6D6D6;border-radius:7px;text-align:center;vertical-align:middle;">
+                                                                <img src="{{ public_url('images/mail/svg/info.svg') }}"
+                                                                    width="12" height="12" alt="">
                                                             </td>
                                                         </tr>
                                                     </table>
                                                 </td>
-                                                <td valign="top">
-                                                    <div
-                                                        style="font-weight:800;font-size:13px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#991B1B;margin-bottom:3px;">
-                                                        {{ __('mail.password_reset_otp.alert_title') }}</div>
-                                                    <div
-                                                        style="font-weight:400;font-size:12px;line-height:1.6;font-family:Arial,Helvetica,sans-serif;color:#991B1B;opacity:0.85;">
-                                                        {!! __('mail.password_reset_otp.alert_body', ['email' => $supportEmail]) !!}
-                                                    </div>
+                                                <td valign="top"
+                                                    style="font-weight:400;font-size:12px;line-height:1.65;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">
+                                                    {!! __('mail.password_reset_otp.alert_body', ['email' => $supportEmail]) !!}
                                                 </td>
                                             </tr>
                                         </table>
