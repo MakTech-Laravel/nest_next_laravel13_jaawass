@@ -10,7 +10,7 @@ use Tests\TestCase;
 
 uses(RefreshDatabase::class);
 
-test('products index returns spanish name and description when Accept-Language is es', function () {
+test('products index returns chinese name and description when Accept-Language is zh_CN', function () {
     $product = Product::factory()->create([
         'name' => 'Canonical English Name',
         'description' => 'Canonical English description.',
@@ -26,20 +26,20 @@ test('products index returns spanish name and description when Accept-Language i
 
     ProductTranslation::query()->create([
         'product_id' => $product->id,
-        'locale' => 'es',
-        'name' => 'Producto en español',
-        'description' => 'Descripción en español.',
+        'locale' => 'zh_CN',
+        'name' => '中文产品',
+        'description' => '中文描述。',
     ]);
 
     /** @var TestCase $this */
     $response = $this->getJson('/api/v1/products', [
-        'Accept-Language' => 'es',
+        'Accept-Language' => 'zh_CN',
     ]);
 
     $response->assertOk()
-        ->assertJsonPath('message', __('api.products_fetched_successfully', [], 'es'))
-        ->assertJsonPath('data.0.name', 'Producto en español')
-        ->assertJsonPath('data.0.description', 'Descripción en español.');
+        ->assertJsonPath('message', __('api.products_fetched_successfully', [], 'zh_CN'))
+        ->assertJsonPath('data.0.name', '中文产品')
+        ->assertJsonPath('data.0.description', '中文描述。');
 });
 
 test('products index returns english translation when Accept-Language is en', function () {
@@ -58,9 +58,9 @@ test('products index returns english translation when Accept-Language is en', fu
 
     ProductTranslation::query()->create([
         'product_id' => $product->id,
-        'locale' => 'es',
-        'name' => 'Producto en español',
-        'description' => 'Descripción en español.',
+        'locale' => 'zh_CN',
+        'name' => '中文产品',
+        'description' => '中文描述。',
     ]);
 
     /** @var TestCase $this */
@@ -74,7 +74,7 @@ test('products index returns english translation when Accept-Language is en', fu
         ->assertJsonPath('data.0.description', 'English description.');
 });
 
-test('products index falls back to english translation when spanish row is missing', function () {
+test('products index falls back to english translation when chinese row is missing', function () {
     $product = Product::factory()->create([
         'name' => 'Fallback Base Name',
         'description' => 'Fallback base description.',
@@ -90,12 +90,43 @@ test('products index falls back to english translation when spanish row is missi
 
     /** @var TestCase $this */
     $response = $this->getJson('/api/v1/products', [
-        'Accept-Language' => 'es',
+        'Accept-Language' => 'zh_CN',
     ]);
 
     $response->assertOk()
         ->assertJsonPath('data.0.name', 'Only English Row')
         ->assertJsonPath('data.0.description', 'Only English row description.');
+});
+
+test('legacy Accept-Language es returns chinese product translation', function () {
+    $product = Product::factory()->create([
+        'name' => 'Canonical English Name',
+        'description' => 'Canonical English description.',
+        'is_approved' => true,
+    ]);
+
+    ProductTranslation::query()->create([
+        'product_id' => $product->id,
+        'locale' => 'en',
+        'name' => 'English Product',
+        'description' => 'English description.',
+    ]);
+
+    ProductTranslation::query()->create([
+        'product_id' => $product->id,
+        'locale' => 'zh_CN',
+        'name' => '中文产品',
+        'description' => '中文描述。',
+    ]);
+
+    /** @var TestCase $this */
+    $response = $this->getJson('/api/v1/products', [
+        'Accept-Language' => 'es',
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.0.name', '中文产品')
+        ->assertJsonPath('data.0.description', '中文描述。');
 });
 
 test('products by category endpoint returns only selected category products', function () {

@@ -52,10 +52,7 @@ class ApplicationLocaleResolver
             }
 
             // Treat Accept-Language as a "header preference" for safe/read requests.
-            $fromAccept = LocaleCode::resolveSupported(
-                (string) ($request->getPreferredLanguage($supported) ?? ''),
-                $supported
-            );
+            $fromAccept = $this->localeFromAcceptLanguage($request, $supported);
             if ($fromAccept !== null) {
                 return $fromAccept;
             }
@@ -76,10 +73,7 @@ class ApplicationLocaleResolver
             }
         }
 
-        $fromAccept = LocaleCode::resolveSupported(
-            (string) ($request->getPreferredLanguage($supported) ?? ''),
-            $supported
-        );
+        $fromAccept = $this->localeFromAcceptLanguage($request, $supported);
         if ($fromAccept !== null) {
             return $fromAccept;
         }
@@ -121,6 +115,41 @@ class ApplicationLocaleResolver
         }
 
         return $this->normalizeToSupportedLocale($candidate, $supported);
+    }
+
+    /**
+     * Resolve Accept-Language against supported locales, including legacy aliases
+     * (e.g. "es" → zh_CN when Spanish is not a product locale).
+     *
+     * Prefer raw Accept-Language tags first: Symfony's getPreferredLanguage() can
+     * fall back to the first supported locale when the client tag is unknown,
+     * which would incorrectly skip aliases like es → zh_CN.
+     *
+     * @param  array<int, string>  $supported
+     */
+    private function localeFromAcceptLanguage(Request $request, array $supported): ?string
+    {
+        $header = (string) $request->header('Accept-Language', '');
+        if ($header !== '') {
+            foreach (explode(',', $header) as $part) {
+                $tag = trim(explode(';', $part, 2)[0]);
+                if ($tag === '' || $tag === '*') {
+                    continue;
+                }
+
+                $resolved = LocaleCode::resolveSupported($tag, $supported);
+                if ($resolved !== null) {
+                    return $resolved;
+                }
+            }
+
+            return null;
+        }
+
+        return LocaleCode::resolveSupported(
+            (string) ($request->getPreferredLanguage($supported) ?? ''),
+            $supported
+        );
     }
 
     /**

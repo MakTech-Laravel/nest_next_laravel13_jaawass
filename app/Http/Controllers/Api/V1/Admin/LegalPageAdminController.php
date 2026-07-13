@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Admin\UpdateLegalPageContentRequest;
 use App\Http\Resources\Api\V1\LegalPageResource;
 use App\Models\LegalPage;
+use App\Support\Localization\LocaleCode;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
@@ -106,14 +107,7 @@ class LegalPageAdminController extends Controller
         $supported = config('localization.supported_locales', ['en']);
         $sourceLocale = (string) config('translation.source_locale', 'en');
 
-        if (in_array($locale, $supported, true)) {
-            return $locale;
-        }
-
-        if (str_starts_with($locale, 'zh')) {
-            return in_array('zh_CN', $supported, true) ? 'zh_CN' : $sourceLocale;
-        }
-
-        return $sourceLocale;
+        return LocaleCode::resolveSupported($locale, $supported)
+            ?? $sourceLocale;
     }
 }

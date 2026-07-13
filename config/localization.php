@@ -9,8 +9,9 @@ return [
     | Supported locales
     |--------------------------------------------------------------------------
     |
-    | Comma-separated list in APP_SUPPORTED_LOCALES (e.g. "en,es"). Requests
-    | resolve to one of these via Accept-Language or the optional override header.
+    | Comma-separated list in APP_SUPPORTED_LOCALES (e.g. "en,ar,he,zh_CN").
+    | Requests resolve to one of these via Accept-Language or the optional override header.
+    | Legacy frontend Chinese slot "es" aliases to zh_CN when "es" is not listed here.
     |
     */
 

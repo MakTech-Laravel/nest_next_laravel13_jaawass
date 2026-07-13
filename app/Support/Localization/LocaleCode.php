@@ -44,7 +44,7 @@ final class LocaleCode
      */
     public static function resolveSupported(string $candidate, array $supported): ?string
     {
-        if ($supported === []) {
+        if ($supported === [] || trim($candidate) === '') {
             return null;
         }
 
@@ -60,6 +60,17 @@ final class LocaleCode
             if (self::canonical($locale) === $primary) {
                 return self::canonical($locale);
             }
+        }
+
+        // Legacy frontend Chinese slot used "es". When Spanish is not a product locale
+        // but Chinese (zh_CN) is, treat "es" as Chinese so old clients keep working.
+        $supportedCanonical = array_map(self::canonical(...), $supported);
+        if (
+            self::canonical($candidate) === 'es'
+            && ! in_array('es', $supportedCanonical, true)
+            && in_array('zh_CN', $supportedCanonical, true)
+        ) {
+            return 'zh_CN';
         }
 
         return null;

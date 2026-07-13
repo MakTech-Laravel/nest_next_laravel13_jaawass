@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Jobs\TranslateAboutPageContentJob;
+use App\Support\Localization\LocaleCode;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -95,14 +96,7 @@ class AboutPage extends Model
         $supported = config('localization.supported_locales', ['en']);
         $sourceLocale = (string) config('translation.source_locale', 'en');
 
-        if (in_array($locale, $supported, true)) {
-            return $locale;
-        }
-
-        if (str_starts_with($locale, 'zh')) {
-            return in_array('zh_CN', $supported, true) ? 'zh_CN' : $sourceLocale;
-        }
-
-        return $sourceLocale;
+        return LocaleCode::resolveSupported($locale, $supported)
+            ?? $sourceLocale;
     }
 }
