@@ -13,6 +13,14 @@ test('resolveSupported matches locale aliases', function () {
 
     expect(LocaleCode::resolveSupported('zh-CN', $supported))->toBe('zh_CN');
     expect(LocaleCode::resolveSupported('ar', $supported))->toBe('ar');
+    // Legacy frontend Chinese slot
+    expect(LocaleCode::resolveSupported('es', $supported))->toBe('zh_CN');
+});
+
+test('resolveSupported keeps es when spanish is a supported product locale', function () {
+    $supported = ['en', 'es', 'zh_CN'];
+
+    expect(LocaleCode::resolveSupported('es', $supported))->toBe('es');
 });
 
 test('toGoogle converts app locale to Google API code', function () {

@@ -17,7 +17,27 @@ beforeEach(function () {
     );
 });
 
-test('login error message uses Accept-Language spanish when supported', function () {
+test('login error message uses Accept-Language zh_CN when supported', function () {
+    User::factory()->create([
+        'email' => 'u@example.com',
+        'password' => 'secret123',
+        'role' => UserRole::BUYER->value,
+    ]);
+
+    /** @var TestCase $this */
+    $response = $this->postJson('/api/v1/login', [
+        'email' => 'u@example.com',
+        'password' => 'wrong-password',
+        'role' => UserRole::BUYER->value,
+    ], [
+        'Accept-Language' => 'zh_CN',
+    ]);
+
+    $response->assertUnauthorized()
+        ->assertJsonPath('message', __('auth.invalid_credentials', [], 'zh_CN'));
+});
+
+test('legacy Accept-Language es aliases to zh_CN when spanish is not supported', function () {
     User::factory()->create([
         'email' => 'u@example.com',
         'password' => 'secret123',
@@ -34,7 +54,7 @@ test('login error message uses Accept-Language spanish when supported', function
     ]);
 
     $response->assertUnauthorized()
-        ->assertJsonPath('message', __('auth.invalid_credentials', [], 'es'));
+        ->assertJsonPath('message', __('auth.invalid_credentials', [], 'zh_CN'));
 });
 
 test('unsupported Accept-Language falls back to app fallback locale', function () {
@@ -71,11 +91,11 @@ test('X-App-Locale overrides Accept-Language when enabled', function () {
         'role' => UserRole::BUYER->value,
     ], [
         'Accept-Language' => 'en',
-        'X-App-Locale' => 'es',
+        'X-App-Locale' => 'zh_CN',
     ]);
 
     $response->assertUnauthorized()
-        ->assertJsonPath('message', __('auth.invalid_credentials', [], 'es'));
+        ->assertJsonPath('message', __('auth.invalid_credentials', [], 'zh_CN'));
 });
 
 test('validation errors use locale from Accept-Language', function () {
@@ -84,18 +104,18 @@ test('validation errors use locale from Accept-Language', function () {
         'email' => 'u@example.com',
         'role' => UserRole::BUYER->value,
     ], [
-        'Accept-Language' => 'es',
+        'Accept-Language' => 'zh_CN',
     ]);
 
     $response->assertUnprocessable()
-        ->assertJsonPath('errors.password.0', __('validation.required', ['attribute' => 'password'], 'es'));
+        ->assertJsonPath('errors.password.0', __('validation.required', ['attribute' => 'password'], 'zh_CN'));
 });
 
 test('mutating request resolves user preferred_language before X-App-Locale', function () {
     $this->seed(CurrencySeeder::class);
 
     $user = User::factory()->create([
-        'preferred_language' => 'es',
+        'preferred_language' => 'zh_CN',
     ]);
 
     Passport::actingAs($user);
@@ -109,7 +129,7 @@ test('mutating request resolves user preferred_language before X-App-Locale', fu
     ]);
 
     $response->assertOk()
-        ->assertJsonPath('message', __('common.updated', [], 'es'));
+        ->assertJsonPath('message', __('common.updated', [], 'zh_CN'));
 });
 
 test('protected route resolves locale header before user preferred_language', function () {
@@ -122,11 +142,11 @@ test('protected route resolves locale header before user preferred_language', fu
     /** @var TestCase $this */
     $response = $this->getJson('/api/v1/me', [
         'Accept-Language' => 'en',
-        'X-App-Locale' => 'es',
+        'X-App-Locale' => 'zh_CN',
     ]);
 
     $response->assertOk()
-        ->assertJsonPath('message', __('api.user_details', [], 'es'));
+        ->assertJsonPath('message', __('api.user_details', [], 'zh_CN'));
 });
 
 test('protected GET resolves Accept-Language before user preferred_language', function () {

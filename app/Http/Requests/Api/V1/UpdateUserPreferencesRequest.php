@@ -4,6 +4,7 @@ namespace App\Http\Requests\Api\V1;
 
 use App\Models\Currency;
 use App\Rules\EnabledCurrencyCode;
+use App\Support\Localization\LocaleCode;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -14,6 +15,23 @@ class UpdateUserPreferencesRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (! $this->filled('preferred_language')) {
+            return;
+        }
+
+        $supported = config('localization.supported_locales', ['en']);
+        $resolved = LocaleCode::resolveSupported(
+            (string) $this->input('preferred_language'),
+            $supported
+        );
+
+        if ($resolved !== null) {
+            $this->merge(['preferred_language' => $resolved]);
+        }
     }
 
     /**
@@ -58,9 +76,9 @@ class UpdateUserPreferencesRequest extends FormRequest
             return null;
         }
 
-        $raw = strtolower(str_replace('_', '-', trim($this->string('preferred_language')->toString())));
+        $raw = trim($this->string('preferred_language')->toString());
 
-        return $raw === '' ? null : $raw;
+        return $raw === '' ? null : LocaleCode::canonical($raw);
     }
 
     public function normalizedTimezone(): ?string

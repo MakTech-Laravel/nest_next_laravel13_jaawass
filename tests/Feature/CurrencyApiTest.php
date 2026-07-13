@@ -136,13 +136,27 @@ test('authenticated user can set language preference via me/preferences', functi
     Passport::actingAs($user);
 
     $response = $this->patchJson('/api/v1/me/preferences', [
+        'preferred_language' => 'zh_CN',
+    ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.preferred_language', 'zh_CN');
+
+    expect($user->fresh()->preferred_language)->toBe('zh_CN');
+});
+
+test('legacy preferred_language es is normalized to zh_CN', function () {
+    $user = User::factory()->create(['preferred_language' => 'en']);
+    Passport::actingAs($user);
+
+    $response = $this->patchJson('/api/v1/me/preferences', [
         'preferred_language' => 'es',
     ]);
 
     $response->assertOk()
-        ->assertJsonPath('data.preferred_language', 'es');
+        ->assertJsonPath('data.preferred_language', 'zh_CN');
 
-    expect($user->fresh()->preferred_language)->toBe('es');
+    expect($user->fresh()->preferred_language)->toBe('zh_CN');
 });
 
 test('display currency resolver orders header before user on GET', function () {
@@ -194,7 +208,7 @@ test('login response includes preferred currency and language', function () {
         'password' => 'password',
         'role' => UserRole::BUYER->value,
         'preferred_currency_id' => $eur->id,
-        'preferred_language' => 'es',
+        'preferred_language' => 'zh_CN',
     ]);
 
     $response = $this->postJson('/api/v1/login', [
@@ -204,7 +218,7 @@ test('login response includes preferred currency and language', function () {
     ]);
 
     $response->assertOk()
-        ->assertJsonPath('data.user.preferred_language', 'es')
+        ->assertJsonPath('data.user.preferred_language', 'zh_CN')
         ->assertJsonPath('data.user.preferred_currency.code', 'EUR');
 });
 
