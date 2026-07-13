@@ -93,13 +93,13 @@ class ManufacturerAnalyticsDemoSeeder extends Seeder
             ));
         }
 
-        $this->command->info(sprintf(
-            'Manufacturer analytics demo complete: %d manufacturer(s), %d product views, %d RFQ inquiries.',
-            $totalManufacturers,
-            $totalViews,
-            $totalInquiries,
-        ));
-        $this->command->info('Try: GET /api/v1/manufacturer/analytics/products?period=last_30_days (login as manufacturer@dev.com).');
+        // $this->command->info(sprintf(
+        //     'Manufacturer analytics demo complete: %d manufacturer(s), %d product views, %d RFQ inquiries.',
+        //     $totalManufacturers,
+        //     $totalViews,
+        //     $totalInquiries,
+        // ));
+        // $this->command->info('Try: GET /api/v1/manufacturer/analytics/products?period=last_30_days (login as manufacturer@dev.com).');
     }
 
     private function purgePreviousDemoData(): void
