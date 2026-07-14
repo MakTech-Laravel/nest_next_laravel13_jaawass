@@ -1,7 +1,7 @@
 @php
     $platformName = config('app.name', 'SourceNest');
     $logoUrl = public_url('images/mail/sourcenest-logo.png');
-    $heroIconUrl = public_url('images/mail/svg/order-document-hero.png');
+    $heroIconUrl = public_url('images/mail/svg/order-completed-hero.svg');
     $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
     $supportEmail = config('mail.from.address', 'no-reply@sourcenest.com');
     $mailIconStyle = 'display:block;border:0;outline:none;text-decoration:none;margin:0 auto;';
@@ -9,30 +9,17 @@
     $orderNumber = $orderNumber ?? $referenceId ?? '';
     $buyerName = $buyerName ?? '';
     $manufacturerName = $manufacturerName ?? '';
-    $variant = match ($recipientRole ?? 'buyer') {
-        'manufacturer' => 'manufacturer',
-        'admin' => 'admin',
-        default => 'buyer',
-    };
-    $tx = static fn (string $key, array $replace = []) => __("mail.manufacturer_order_created.{$variant}.{$key}", $replace);
-    $shared = static fn (string $key, array $replace = []) => __("mail.manufacturer_order_created.{$key}", $replace);
+    $tx = static fn (string $key, array $replace = []) => __("mail.order_completed.manufacturer.{$key}", $replace);
+    $shared = static fn (string $key, array $replace = []) => __("mail.order_completed.{$key}", $replace);
     $txReplace = [
         'name' => $recipientName,
         'orderNumber' => $orderNumber,
         'buyerName' => $buyerName,
         'manufacturerName' => $manufacturerName,
     ];
-    $ctaUrl = $ctaUrl ?? $ordersUrl ?? match ($variant) {
-        'manufacturer' => \App\Support\Mail\MailNotificationHelper::manufacturerOrderUrl(
-            \App\Support\Mail\MailNotificationHelper::resolveOrderId($orderId ?? null, $orderNumber ?? null)
-        ),
-        'admin' => \App\Support\Mail\MailNotificationHelper::adminOrderUrl(
-            \App\Support\Mail\MailNotificationHelper::resolveOrderId($orderId ?? null, $orderNumber ?? null)
-        ),
-        default => \App\Support\Mail\MailNotificationHelper::buyerOrderUrl(
-            \App\Support\Mail\MailNotificationHelper::resolveOrderId($orderId ?? null, $orderNumber ?? null)
-        ),
-    };
+    $resolvedOrderId = \App\Support\Mail\MailNotificationHelper::resolveOrderId($orderId ?? null, $orderNumber ?? null);
+    $ctaUrl = $ctaUrl ?? $ordersUrl ?? \App\Support\Mail\MailNotificationHelper::manufacturerOrderUrl($resolvedOrderId);
+    $supportUrl = $supportUrl ?? \App\Support\Mail\MailNotificationHelper::manufacturerSupportUrl();
 @endphp
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
@@ -42,33 +29,63 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>{{ $shared('subject', ['orderNumber' => $orderNumber, 'manufacturerName' => $manufacturerName]) }}</title>
+    <meta name="x-apple-disable-message-reformatting">
+    <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
+    <title>{{ $shared('subject', ['orderNumber' => $orderNumber]) }}</title>
     <!--[if mso]>
     <noscript>
         <xml>
             <o:OfficeDocumentSettings>
+                <o:AllowPNG/>
                 <o:PixelsPerInch>96</o:PixelsPerInch>
             </o:OfficeDocumentSettings>
         </xml>
     </noscript>
     <![endif]-->
+    <style type="text/css">
+        html, body { margin: 0 !important; padding: 0 !important; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        img { border: 0; outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; display: block; max-width: 100%; height: auto; }
+        table { border-collapse: collapse; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        @media only screen and (max-width: 640px) {
+            .email-outer { padding: 12px 8px !important; }
+            .email-pad { padding-left: 18px !important; padding-right: 18px !important; }
+            .email-hero-title { font-size: 20px !important; }
+            .email-stack { display: block !important; width: 100% !important; }
+            .email-stack-icon { padding-right: 0 !important; padding-bottom: 14px !important; }
+            .email-footer-tag { text-align: left !important; display: block !important; padding-top: 6px !important; }
+            .email-cta { display: block !important; width: 100% !important; text-align: center !important; box-sizing: border-box !important; }
+            .email-cta-cell { display: block !important; width: 100% !important; padding-left: 0 !important; padding-top: 10px !important; }
+            .email-cta-cell:first-child { padding-top: 0 !important; }
+            .email-evl-lbl { display: block !important; width: 100% !important; border-right: none !important; border-bottom: 1px solid #F0F0F0 !important; }
+            .email-evl-val { display: block !important; width: 100% !important; }
+        }
+    </style>
+    <!--[if mso]>
+    <style type="text/css">
+        body, table, td, a, span, div { font-family: Arial, Helvetica, sans-serif !important; }
+    </style>
+    <![endif]-->
 </head>
 
 <body
     style="margin:0;padding:0;background-color:#F4F0EA;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
-    <span
-        style="display:none !important;visibility:hidden;mso-hide:all;font-size:1px;color:#F4F0EA;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">{{ $tx('preheader', $txReplace) }}</span>
+    <div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
+        {{ $tx('preheader', $txReplace) }}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+    </div>
 
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
         style="background-color:#F4F0EA;">
         <tr>
-            <td align="center" style="padding:24px 12px;">
+            <td align="center" class="email-outer" style="padding:24px 12px;">
+                <!--[if mso]>
+                <table role="presentation" width="700" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td>
+                <![endif]-->
                 <table role="presentation" width="700" cellspacing="0" cellpadding="0" border="0"
                     style="max-width:700px;width:100%;background-color:#FFFFFF;border-radius:14px;overflow:hidden;">
 
-                    {{-- Header (hd-a) --}}
+                    {{-- Header --}}
                     <tr>
-                        <td bgcolor="#FFFFFF"
+                        <td class="email-pad" bgcolor="#FFFFFF"
                             style="padding:20px 30px;background-color:#FFFFFF;border-bottom:1.5px solid #F0F0F0;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
@@ -95,11 +112,12 @@
 
                     {{-- Hero (h5) --}}
                     <tr>
-                        <td bgcolor="#FBF7EE"
+                        <td class="email-pad" bgcolor="#FBF7EE"
                             style="padding:26px 30px;background-color:#FBF7EE;border-bottom:1.5px solid #E8D5A8;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
-                                    <td width="76" valign="middle" style="width:76px;padding-right:18px;">
+                                    <td class="email-stack email-stack-icon" width="76" valign="middle"
+                                        style="width:76px;padding-right:18px;">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
                                                 <td width="58" height="58" align="center" valign="middle"
@@ -113,7 +131,7 @@
                                             </tr>
                                         </table>
                                     </td>
-                                    <td valign="middle">
+                                    <td class="email-stack" valign="middle">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0"
                                             style="margin-bottom:10px;">
                                             <tr>
@@ -128,21 +146,23 @@
                                                 </td>
                                             </tr>
                                         </table>
-                                        <div
+                                        <div class="email-hero-title"
                                             style="font-weight:500;font-size:22px;line-height:1.17;font-family:Georgia,'Times New Roman',serif;color:#3B2800;letter-spacing:-0.2px;">
-                                            {!! str_replace('<em>', '<em style="font-style:italic;color:#9A7A3A;">', $tx('hero_headline', $txReplace)) !!}</div>
+                                            {!! str_replace('<em>', '<em style="font-style:italic;color:#9A7A3A;">', $tx('hero_headline', $txReplace)) !!}
+                                        </div>
                                         <div
                                             style="padding-top:6px;font-weight:400;font-size:13px;line-height:1.78;font-family:Arial,Helvetica,sans-serif;color:#666666;">
-                                            {{ $tx('hero_subheadline', $txReplace) }}</div>
+                                            {{ $tx('hero_subheadline', $txReplace) }}
+                                        </div>
                                     </td>
                                 </tr>
                             </table>
                         </td>
                     </tr>
 
-                    {{-- Order details (sec wh + evlog) --}}
+                    {{-- Order details --}}
                     <tr>
-                        <td bgcolor="#FFFFFF"
+                        <td class="email-pad" bgcolor="#FFFFFF"
                             style="padding:28px 30px;background-color:#FFFFFF;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0"
                                 style="margin-bottom:18px;">
@@ -169,7 +189,7 @@
                                                     {{ $shared('order_reference') }}</td>
                                                 <td align="right">
                                                     <span
-                                                        style="display:inline-block;padding:2px 10px;border-radius:20px;border:1.5px solid #F0C040;background-color:#FFF8E4;font-weight:800;font-size:9px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#7A4D00;">{{ $shared('status_created') }}</span>
+                                                        style="display:inline-block;padding:2px 10px;border-radius:20px;border:1.5px solid #6ECFA0;background-color:#EAFAF2;font-weight:800;font-size:9px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#0A5C32;">{{ $shared('status_completed') }}</span>
                                                 </td>
                                             </tr>
                                         </table>
@@ -180,10 +200,10 @@
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
                                             border="0">
                                             <tr>
-                                                <td width="110" bgcolor="#F8F8F8" valign="middle"
+                                                <td class="email-evl-lbl" width="110" bgcolor="#F8F8F8" valign="middle"
                                                     style="width:110px;padding:11px 16px;background-color:#F8F8F8;border-right:1px solid #F0F0F0;font-weight:700;font-size:11px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">
                                                     {{ $shared('order_number_label') }}</td>
-                                                <td valign="middle"
+                                                <td class="email-evl-val" valign="middle"
                                                     style="padding:11px 16px;font-weight:500;font-size:12.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#1C1C1C;">
                                                     {{ $orderNumber }}</td>
                                             </tr>
@@ -194,9 +214,9 @@
                         </td>
                     </tr>
 
-                    {{-- Body copy (sec gs) --}}
+                    {{-- Body copy --}}
                     <tr>
-                        <td bgcolor="#F8F8F8"
+                        <td class="email-pad" bgcolor="#F8F8F8"
                             style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
                             <p
                                 style="margin:0 0 13px 0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">
@@ -205,22 +225,27 @@
                                 style="margin:0 0 13px 0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">
                                 {!! $tx('body_1', $txReplace) !!}</p>
                             <p
-                                style="margin:0 0 13px 0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">
-                                {{ $tx('body_2', $txReplace) }}</p>
-                            <p
                                 style="margin:0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">
-                                {{ $tx('body_3', $txReplace) }}</p>
+                                {{ $tx('body_2', $txReplace) }}</p>
                         </td>
                     </tr>
 
                     {{-- CTA --}}
                     <tr>
-                        <td bgcolor="#FFFFFF" style="padding:26px 30px 30px;background-color:#FFFFFF;">
+                        <td class="email-pad" bgcolor="#FFFFFF" style="padding:26px 30px 30px;background-color:#FFFFFF;">
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
-                                    <td bgcolor="#3B2800" style="border-radius:8px;background-color:#3B2800;">
-                                        <a href="{{ $ctaUrl }}"
+                                    <td class="email-cta-cell" bgcolor="#3B2800"
+                                        style="border-radius:8px;background-color:#3B2800;">
+                                        <a class="email-cta" href="{{ $ctaUrl }}"
                                             style="display:inline-block;padding:14px 30px;background-color:#3B2800;color:#FFFFFF;font-weight:900;font-size:12px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.6px;text-transform:uppercase;text-decoration:none;border-radius:8px;">{{ $tx('cta') }}</a>
+                                    </td>
+                                    <td class="email-cta-cell" width="10" style="width:10px;font-size:0;line-height:0;">
+                                        &nbsp;</td>
+                                    <td class="email-cta-cell"
+                                        style="border-radius:8px;border:2px solid #D6D6D6;background-color:transparent;">
+                                        <a class="email-cta" href="{{ $supportUrl }}"
+                                            style="display:inline-block;padding:12px 28px;background-color:transparent;color:#3B2800;font-weight:900;font-size:12px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.6px;text-transform:uppercase;text-decoration:none;border-radius:8px;">{{ $tx('cta_secondary') }}</a>
                                     </td>
                                 </tr>
                             </table>
@@ -232,14 +257,14 @@
 
                     {{-- Footer --}}
                     <tr>
-                        <td bgcolor="#F8F8F8"
+                        <td class="email-pad" bgcolor="#F8F8F8"
                             style="padding:18px 30px;background-color:#F8F8F8;border-top:1px solid #E6E6E6;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
                                     <td
                                         style="font-weight:900;font-size:13px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#3B2800;letter-spacing:-0.4px;">
                                         sourcenest</td>
-                                    <td align="right"
+                                    <td class="email-footer-tag" align="right"
                                         style="font-weight:700;font-size:8px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.8px;text-transform:uppercase;color:#B4B4B4;">
                                         {{ $shared('footer_tag') }}</td>
                                 </tr>
@@ -261,6 +286,9 @@
                     </tr>
 
                 </table>
+                <!--[if mso]>
+                </td></tr></table>
+                <![endif]-->
             </td>
         </tr>
     </table>

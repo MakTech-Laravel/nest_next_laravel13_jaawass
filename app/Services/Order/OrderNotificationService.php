@@ -25,59 +25,31 @@ class OrderNotificationService
         ]);
 
         $buyer = $order->buyer;
+        $manufacturer = $order->manufacturer;
 
         if ($buyer !== null && $buyer->email !== null) {
             $this->mailingService->send(
                 $buyer->email,
                 MailTemplate::ManufacturerOrderCreated,
-                $this->orderCreatedMailData($order),
+                $this->orderCreatedMailData($order, 'buyer', $buyer),
             );
         }
 
-        $manufacturer = $order->manufacturer;
-        $orderNumber = $this->orderNumber($order);
-        $buyerName = $this->displayName($buyer);
-
-        MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($order, $orderNumber, $buyerName, $manufacturer): void {
-            $this->mailingService->send($email, MailTemplate::OrderCreatedManufacturer, [
-                'preheader' => __('mail.order_created_manufacturer.preheader', [
-                    'orderNumber' => $orderNumber,
-                    'buyerName' => $buyerName,
-                ]),
-                'headerTitle' => __('mail.order_created_manufacturer.header_title'),
-                'headerSubtitle' => __('mail.order_created_manufacturer.header_subtitle'),
-                'intro' => __('mail.order_created_manufacturer.intro', [
-                    'name' => $this->displayName($manufacturer),
-                    'orderNumber' => $orderNumber,
-                    'buyer' => $buyerName,
-                ]),
-                'ctaUrl' => $this->manufacturerOrdersUrl((int) $order->id),
-                'ctaLabel' => __('mail.order_created_manufacturer.cta'),
-                'referenceId' => $orderNumber,
-                'footerNote' => __('mail.order_created_manufacturer.footer'),
-            ]);
+        MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($order, $manufacturer): void {
+            $this->mailingService->send(
+                $email,
+                MailTemplate::OrderCreatedManufacturer,
+                $this->orderCreatedMailData($order, 'manufacturer', $manufacturer),
+            );
         });
 
         foreach (MailNotificationHelper::adminRecipients() as $admin) {
-            MailNotificationHelper::sendIfEmail($admin, function (string $email) use ($order, $orderNumber, $buyerName, $admin): void {
-                $this->mailingService->send($email, MailTemplate::OrderCreatedAdmin, [
-                    'preheader' => __('mail.order_created_admin.preheader', [
-                        'manufacturerName' => $this->manufacturerDisplayName($order),
-                        'orderNumber' => $orderNumber,
-                        'buyerName' => $buyerName,
-                    ]),
-                    'headerTitle' => __('mail.order_created_admin.header_title'),
-                    'headerSubtitle' => __('mail.order_created_admin.header_subtitle'),
-                    'intro' => __('mail.order_created_admin.intro', [
-                        'orderNumber' => $orderNumber,
-                        'manufacturer' => $this->manufacturerDisplayName($order),
-                        'buyer' => $buyerName,
-                    ]),
-                    'ctaUrl' => $this->adminOrdersUrl((int) $order->id),
-                    'ctaLabel' => __('mail.order_created_admin.cta'),
-                    'referenceId' => $orderNumber,
-                    'footerNote' => __('mail.order_created_admin.footer'),
-                ]);
+            MailNotificationHelper::sendIfEmail($admin, function (string $email) use ($order, $admin): void {
+                $this->mailingService->send(
+                    $email,
+                    MailTemplate::OrderCreatedAdmin,
+                    $this->orderCreatedMailData($order, 'admin', $admin),
+                );
             });
         }
 
@@ -88,30 +60,98 @@ class OrderNotificationService
     {
         $order->loadMissing(['buyer.company', 'manufacturer.company']);
 
-        $buyer = $order->buyer;
-        $orderNumber = $this->orderNumber($order);
-        $manufacturerName = $this->manufacturerDisplayName($order);
-        $statusLabel = $status->label();
+        $templates = $this->statusMailTemplates($status);
 
-        if ($buyer !== null && $buyer->email !== null) {
-            $this->mailingService->send($buyer->email, MailTemplate::OrderStatusUpdated, [
-                'preheader' => __('mail.order_status_updated.preheader', ['orderNumber' => $orderNumber]),
-                'headerTitle' => __('mail.order_status_updated.header_title'),
-                'headerSubtitle' => __('mail.order_status_updated.header_subtitle'),
-                'intro' => __('mail.order_status_updated.intro', [
-                    'name' => $this->displayName($buyer),
-                    'orderNumber' => $orderNumber,
-                    'manufacturer' => $manufacturerName,
-                    'status' => $statusLabel,
-                ]),
+        if ($templates === null) {
+            $this->dispatchStatusUpdatedInAppNotifications($order, $status, $manufacturer);
+
+            return;
+        }
+
+        $buyer = $order->buyer;
+        $orderManufacturer = $order->manufacturer;
+        $mailData = $this->statusUpdatedMailData($order, $status);
+
+        if ($buyer !== null && $buyer->email !== null && isset($templates['buyer'])) {
+            $this->mailingService->send($buyer->email, $templates['buyer'], [
+                ...$mailData,
+                'recipientName' => $this->displayName($buyer),
                 'ctaUrl' => $this->buyerOrdersUrl((int) $order->id),
-                'ctaLabel' => __('mail.order_status_updated.cta'),
-                'referenceId' => $orderNumber,
-                'footerNote' => __('mail.order_status_updated.footer'),
             ]);
         }
 
+        if (isset($templates['manufacturer'])) {
+            MailNotificationHelper::sendIfEmail($orderManufacturer, function (string $email) use ($order, $orderManufacturer, $templates, $mailData): void {
+                $this->mailingService->send($email, $templates['manufacturer'], [
+                    ...$mailData,
+                    'recipientName' => $this->displayName($orderManufacturer),
+                    'ctaUrl' => $this->manufacturerOrdersUrl((int) $order->id),
+                ]);
+            });
+        }
+
+        if (isset($templates['admin'])) {
+            foreach (MailNotificationHelper::adminRecipients() as $admin) {
+                MailNotificationHelper::sendIfEmail($admin, function (string $email) use ($order, $admin, $templates, $mailData): void {
+                    $this->mailingService->send($email, $templates['admin'], [
+                        ...$mailData,
+                        'recipientName' => $this->displayName($admin),
+                        'ctaUrl' => $this->adminOrdersUrl((int) $order->id),
+                    ]);
+                });
+            }
+        }
+
         $this->dispatchStatusUpdatedInAppNotifications($order, $status, $manufacturer);
+    }
+
+    /**
+     * @return array{buyer?: MailTemplate, manufacturer?: MailTemplate, admin?: MailTemplate}|null
+     */
+    private function statusMailTemplates(OrderStatus $status): ?array
+    {
+        return match ($status) {
+            OrderStatus::InProduction => [
+                'buyer' => MailTemplate::OrderInProductionBuyer,
+                'manufacturer' => MailTemplate::OrderInProductionManufacturer,
+            ],
+            OrderStatus::ReadyForShipment => [
+                'buyer' => MailTemplate::OrderReadyForShipmentBuyer,
+                'manufacturer' => MailTemplate::OrderReadyForShipmentManufacturer,
+            ],
+            OrderStatus::Shipped => [
+                'buyer' => MailTemplate::OrderShippedBuyer,
+                'manufacturer' => MailTemplate::OrderShippedManufacturer,
+            ],
+            OrderStatus::Completed => [
+                'buyer' => MailTemplate::OrderCompletedBuyer,
+                'manufacturer' => MailTemplate::OrderCompletedManufacturer,
+                'admin' => MailTemplate::OrderCompletedAdmin,
+            ],
+            OrderStatus::Cancelled => [
+                'buyer' => MailTemplate::OrderCancelledBuyer,
+                'manufacturer' => MailTemplate::OrderCancelledManufacturer,
+                'admin' => MailTemplate::OrderCancelledAdmin,
+            ],
+            OrderStatus::OrderCreated => null,
+        };
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function statusUpdatedMailData(Order $order, OrderStatus $status): array
+    {
+        $orderNumber = $this->orderNumber($order);
+
+        return [
+            'orderId' => (int) $order->id,
+            'orderNumber' => $orderNumber,
+            'status' => $status->label(),
+            'buyerName' => $this->displayName($order->buyer),
+            'manufacturerName' => $this->manufacturerDisplayName($order),
+            'referenceId' => $orderNumber,
+        ];
     }
 
     private function dispatchOrderCreatedInAppNotifications(Order $order): void
@@ -270,11 +310,6 @@ class OrderNotificationService
         return MailNotificationHelper::adminRecipients();
     }
 
-    private function manufacturerOrdersUrl(int $orderId): string
-    {
-        return MailNotificationHelper::frontendUrl('dashboard/manufacturer/orders/'.$orderId);
-    }
-
     /**
      * @param  array<string, mixed>  $data
      */
@@ -318,10 +353,11 @@ class OrderNotificationService
     /**
      * @return array<string, mixed>
      */
-    private function orderCreatedMailData(Order $order): array
+    private function orderCreatedMailData(Order $order, string $recipientRole, ?User $recipient = null): array
     {
         $manufacturerName = $this->manufacturerDisplayName($order);
-
+        $buyerName = $this->displayName($order->buyer);
+        $orderNumber = $this->orderNumber($order);
         $localized = $order->localizedData();
 
         $items = $order->items->map(fn ($item): array => [
@@ -333,10 +369,19 @@ class OrderNotificationService
             'notes' => $item->notes,
         ])->all();
 
+        $ctaUrl = match ($recipientRole) {
+            'manufacturer' => $this->manufacturerOrdersUrl((int) $order->id),
+            'admin' => $this->adminOrdersUrl((int) $order->id),
+            default => $this->buyerOrdersUrl((int) $order->id),
+        };
+
         return [
-            'buyerName' => $this->displayName($order->buyer),
+            'recipientRole' => $recipientRole,
+            'recipientName' => $this->displayName($recipient),
+            'buyerName' => $buyerName,
             'manufacturerName' => $manufacturerName,
-            'orderNumber' => $this->orderNumber($order),
+            'orderId' => (int) $order->id,
+            'orderNumber' => $orderNumber,
             'orderTitle' => $localized['title'],
             'totalAmount' => number_format((float) $order->total_amount, 2),
             'currencyCode' => $order->currency_code,
@@ -347,9 +392,10 @@ class OrderNotificationService
             'destination' => $order->destination,
             'notes' => $localized['notes'],
             'items' => $items,
-            'ordersUrl' => $this->buyerOrdersUrl((int) $order->id),
-            'referenceId' => $this->orderNumber($order),
-            'footerNote' => __('mail.manufacturer_order_created.footer'),
+            'ctaUrl' => $ctaUrl,
+            'ordersUrl' => $ctaUrl,
+            'referenceId' => $orderNumber,
+            'footerNote' => __("mail.manufacturer_order_created.{$recipientRole}.footer"),
         ];
     }
 
@@ -372,17 +418,18 @@ class OrderNotificationService
         return $name !== '' ? $name : 'there';
     }
 
+    private function manufacturerOrdersUrl(int $orderId): string
+    {
+        return MailNotificationHelper::manufacturerOrderUrl($orderId);
+    }
+
     private function buyerOrdersUrl(int $orderId): string
     {
-        $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
-
-        return $frontendUrl.'/dashboard/buyer/orders/'.$orderId;
+        return MailNotificationHelper::buyerOrderUrl($orderId);
     }
 
     private function adminOrdersUrl(int $orderId): string
     {
-        $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
-
-        return $frontendUrl.'/admin/orders/'.$orderId;
+        return MailNotificationHelper::adminOrderUrl($orderId);
     }
 }
