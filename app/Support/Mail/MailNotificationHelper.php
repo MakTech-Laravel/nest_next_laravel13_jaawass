@@ -16,6 +16,72 @@ final class MailNotificationHelper
         return $path === '' ? $base : $base.'/'.$path;
     }
 
+    public static function withEmailSource(string $url): string
+    {
+        if (str_contains($url, 'source=')) {
+            return $url;
+        }
+
+        return $url.(str_contains($url, '?') ? '&' : '?').'source=email';
+    }
+
+    public static function buyerOrderUrl(?int $orderId = null): string
+    {
+        $path = $orderId !== null && $orderId > 0
+            ? 'dashboard/buyer/orders/'.$orderId
+            : 'dashboard/buyer/orders';
+
+        return self::withEmailSource(self::frontendUrl($path));
+    }
+
+    public static function manufacturerOrderUrl(?int $orderId = null): string
+    {
+        $path = $orderId !== null && $orderId > 0
+            ? 'dashboard/manufacturer/orders/'.$orderId
+            : 'dashboard/manufacturer/orders';
+
+        return self::withEmailSource(self::frontendUrl($path));
+    }
+
+    public static function adminOrderUrl(?int $orderId = null): string
+    {
+        $path = $orderId !== null && $orderId > 0
+            ? 'admin/orders/'.$orderId
+            : 'admin/orders';
+
+        return self::withEmailSource(self::frontendUrl($path));
+    }
+
+    public static function buyerSupportUrl(): string
+    {
+        return self::withEmailSource(self::frontendUrl('dashboard/buyer/support-tickets'));
+    }
+
+    public static function manufacturerSupportUrl(): string
+    {
+        return self::withEmailSource(self::frontendUrl('dashboard/manufacturer/support-tickets'));
+    }
+
+    public static function adminSupportUrl(): string
+    {
+        return self::withEmailSource(self::frontendUrl('admin/customer-supports/tickets'));
+    }
+
+    public static function resolveOrderId(mixed $orderId = null, mixed $orderNumber = null): ?int
+    {
+        if (is_numeric($orderId) && (int) $orderId > 0) {
+            return (int) $orderId;
+        }
+
+        if (is_string($orderNumber) && preg_match('/(\d+)/', $orderNumber, $matches) === 1) {
+            $id = (int) $matches[1];
+
+            return $id > 0 ? $id : null;
+        }
+
+        return null;
+    }
+
     public static function displayName(?User $user): string
     {
         if ($user === null) {

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Jobs\Order\SendOrderInAppNotificationJob;
 use App\Jobs\SendMailJob;
 use App\Models\Order;
 use App\Models\OrderAttachment;
@@ -21,8 +22,9 @@ beforeEach(function (): void {
         provider: config('auth.guards.api.provider')
     );
 
-    Queue::fake([SendMailJob::class]);
+    Queue::fake([SendMailJob::class, SendOrderInAppNotificationJob::class]);
     Storage::fake('public');
+    config(['broadcasting.default' => 'null']);
 });
 
 test('manufacturer can create order for connected buyer and product', function (): void {
@@ -65,7 +67,14 @@ test('manufacturer can create order for connected buyer and product', function (
 
     Queue::assertPushed(SendMailJob::class, function (SendMailJob $job) use ($buyer): bool {
         return $job->recipient === $buyer->email
-            && $job->template === 'manufacturer-order-created';
+            && $job->template === 'manufacturer-order-created'
+            && ($job->data['recipientRole'] ?? null) === 'buyer';
+    });
+
+    Queue::assertPushed(SendMailJob::class, function (SendMailJob $job) use ($manufacturer): bool {
+        return $job->recipient === $manufacturer->email
+            && $job->template === 'order-created-manufacturer'
+            && ($job->data['recipientRole'] ?? null) === 'manufacturer';
     });
 });
 

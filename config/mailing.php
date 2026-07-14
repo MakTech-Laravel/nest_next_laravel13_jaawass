@@ -129,18 +129,78 @@ return [
       'markdown' => false,
     ],
     'order-created-manufacturer' => [
-      'view' => 'mail.transactional',
+      'view' => 'mail.manufacturer-order-created',
       'subject' => 'mail.order_created_manufacturer.subject',
       'markdown' => false,
     ],
     'order-created-admin' => [
-      'view' => 'mail.transactional',
+      'view' => 'mail.manufacturer-order-created',
       'subject' => 'mail.order_created_admin.subject',
       'markdown' => false,
     ],
     'order-status-updated' => [
       'view' => 'mail.transactional',
       'subject' => 'mail.order_status_updated.subject',
+      'markdown' => false,
+    ],
+    'order-in-production-buyer' => [
+      'view' => 'mail.order-status.order-in-production-buyer',
+      'subject' => 'mail.order_in_production.subject',
+      'markdown' => false,
+    ],
+    'order-in-production-manufacturer' => [
+      'view' => 'mail.order-status.order-in-production-manufacturer',
+      'subject' => 'mail.order_in_production.subject',
+      'markdown' => false,
+    ],
+    'order-ready-for-shipment-buyer' => [
+      'view' => 'mail.order-status.order-ready-for-shipment-buyer',
+      'subject' => 'mail.order_ready_for_shipment.subject',
+      'markdown' => false,
+    ],
+    'order-ready-for-shipment-manufacturer' => [
+      'view' => 'mail.order-status.order-ready-for-shipment-manufacturer',
+      'subject' => 'mail.order_ready_for_shipment.subject',
+      'markdown' => false,
+    ],
+    'order-shipped-buyer' => [
+      'view' => 'mail.order-status.order-shipped-buyer',
+      'subject' => 'mail.order_shipped.subject',
+      'markdown' => false,
+    ],
+    'order-shipped-manufacturer' => [
+      'view' => 'mail.order-status.order-shipped-manufacturer',
+      'subject' => 'mail.order_shipped.subject',
+      'markdown' => false,
+    ],
+    'order-completed-buyer' => [
+      'view' => 'mail.order-status.order-completed-buyer',
+      'subject' => 'mail.order_completed.subject',
+      'markdown' => false,
+    ],
+    'order-completed-manufacturer' => [
+      'view' => 'mail.order-status.order-completed-manufacturer',
+      'subject' => 'mail.order_completed.subject',
+      'markdown' => false,
+    ],
+    'order-completed-admin' => [
+      'view' => 'mail.order-status.order-completed-admin',
+      'subject' => 'mail.order_completed.subject',
+      'markdown' => false,
+    ],
+    'order-cancelled-buyer' => [
+      'view' => 'mail.order-status.order-cancelled-buyer',
+      'subject' => 'mail.order_cancelled.subject',
+      'markdown' => false,
+    ],
+    'order-cancelled-manufacturer' => [
+      'view' => 'mail.order-status.order-cancelled-manufacturer',
+      'subject' => 'mail.order_cancelled.subject',
+      'markdown' => false,
+    ],
+    'order-cancelled-admin' => [
+      'view' => 'mail.order-status.order-cancelled-admin',
+      'subject' => 'mail.order_cancelled.subject',
       'markdown' => false,
     ],
     'rfq-created-manufacturer' => [

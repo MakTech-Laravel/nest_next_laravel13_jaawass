@@ -10,7 +10,93 @@ Route::get('/', function () {
 
 
 Route::get('/test-email', function () {
-    return view('mail.password-changed');
+    $role = request()->query('role', 'buyer');
+    $template = request()->query('template', 'manufacturer-order-created');
+    $orderId = 42;
+
+    $ctaUrl = match ($role) {
+        'manufacturer' => \App\Support\Mail\MailNotificationHelper::manufacturerOrderUrl($orderId),
+        'admin' => \App\Support\Mail\MailNotificationHelper::adminOrderUrl($orderId),
+        default => \App\Support\Mail\MailNotificationHelper::buyerOrderUrl($orderId),
+    };
+
+    $shared = [
+        'recipientRole' => $role,
+        'recipientName' => 'Alex',
+        'orderId' => $orderId,
+        'orderNumber' => 'ORD-00042',
+        'buyerName' => 'Alex Buyer',
+        'manufacturerName' => 'Acme Ceramics',
+        'ctaUrl' => $ctaUrl,
+    ];
+
+    if ($template === 'order-in-production') {
+        return view(
+            $role === 'manufacturer'
+                ? 'mail.order-status.order-in-production-manufacturer'
+                : 'mail.order-status.order-in-production-buyer',
+            $shared,
+        );
+    }
+
+    if ($template === 'order-ready-for-shipment') {
+        return view(
+            $role === 'manufacturer'
+                ? 'mail.order-status.order-ready-for-shipment-manufacturer'
+                : 'mail.order-status.order-ready-for-shipment-buyer',
+            $shared,
+        );
+    }
+
+    if ($template === 'order-shipped') {
+        return view(
+            $role === 'manufacturer'
+                ? 'mail.order-status.order-shipped-manufacturer'
+                : 'mail.order-status.order-shipped-buyer',
+            $shared,
+        );
+    }
+
+    if ($template === 'order-completed') {
+        $view = match ($role) {
+            'manufacturer' => 'mail.order-status.order-completed-manufacturer',
+            'admin' => 'mail.order-status.order-completed-admin',
+            default => 'mail.order-status.order-completed-buyer',
+        };
+
+        return view($view, $shared);
+    }
+
+    if ($template === 'order-cancelled') {
+        $view = match ($role) {
+            'manufacturer' => 'mail.order-status.order-cancelled-manufacturer',
+            'admin' => 'mail.order-status.order-cancelled-admin',
+            default => 'mail.order-status.order-cancelled-buyer',
+        };
+
+        return view($view, $shared);
+    }
+
+    return view('mail.manufacturer-order-created', [
+        ...$shared,
+        'orderTitle' => 'Premium ceramic mugs - 350ml',
+        'totalAmount' => '12,500.50',
+        'currencyCode' => 'USD',
+        'estimatedDeliveryAt' => 'August 15, 2026',
+        'productionLead' => '30 days',
+        'paymentTerms' => '50% upfront, 50% on delivery',
+        'shippingTerms' => 'FOB Shanghai',
+        'destination' => 'Los Angeles, USA',
+        'items' => [
+            [
+                'productName' => 'Ceramic Mug 350ml',
+                'quantity' => 5000,
+                'quantityUnit' => 'pieces',
+                'unitPrice' => '2.50',
+                'lineTotal' => '12,500.00',
+            ],
+        ],
+    ]);
 });
 
 
