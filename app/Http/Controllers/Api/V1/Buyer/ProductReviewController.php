@@ -7,18 +7,23 @@ use App\Http\Requests\Api\V1\Buyer\StoreProductReviewRequest;
 use App\Http\Resources\Api\V1\ProductReviewResource;
 use App\Models\Product;
 use App\Models\Review;
+use App\Services\Review\ReviewNotificationService;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
 class ProductReviewController extends Controller
 {
+    public function __construct(
+        private readonly ReviewNotificationService $reviewNotificationService,
+    ) {}
+
     public function store(StoreProductReviewRequest $request, Product $product): JsonResponse
     {
         $attributes = $request->reviewAttributes($product);
 
         $review = Review::query()
             ->create($attributes)
-            ->load(['reviewer.company', 'order', 'translations']);
+            ->load(['reviewer.company', 'order', 'translations', 'product', 'user']);
 
         $sourceLocale = $request->input('locale') ?? app()->getLocale();
         $sourceData = [
@@ -28,6 +33,8 @@ class ProductReviewController extends Controller
 
         $review->syncTranslations($sourceData, $sourceLocale);
         $review->load('translations');
+
+        $this->reviewNotificationService->notifySubmitted($review);
 
         return sendResponse(
             status: true,

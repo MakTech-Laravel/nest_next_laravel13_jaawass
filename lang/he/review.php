@@ -15,4 +15,11 @@ return [
         'flagged' => 'מסומן',
         'hidden' => 'מוסתר',
     ],
+
+    'notifications' => [
+        'submitted' => [
+            'admin_title' => 'ביקורת מוצר חדשה התקבלה',
+            'admin_body' => ':buyer שלח ביקורת :rating/5 עבור :product.',
+        ],
+    ],
 ];

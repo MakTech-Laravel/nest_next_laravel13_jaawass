@@ -2,14 +2,21 @@
 
 namespace App\Services\Admin;
 
+use App\Enums\MailTemplate;
 use App\Enums\ReviewStatus;
 use App\Http\Requests\Api\V1\Admin\IndexAdminReviewRequest;
 use App\Models\Review;
+use App\Services\Mailing\MailingService;
+use App\Support\Mail\MailNotificationHelper;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 
 class AdminReviewService
 {
+    public function __construct(
+        private readonly MailingService $mailingService,
+    ) {}
+
     /**
      * @return array<string, int>
      */
@@ -57,6 +64,7 @@ class AdminReviewService
      */
     public function update(Review $review, array $attributes, ?string $sourceLocale = null): Review
     {
+        $previousStatus = $review->status;
         $locale = $attributes['locale'] ?? $sourceLocale;
         unset($attributes['locale']);
 
@@ -71,7 +79,11 @@ class AdminReviewService
             $review->syncTranslations($translatable, is_string($locale) ? $locale : null);
         }
 
-        return $review->fresh($this->detailRelations());
+        $review = $review->fresh($this->detailRelations()) ?? $review;
+
+        $this->notifyWhenPublished($review, $previousStatus);
+
+        return $review;
     }
 
     public function delete(Review $review): Review
@@ -103,6 +115,82 @@ class AdminReviewService
     public function detailRelations(): array
     {
         return $this->listRelations();
+    }
+
+    private function notifyWhenPublished(Review $review, ?ReviewStatus $previousStatus): void
+    {
+        if ($review->status !== ReviewStatus::PUBLISHED) {
+            return;
+        }
+
+        if ($previousStatus === ReviewStatus::PUBLISHED) {
+            return;
+        }
+
+        $review->loadMissing([
+            'reviewer.company',
+            'user.company',
+            'product',
+            'order',
+        ]);
+
+        $mailData = $this->reviewPublishedMailData($review);
+        $buyer = $review->reviewer;
+        $manufacturer = $review->user;
+
+        MailNotificationHelper::sendIfEmail($buyer, function (string $email) use ($mailData, $buyer): void {
+            $this->mailingService->send($email, MailTemplate::ReviewApproved, [
+                ...$mailData,
+                'recipientName' => MailNotificationHelper::displayName($buyer),
+                'ctaUrl' => MailNotificationHelper::productReviewsUrl(
+                    isset($mailData['productId']) ? (int) $mailData['productId'] : null
+                ),
+            ]);
+        });
+
+        MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($mailData): void {
+            $this->mailingService->send($email, MailTemplate::NewProductReview, $mailData);
+        });
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function reviewPublishedMailData(Review $review): array
+    {
+        $reviewer = $review->reviewer;
+        $product = $review->product;
+        $order = $review->order;
+        $localized = $review->localizedData();
+        $orderId = $order !== null ? (int) $order->id : ($review->order_id !== null ? (int) $review->order_id : null);
+        $orderNumber = $orderId !== null ? sprintf('ORD-%05d', $orderId) : '';
+        $productId = $product !== null ? (int) $product->id : ($review->product_id !== null ? (int) $review->product_id : null);
+        $buyerName = MailNotificationHelper::displayName($reviewer);
+        $buyerCompany = '';
+        $buyerCountry = '';
+
+        if ($reviewer !== null) {
+            $reviewer->loadMissing('company');
+            $buyerCompany = trim((string) ($reviewer->company?->company_name ?? ''));
+            $buyerCountry = trim((string) ($reviewer->company?->country ?? ''));
+        }
+
+        return [
+            'orderId' => $orderId,
+            'orderNumber' => $orderNumber,
+            'productId' => $productId,
+            'productName' => $product?->name ?? '',
+            'buyerName' => $buyerName,
+            'buyerCompany' => $buyerCompany,
+            'buyerCountry' => $buyerCountry,
+            'buyerInitials' => MailNotificationHelper::initials($buyerName),
+            'rating' => (int) $review->rating,
+            'reviewTitle' => $localized['title'] ?? $review->title ?? '',
+            'reviewBody' => $localized['comment'] ?? $review->comment ?? '',
+            'reviewDate' => $review->created_at?->format('M j, Y') ?? '',
+            'ctaUrl' => MailNotificationHelper::productReviewsUrl($productId),
+            'manufacturerName' => MailNotificationHelper::companyOrName($review->user),
+        ];
     }
 
     private function listQuery(IndexAdminReviewRequest $request): Builder

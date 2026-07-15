@@ -58,7 +58,7 @@ class OrderNotificationService
 
     public function sendStatusUpdated(Order $order, OrderStatus $status, User $manufacturer): void
     {
-        $order->loadMissing(['buyer.company', 'manufacturer.company']);
+        $order->loadMissing(['buyer.company', 'manufacturer.company', 'product', 'items.product']);
 
         $templates = $this->statusMailTemplates($status);
 
@@ -78,6 +78,14 @@ class OrderNotificationService
                 'recipientName' => $this->displayName($buyer),
                 'ctaUrl' => $this->buyerOrdersUrl((int) $order->id),
             ]);
+
+            if ($status === OrderStatus::Completed) {
+                $this->mailingService->send(
+                    $buyer->email,
+                    MailTemplate::OrderReviewInvite,
+                    $this->reviewInviteMailData($order, $buyer),
+                );
+            }
         }
 
         if (isset($templates['manufacturer'])) {
@@ -150,6 +158,31 @@ class OrderNotificationService
             'status' => $status->label(),
             'buyerName' => $this->displayName($order->buyer),
             'manufacturerName' => $this->manufacturerDisplayName($order),
+            'referenceId' => $orderNumber,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function reviewInviteMailData(Order $order, User $buyer): array
+    {
+        $orderNumber = $this->orderNumber($order);
+        $product = $order->product ?? $order->items->first()?->product;
+        $productId = $product !== null ? (int) $product->id : null;
+        $productName = $product?->name ?? '';
+
+        return [
+            'orderId' => (int) $order->id,
+            'orderNumber' => $orderNumber,
+            'recipientName' => $this->displayName($buyer),
+            'manufacturerName' => $this->manufacturerDisplayName($order),
+            'productId' => $productId,
+            'productName' => $productName,
+            'ctaUrl' => MailNotificationHelper::productUrl($productId, [
+                'review' => 'true',
+                'order' => $orderNumber,
+            ]),
             'referenceId' => $orderNumber,
         ];
     }

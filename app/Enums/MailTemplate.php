@@ -42,6 +42,9 @@ enum MailTemplate: string
     case OrderCancelledBuyer = 'order-cancelled-buyer';
     case OrderCancelledManufacturer = 'order-cancelled-manufacturer';
     case OrderCancelledAdmin = 'order-cancelled-admin';
+    case OrderReviewInvite = 'order-review-invite';
+    case ReviewApproved = 'review-approved';
+    case NewProductReview = 'new-product-review';
     case RfqCreatedManufacturer = 'rfq-created-manufacturer';
     case RfqQuotedBuyer = 'rfq-quoted-buyer';
     case RfqStatusUpdated = 'rfq-status-updated';

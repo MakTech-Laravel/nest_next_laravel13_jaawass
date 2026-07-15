@@ -15,4 +15,11 @@ return [
         'flagged' => 'Marcado',
         'hidden' => 'Oculto',
     ],
+
+    'notifications' => [
+        'submitted' => [
+            'admin_title' => 'Nueva reseña de producto enviada',
+            'admin_body' => ':buyer envió una reseña de :rating/5 para :product.',
+        ],
+    ],
 ];

@@ -77,6 +77,48 @@ Route::get('/test-email', function () {
         return view($view, $shared);
     }
 
+    if ($template === 'order-review-invite') {
+        return view('mail.order-review-invite', [
+            ...$shared,
+            'manufacturerName' => 'Acme Ceramics',
+            'productName' => 'Premium ceramic mugs - 350ml',
+            'productId' => 12,
+            'ctaUrl' => \App\Support\Mail\MailNotificationHelper::productUrl(12, [
+                'review' => 'true',
+                'order' => 'ORD-00042',
+            ]),
+        ]);
+    }
+
+    if ($template === 'review-approved') {
+        return view('mail.review-approved', [
+            ...$shared,
+            'productName' => 'Premium ceramic mugs - 350ml',
+            'productId' => 12,
+            'manufacturerName' => 'Acme Ceramics',
+            'rating' => 5,
+            'reviewTitle' => 'Excellent quality and communication',
+            'ctaUrl' => \App\Support\Mail\MailNotificationHelper::productReviewsUrl(12),
+        ]);
+    }
+
+    if ($template === 'new-product-review') {
+        return view('mail.new-product-review', [
+            ...$shared,
+            'productName' => 'Premium ceramic mugs - 350ml',
+            'productId' => 12,
+            'buyerName' => 'Alex Buyer',
+            'buyerCompany' => 'Alex Trading Co',
+            'buyerCountry' => 'USA',
+            'buyerInitials' => 'AB',
+            'rating' => 5,
+            'reviewTitle' => 'Excellent quality and communication',
+            'reviewBody' => 'The manufacturer delivered exactly what we ordered and kept us updated throughout production. Highly recommended.',
+            'reviewDate' => 'Jul 14, 2026',
+            'ctaUrl' => \App\Support\Mail\MailNotificationHelper::productReviewsUrl(12),
+        ]);
+    }
+
     return view('mail.manufacturer-order-created', [
         ...$shared,
         'orderTitle' => 'Premium ceramic mugs - 350ml',

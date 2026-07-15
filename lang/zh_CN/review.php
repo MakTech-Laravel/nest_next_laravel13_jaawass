@@ -15,4 +15,11 @@ return [
         'flagged' => '已标记',
         'hidden' => '已隐藏',
     ],
+
+    'notifications' => [
+        'submitted' => [
+            'admin_title' => '收到新的产品评价',
+            'admin_body' => ':buyer 为 :product 提交了 :rating 星评价。',
+        ],
+    ],
 ];

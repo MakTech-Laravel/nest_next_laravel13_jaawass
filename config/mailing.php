@@ -203,6 +203,21 @@ return [
       'subject' => 'mail.order_cancelled.subject',
       'markdown' => false,
     ],
+    'order-review-invite' => [
+      'view' => 'mail.order-review-invite',
+      'subject' => 'How was your experience with :manufacturerName? Leave a review',
+      'markdown' => false,
+    ],
+    'review-approved' => [
+      'view' => 'mail.review-approved',
+      'subject' => 'Your review was approved — :productName',
+      'markdown' => false,
+    ],
+    'new-product-review' => [
+      'view' => 'mail.new-product-review',
+      'subject' => 'You received a new product review — :productName',
+      'markdown' => false,
+    ],
     'rfq-created-manufacturer' => [
       'view' => 'mail.rfq-created-manufacturer',
       'subject' => 'mail.rfq_created_manufacturer.subject',

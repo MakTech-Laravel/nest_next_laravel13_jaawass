@@ -15,4 +15,11 @@ return [
         'flagged' => 'مُبلَّغ عنه',
         'hidden' => 'مخفي',
     ],
+
+    'notifications' => [
+        'submitted' => [
+            'admin_title' => 'تم إرسال مراجعة منتج جديدة',
+            'admin_body' => 'قدّم :buyer مراجعة :rating/5 لـ :product.',
+        ],
+    ],
 ];

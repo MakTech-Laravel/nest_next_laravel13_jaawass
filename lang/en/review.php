@@ -15,4 +15,11 @@ return [
         'flagged' => 'Flagged',
         'hidden' => 'Hidden',
     ],
+
+    'notifications' => [
+        'submitted' => [
+            'admin_title' => 'New product review submitted',
+            'admin_body' => ':buyer submitted a :rating/5 review for :product.',
+        ],
+    ],
 ];

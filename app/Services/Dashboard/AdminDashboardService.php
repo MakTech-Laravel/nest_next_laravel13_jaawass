@@ -202,6 +202,7 @@ class AdminDashboardService
                 DashboardEventType::SupplierSuspended->value,
                 DashboardEventType::OrderDelivered->value,
                 DashboardEventType::RfqCreated->value,
+                DashboardEventType::ReviewSubmitted->value,
             ])
             ->latest('occurred_at')
             ->limit(10)
@@ -290,6 +291,7 @@ class AdminDashboardService
             DashboardEventType::SupplierSuspended->value => 'Supplier suspended',
             DashboardEventType::OrderDelivered->value => 'Order completed',
             DashboardEventType::RfqCreated->value => 'New RFQ submitted',
+            DashboardEventType::ReviewSubmitted->value => 'New product review',
             default => ucfirst(str_replace('_', ' ', $event->event_type)),
         };
     }
@@ -302,7 +304,26 @@ class AdminDashboardService
             DashboardEventType::SupplierSuspended->value => 'Supplier #'.$event->entity_id,
             DashboardEventType::OrderDelivered->value => 'Order #'.$event->entity_id,
             DashboardEventType::RfqCreated->value => 'RFQ #'.$event->entity_id,
+            DashboardEventType::ReviewSubmitted->value => $this->reviewSubmittedDetail($event),
             default => '',
         };
+    }
+
+    private function reviewSubmittedDetail(DashboardEvent $event): string
+    {
+        $metadata = is_array($event->metadata) ? $event->metadata : [];
+        $productName = trim((string) ($metadata['product_name'] ?? ''));
+        $buyerName = trim((string) ($metadata['buyer_name'] ?? ''));
+        $rating = isset($metadata['rating']) ? (int) $metadata['rating'] : null;
+
+        if ($productName !== '' && $buyerName !== '') {
+            $detail = "{$productName} by {$buyerName}";
+
+            return $rating !== null && $rating > 0
+                ? "{$detail} ({$rating}/5)"
+                : $detail;
+        }
+
+        return 'Review #'.$event->entity_id;
     }
 }

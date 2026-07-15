@@ -82,6 +82,34 @@ final class MailNotificationHelper
         return null;
     }
 
+    public static function productUrl(?int $productId = null, array $query = []): string
+    {
+        $path = $productId !== null && $productId > 0
+            ? 'products/'.$productId
+            : 'products';
+
+        $url = self::frontendUrl($path);
+        $query = array_filter($query, fn (mixed $value): bool => $value !== null && $value !== '');
+
+        if ($query !== []) {
+            $url .= (str_contains($url, '?') ? '&' : '?').http_build_query($query);
+        }
+
+        return self::withEmailSource($url);
+    }
+
+    public static function productReviewsUrl(?int $productId = null): string
+    {
+        $url = self::productUrl($productId);
+        $hash = '#reviews';
+
+        if (str_contains($url, '#')) {
+            return $url;
+        }
+
+        return $url.$hash;
+    }
+
     public static function displayName(?User $user): string
     {
         if ($user === null) {

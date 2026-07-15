@@ -32,6 +32,7 @@ final class UserNotificationPreferenceGate
             'manufacturer.rejected',
             'manufacturer.registered',
             'supplier.report.',
+            'review.',
         ] as $prefix) {
             if (str_starts_with($type, $prefix)) {
                 return true;

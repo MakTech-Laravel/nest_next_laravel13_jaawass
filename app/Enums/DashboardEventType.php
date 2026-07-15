@@ -22,6 +22,7 @@ enum DashboardEventType: string
     case SupplierApproved = 'supplier_approved';
     case SupplierRejected = 'supplier_rejected';
     case SupplierSuspended = 'supplier_suspended';
+    case ReviewSubmitted = 'review_submitted';
 
     /**
      * @return array<int, string>
