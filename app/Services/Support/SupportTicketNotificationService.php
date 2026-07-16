@@ -24,15 +24,31 @@ class SupportTicketNotificationService
         $preview = $this->messagePreview($message);
         $userUrl = $this->userTicketUrl($ticket);
         $adminUrl = $this->adminTicketUrl($ticket);
+        $ticketNumber = 'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT);
+        $creatorName = MailNotificationHelper::displayName($creator);
+        $creatorRole = $creator->role instanceof UserRole
+            ? $creator->role
+            : UserRole::tryFrom((string) $creator->role);
+        $creatorType = match ($creatorRole) {
+            UserRole::MANUFACTURER => 'Manufacturer',
+            UserRole::BUYER => 'Buyer',
+            UserRole::ADMIN => 'Admin',
+            default => 'User',
+        };
 
-        MailNotificationHelper::sendIfEmail($creator, function (string $email) use ($creator, $subject, $preview, $userUrl, $ticket): void {
+        MailNotificationHelper::sendIfEmail($creator, function (string $email) use ($creator, $subject, $preview, $userUrl, $ticketNumber): void {
             $this->mailingService->send($email, MailTemplate::SupportTicketCreated, $this->mailData(
                 'mail.support_ticket_created',
                 ['name' => MailNotificationHelper::displayName($creator), 'subject' => $subject],
                 $preview,
                 $userUrl,
                 __('mail.support_ticket_created.cta'),
-                'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT),
+                $ticketNumber,
+                [
+                    'ticketNumber' => $ticketNumber,
+                    'ticketSubject' => $subject,
+                    'messageBodyPlain' => $preview,
+                ],
             ));
         });
 
@@ -47,17 +63,36 @@ class SupportTicketNotificationService
         );
 
         foreach (MailNotificationHelper::adminRecipients() as $admin) {
-            MailNotificationHelper::sendIfEmail($admin, function (string $email) use ($creator, $subject, $preview, $adminUrl, $ticket): void {
+            MailNotificationHelper::sendIfEmail($admin, function (string $email) use (
+                $creator,
+                $creatorName,
+                $creatorType,
+                $subject,
+                $preview,
+                $adminUrl,
+                $ticket,
+                $ticketNumber,
+            ): void {
                 $this->mailingService->send($email, MailTemplate::SupportTicketCreatedAdmin, $this->mailData(
                     'mail.support_ticket_created_admin',
                     [
-                        'user' => MailNotificationHelper::displayName($creator),
+                        'user' => $creatorName,
                         'subject' => $subject,
                     ],
                     $preview,
                     $adminUrl,
                     __('mail.support_ticket_created_admin.cta'),
-                    'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT),
+                    $ticketNumber,
+                    [
+                        'ticketNumber' => $ticketNumber,
+                        'ticketSubject' => $subject,
+                        'creatorName' => $creatorName,
+                        'creatorEmail' => (string) ($creator->email ?? ''),
+                        'creatorType' => $creatorType,
+                        'creatorInitials' => MailNotificationHelper::initials($creatorName),
+                        'submittedAt' => $ticket->created_at?->format('M j · g:i A') ?? '',
+                        'messageBodyPlain' => $preview,
+                    ],
                 ));
             });
 
@@ -67,7 +102,7 @@ class SupportTicketNotificationService
                 'support.ticket.created.admin',
                 __('mail.support_ticket_created_admin.notification_title'),
                 __('mail.support_ticket_created_admin.notification_body', [
-                    'user' => MailNotificationHelper::displayName($creator),
+                    'user' => $creatorName,
                     'subject' => $subject,
                 ]),
                 ['ticket_id' => $ticket->id],
@@ -200,6 +235,7 @@ class SupportTicketNotificationService
 
     /**
      * @param  array<string, string>  $replacements
+     * @param  array<string, mixed>  $extra
      * @return array<string, mixed>
      */
     private function mailData(
@@ -209,6 +245,7 @@ class SupportTicketNotificationService
         string $ctaUrl,
         string $ctaLabel,
         string $referenceId,
+        array $extra = [],
     ): array {
         return [
             'preheader' => __($prefix.'.preheader', $replacements),
@@ -218,10 +255,14 @@ class SupportTicketNotificationService
             'intro' => __($prefix.'.intro', $replacements),
             'messageHeading' => $messageBody ? __($prefix.'.message_heading', $replacements) : null,
             'messageBody' => $messageBody ? nl2br(e($messageBody)) : null,
+            'messageBodyPlain' => $messageBody,
             'ctaUrl' => $ctaUrl,
             'ctaLabel' => $ctaLabel,
             'referenceId' => $referenceId,
+            'ticketNumber' => $referenceId,
+            'ticketSubject' => $replacements['subject'] ?? '',
             'footerNote' => __($prefix.'.footer', $replacements),
+            ...$extra,
         ];
     }
 

@@ -239,13 +239,13 @@ return [
       'markdown' => false,
     ],
     'support-ticket-created' => [
-      'view' => 'mail.transactional',
-      'subject' => 'mail.support_ticket_created.subject',
+      'view' => 'mail.support-ticket-created',
+      'subject' => 'Your support ticket has been received — :ticketNumber',
       'markdown' => false,
     ],
     'support-ticket-created-admin' => [
-      'view' => 'mail.transactional',
-      'subject' => 'mail.support_ticket_created_admin.subject',
+      'view' => 'mail.support-ticket-created-admin',
+      'subject' => 'New support ticket opened — :ticketNumber',
       'markdown' => false,
     ],
     'support-ticket-reply' => [
