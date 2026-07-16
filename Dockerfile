@@ -18,14 +18,16 @@ COPY --from=composer:2.6 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www
 COPY . .
 
-RUN mkdir -p storage/framework/{views,sessions,cache} storage/logs bootstrap/cache \
+RUN mkdir -p storage/app/public storage/framework/{views,sessions,cache} storage/logs bootstrap/cache \
     && composer install --no-dev --optimize-autoloader --no-scripts \
     && npm install && npm run build \
     && chown -R www-data:www-data /var/www \
-    && chmod -R 775 storage bootstrap/cache
+    && chmod -R 775 storage bootstrap/cache \
+    && sed -i 's/\r$//' /var/www/docker/entrypoint.sh \
+    && chmod +x /var/www/docker/entrypoint.sh
 
 COPY ./docker/nginx.conf /etc/nginx/nginx.conf
 COPY ./docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 EXPOSE 80
-CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["/bin/sh", "/var/www/docker/entrypoint.sh"]

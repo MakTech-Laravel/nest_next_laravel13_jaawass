@@ -85,11 +85,4 @@ class Article extends Model
     {
         $this->increment('views');
     }
-    
-    public function getArticleImageUrlAttribute()
-    {
-        return storage_url($this->article_image);
-    }
-
-    protected $appends = ['article_image_url'];
 }

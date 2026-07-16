@@ -11,12 +11,33 @@ use App\Http\Requests\Api\V1\Admin\UpdateArticleRequest;
 use App\Http\Resources\Api\V1\Admin\ArticleResource;
 use App\Models\Article;
 use App\Services\ArticleService;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
 
 class ArticleController extends Controller
 {
     public function __construct(protected ArticleService $articleService) {}
+
+    /**
+     * Store on the public disk the same way product images do:
+     * storage/app/public/articles/{file} → /storage/articles/{file}
+     */
+    private function storeArticleImage(UploadedFile $file): string
+    {
+        $originalName = str_replace(
+            ' ',
+            '_',
+            pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)
+        );
+
+        $fileName = $originalName.'_'.uniqid().'.'.$file->getClientOriginalExtension();
+        $path = 'articles/'.$fileName;
+
+        Storage::disk('public')->put($path, file_get_contents($file));
+
+        return $path;
+    }
 
     /**
      * Display a listing of the resource.
@@ -47,28 +68,13 @@ class ArticleController extends Controller
     {
         $validated = $request->validated();
 
-
         if (
             isset($validated['article_image']) &&
-            $validated['article_image'] instanceof \Illuminate\Http\UploadedFile
+            $validated['article_image'] instanceof UploadedFile
         ) {
-
-            $file = $validated['article_image'];
-
-            $originalName = pathinfo(
-                $file->getClientOriginalName(),
-                PATHINFO_FILENAME
-            );
-
-            $originalName = str_replace(' ', '_', $originalName);
-
-            $fileName = $originalName . '_' . time() . '.' . $file->getClientOriginalExtension();
-
-            $validated['article_image'] = $file->storeAs('articles', $fileName, 'public');
-        }else{
-            if(isset($validated['article_image'])){
-                unset($validated['article_image']);
-            }
+            $validated['article_image'] = $this->storeArticleImage($validated['article_image']);
+        } else {
+            unset($validated['article_image']);
         }
 
         $validated['creator_id'] = $request->user()->id;
@@ -142,35 +148,25 @@ class ArticleController extends Controller
 
         if (
             isset($validated['article_image']) &&
-            $validated['article_image'] instanceof \Illuminate\Http\UploadedFile
+            $validated['article_image'] instanceof UploadedFile
         ) {
-
-            $file = $validated['article_image'];
-
-            $originalName = pathinfo(
-                $file->getClientOriginalName(),
-                PATHINFO_FILENAME
-            );
-
-            $originalName = str_replace(' ', '_', $originalName);
-
-            $fileName = $originalName . '_' . time() . '.' . $file->getClientOriginalExtension();
-
-            $validated['article_image'] = $file->storeAs('articles', $fileName, 'public');
-        }else{
-            if(isset($validated['article_image'])){
-                unset($validated['article_image']);
-            }
+            $validated['article_image'] = $this->storeArticleImage($validated['article_image']);
+        } else {
+            unset($validated['article_image']);
         }
 
         try {
             $article = $this->articleService->find($id);
-            $isUpdated = $this->articleService->update($article, $validated);
+            $previousImage = $article->article_image;
+            $article = $this->articleService->update($article, $validated);
 
-            if ($isUpdated) {
-                if(Storage::exists($article->article_image)) {
-                    Storage::delete($article->article_image);
-                }
+            if (
+                isset($validated['article_image'])
+                && $previousImage
+                && $previousImage !== $validated['article_image']
+                && Storage::disk('public')->exists($previousImage)
+            ) {
+                Storage::disk('public')->delete($previousImage);
             }
             $translatableChanged = array_intersect_key(
                 $request->validated(),
