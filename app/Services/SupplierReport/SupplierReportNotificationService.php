@@ -30,23 +30,14 @@ class SupplierReportNotificationService
         $this->mailingService->send(
             $reporter->email,
             MailTemplate::SupplierReportReceived,
-            array_merge($data, [
-                'preheader' => __('mail.supplier_report_received.preheader'),
-                'headerTitle' => __('mail.supplier_report_received.subject'),
-                'headerSubtitle' => __('mail.layout.default_eyebrow'),
-                'intro' => __('mail.supplier_report_received.intro', [
-                    'name' => $data['buyerName'],
-                    'supplier' => $data['supplierName'],
-                    'id' => $data['reportId'],
-                ]),
-                'messageHeading' => __('mail.supplier_report_received.details_heading'),
+            [
+                'buyerName' => $data['buyerName'],
+                'supplierName' => $data['supplierName'],
+                'reportId' => $data['reportId'],
                 'messageBody' => nl2br(e((string) $report->details)),
-                'detailsHeading' => __('mail.supplier_report_received.reason_heading'),
-                'details' => ['Reason' => $data['reasonLabel']],
-                'ctaUrl' => $data['reportsUrl'],
-                'ctaLabel' => __('mail.supplier_report_received.cta'),
-                'footerNote' => __('mail.supplier_report_received.footer'),
-            ]),
+                'reasonLabel' => $data['reasonLabel'],
+                'reportsUrl' => $data['reportsUrl'],
+            ],
         );
 
         SendSupportTicketInAppNotificationJob::dispatch(
@@ -81,21 +72,13 @@ class SupplierReportNotificationService
         $this->mailingService->send(
             $reporter->email,
             MailTemplate::SupplierReportStatusUpdated,
-            array_merge($data, [
-                'preheader' => __('mail.supplier_report_status_updated.preheader'),
-                'headerTitle' => __('mail.supplier_report_status_updated.subject'),
-                'headerSubtitle' => $toStatus->label(),
-                'intro' => __('mail.supplier_report_status_updated.intro', [
-                    'name' => $data['buyerName'],
-                    'supplier' => $data['supplierName'],
-                    'status' => $toStatus->label(),
-                ]),
-                'messageHeading' => __('mail.supplier_report_status_updated.message_heading'),
+            [
+                'buyerName' => $data['buyerName'],
+                'supplierName' => $data['supplierName'],
+                'statusLabel' => $toStatus->label(),
                 'messageBody' => $log->message ? nl2br(e((string) $log->message)) : null,
-                'ctaUrl' => $data['reportsUrl'],
-                'ctaLabel' => __('mail.supplier_report_status_updated.cta'),
-                'footerNote' => __('mail.supplier_report_status_updated.footer'),
-            ]),
+                'reportsUrl' => $data['reportsUrl'],
+            ],
         );
 
         SendSupportTicketInAppNotificationJob::dispatch(
@@ -122,25 +105,13 @@ class SupplierReportNotificationService
         foreach (MailNotificationHelper::adminRecipients() as $admin) {
             MailNotificationHelper::sendIfEmail($admin, function (string $email) use ($data, $report, $adminUrl): void {
                 $this->mailingService->send($email, MailTemplate::SupplierReportReceivedAdmin, [
-                    'preheader' => __('mail.supplier_report_received_admin.preheader'),
-                    'headerTitle' => __('mail.supplier_report_received_admin.header_title'),
-                    'headerSubtitle' => __('mail.supplier_report_received_admin.header_subtitle'),
-                    'intro' => __('mail.supplier_report_received_admin.intro', [
-                        'buyer' => $data['buyerName'],
-                        'supplier' => $data['supplierName'],
-                        'id' => $data['reportId'],
-                    ]),
-                    'detailsHeading' => __('mail.supplier_report_received_admin.details_heading'),
-                    'details' => [
-                        'Reason' => $data['reasonLabel'],
-                        'Report ID' => (string) $data['reportId'],
-                    ],
-                    'messageHeading' => __('mail.supplier_report_received.details_heading'),
+                    'buyerName' => $data['buyerName'],
+                    'supplierName' => $data['supplierName'],
+                    'reportId' => $data['reportId'],
+                    'reasonLabel' => $data['reasonLabel'],
                     'messageBody' => $report->details ? nl2br(e((string) $report->details)) : null,
                     'ctaUrl' => $adminUrl,
-                    'ctaLabel' => __('mail.supplier_report_received_admin.cta'),
                     'referenceId' => 'RPT-'.str_pad((string) $report->id, 5, '0', STR_PAD_LEFT),
-                    'footerNote' => __('mail.supplier_report_received_admin.footer'),
                 ]);
             }, 'supplier.report.created');
 

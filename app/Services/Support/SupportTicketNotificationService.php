@@ -128,19 +128,14 @@ class SupportTicketNotificationService
             : $this->userTicketUrl($ticket, $recipient);
 
         MailNotificationHelper::sendIfEmail($recipient, function (string $email) use ($recipient, $sender, $subject, $preview, $url, $ticket): void {
-            $this->mailingService->send($email, MailTemplate::SupportTicketReply, $this->mailData(
-                'mail.support_ticket_reply',
-                [
-                    'name' => MailNotificationHelper::displayName($recipient),
-                    'sender' => MailNotificationHelper::displayName($sender),
-                    'senderName' => MailNotificationHelper::displayName($sender),
-                    'subject' => $subject,
-                ],
-                $preview,
-                $url,
-                __('mail.support_ticket_reply.cta'),
-                'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT),
-            ));
+            $this->mailingService->send($email, MailTemplate::SupportTicketReply, [
+                'name' => MailNotificationHelper::displayName($recipient),
+                'senderName' => MailNotificationHelper::displayName($sender),
+                'subject' => $subject,
+                'messageBody' => $preview ? nl2br(e($preview)) : null,
+                'ctaUrl' => $url,
+                'referenceId' => 'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT),
+            ]);
         });
 
         $this->dispatchInApp(
@@ -176,18 +171,13 @@ class SupportTicketNotificationService
         $url = $this->userTicketUrl($ticket, $owner);
 
         MailNotificationHelper::sendIfEmail($owner, function (string $email) use ($owner, $subject, $statusLabel, $url, $ticket): void {
-            $this->mailingService->send($email, MailTemplate::SupportTicketResolved, $this->mailData(
-                'mail.support_ticket_resolved',
-                [
-                    'name' => MailNotificationHelper::displayName($owner),
-                    'subject' => $subject,
-                    'status' => $statusLabel,
-                ],
-                null,
-                $url,
-                __('mail.support_ticket_resolved.cta'),
-                'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT),
-            ));
+            $this->mailingService->send($email, MailTemplate::SupportTicketResolved, [
+                'name' => MailNotificationHelper::displayName($owner),
+                'subject' => $subject,
+                'status' => $statusLabel,
+                'ctaUrl' => $url,
+                'referenceId' => 'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT),
+            ]);
         });
 
         $this->dispatchInApp(

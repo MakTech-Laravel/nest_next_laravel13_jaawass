@@ -27,7 +27,7 @@ class PasswordResetOtpMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.otp',
+            view: 'mail.auth.otp',
             with: [
                 'otp' => $this->otp,
                 'intro' => __('mail.password_reset_otp.intro'),

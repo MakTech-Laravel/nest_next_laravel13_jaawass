@@ -9,7 +9,7 @@ Route::get('/', function () {
 
 
 Route::get('/test-email', function () {
-    return view('mail.support-ticket-created');
+    return view('mail.support.support-ticket-created');
 });
 
 

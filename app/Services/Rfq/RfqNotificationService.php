@@ -9,8 +9,6 @@ use App\Models\RfqSubmission;
 use App\Models\User;
 use App\Services\Mailing\MailingService;
 use App\Support\Mail\MailNotificationHelper;
-use Illuminate\Support\Facades\Lang;
-
 class RfqNotificationService
 {
     public function __construct(
@@ -179,21 +177,14 @@ class RfqNotificationService
                 : $this->buyerRfqUrl($rfq);
 
             MailNotificationHelper::sendIfEmail($recipient, function (string $email) use ($rfq, $rfqNumber, $statusLabel, $url, $recipient): void {
-                $this->mailingService->send($email, MailTemplate::RfqStatusUpdated, $this->transactionalMail(
-                    prefix: 'mail.rfq_status_updated',
-                    recipientName: MailNotificationHelper::displayName($recipient),
-                    replacements: [
-                        'name' => MailNotificationHelper::displayName($recipient),
-                        'rfq' => $rfqNumber,
-                        'rfqNumber' => $rfqNumber,
-                        'status' => $statusLabel,
-                    ],
-                    details: $this->rfqDetails($rfq),
-                    ctaUrl: $url,
-                    ctaLabel: __('mail.rfq_status_updated.cta'),
-                    referenceId: $rfqNumber,
-                    footerNote: __('mail.rfq_status_updated.footer'),
-                ));
+                $this->mailingService->send($email, MailTemplate::RfqStatusUpdated, [
+                    'name' => MailNotificationHelper::displayName($recipient),
+                    'rfqNumber' => $rfqNumber,
+                    'status' => $statusLabel,
+                    'details' => $this->rfqDetails($rfq),
+                    'ctaUrl' => $url,
+                    'referenceId' => $rfqNumber,
+                ]);
             }, 'rfq.status.'.$status->value);
 
             $this->dispatchInApp(
@@ -209,42 +200,6 @@ class RfqNotificationService
                 actionUrl: $url,
             );
         }
-    }
-
-    /**
-     * @param  array<string, string>  $replacements
-     * @param  array<string, mixed>  $details
-     * @return array<string, mixed>
-     */
-    private function transactionalMail(
-        string $prefix,
-        string $recipientName,
-        array $replacements,
-        array $details = [],
-        ?string $ctaUrl = null,
-        ?string $ctaLabel = null,
-        ?string $referenceId = null,
-        ?string $footerNote = null,
-        ?string $messageBody = null,
-    ): array {
-        return [
-            'preheader' => __($prefix.'.preheader', $replacements),
-            'headerEyebrow' => __('mail.layout.default_eyebrow'),
-            'headerTitle' => __($prefix.'.header_title', $replacements),
-            'headerSubtitle' => __($prefix.'.header_subtitle', $replacements),
-            'alertTag' => Lang::has($prefix.'.alert_tag') ? __($prefix.'.alert_tag', $replacements) : null,
-            'alertHeading' => Lang::has($prefix.'.alert_heading') ? __($prefix.'.alert_heading', $replacements) : null,
-            'greeting' => null,
-            'intro' => __($prefix.'.intro', $replacements),
-            'messageHeading' => $messageBody ? __($prefix.'.message_heading', $replacements) : null,
-            'messageBody' => $messageBody ? nl2br(e($messageBody)) : null,
-            'detailsHeading' => $details !== [] ? __($prefix.'.details_heading', $replacements) : null,
-            'details' => collect($details)->filter(fn ($v) => $v !== null && $v !== '')->all(),
-            'ctaUrl' => $ctaUrl,
-            'ctaLabel' => $ctaLabel,
-            'referenceId' => $referenceId,
-            'footerNote' => $footerNote,
-        ];
     }
 
     /**

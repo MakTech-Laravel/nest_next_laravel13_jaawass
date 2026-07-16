@@ -62,22 +62,13 @@ class ManufacturerAdminMessageService
             $manufacturer->email,
             MailTemplate::ManufacturerAdminMessage,
             [
-                'preheader' => __('mail.manufacturer_admin_message.preheader'),
-                'headerEyebrow' => __('mail.layout.default_eyebrow'),
-                'headerTitle' => __('mail.manufacturer_admin_message.subject'),
-                'headerSubtitle' => $subject,
-                'intro' => __('mail.manufacturer_admin_message.intro', [
-                    'name' => $this->displayName($manufacturer),
-                    'admin' => $this->displayName($admin),
-                    'company' => $manufacturer->company?->company_name ?? config('app.name'),
-                ]),
-                'messageHeading' => __('mail.manufacturer_admin_message.message_heading'),
+                'name' => $this->displayName($manufacturer),
+                'admin' => $this->displayName($admin),
+                'company' => $manufacturer->company?->company_name ?? config('app.name'),
+                'ticketSubject' => $subject,
                 'messageBody' => nl2br(e($message)),
-                'extraBody' => __('mail.manufacturer_admin_message.ticket_body', ['subject' => $subject]),
                 'ctaUrl' => $this->ticketUrl($ticket->id),
-                'ctaLabel' => __('mail.manufacturer_admin_message.cta'),
                 'referenceId' => 'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT),
-                'footerNote' => __('mail.manufacturer_admin_message.footer'),
             ],
         );
 
