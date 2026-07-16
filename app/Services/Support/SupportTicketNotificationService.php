@@ -123,18 +123,57 @@ class SupportTicketNotificationService
             return;
         }
 
-        $url = $recipient->role === UserRole::ADMIN
+        $isAdminRecipient = $recipient->role === UserRole::ADMIN;
+        $url = $isAdminRecipient
             ? $this->adminTicketUrl($ticket)
             : $this->userTicketUrl($ticket, $recipient);
+        $template = $isAdminRecipient
+            ? MailTemplate::SupportTicketReplyAdmin
+            : MailTemplate::SupportTicketReply;
+        $langPrefix = $isAdminRecipient
+            ? 'mail.support_ticket_reply_admin'
+            : 'mail.support_ticket_reply';
+        $ticketNumber = 'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT);
+        $senderName = MailNotificationHelper::displayName($sender);
+        $senderRole = $sender->role instanceof UserRole
+            ? $sender->role
+            : UserRole::tryFrom((string) $sender->role);
+        $senderType = match ($senderRole) {
+            UserRole::MANUFACTURER => 'Manufacturer',
+            UserRole::BUYER => 'Buyer',
+            UserRole::ADMIN => 'Admin',
+            default => 'User',
+        };
 
-        MailNotificationHelper::sendIfEmail($recipient, function (string $email) use ($recipient, $sender, $subject, $preview, $url, $ticket): void {
-            $this->mailingService->send($email, MailTemplate::SupportTicketReply, [
+        MailNotificationHelper::sendIfEmail($recipient, function (string $email) use (
+            $recipient,
+            $sender,
+            $senderName,
+            $senderType,
+            $subject,
+            $preview,
+            $url,
+            $ticket,
+            $ticketNumber,
+            $template,
+            $langPrefix,
+        ): void {
+            $this->mailingService->send($email, $template, [
                 'name' => MailNotificationHelper::displayName($recipient),
-                'senderName' => MailNotificationHelper::displayName($sender),
+                'senderName' => $senderName,
+                'sender' => $senderName,
                 'subject' => $subject,
                 'messageBody' => $preview ? nl2br(e($preview)) : null,
+                'messageBodyPlain' => $preview,
                 'ctaUrl' => $url,
-                'referenceId' => 'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT),
+                'ctaLabel' => __($langPrefix.'.cta'),
+                'referenceId' => $ticketNumber,
+                'ticketNumber' => $ticketNumber,
+                'ticketSubject' => $subject,
+                'senderType' => $senderType,
+                'senderEmail' => (string) ($sender->email ?? ''),
+                'senderInitials' => MailNotificationHelper::initials($senderName),
+                'repliedAt' => now()->format('M j · g:i A'),
             ]);
         });
 
@@ -142,9 +181,9 @@ class SupportTicketNotificationService
             $recipient,
             $sender,
             'support.ticket.reply',
-            __('mail.support_ticket_reply.notification_title'),
-            __('mail.support_ticket_reply.notification_body', [
-                'sender' => MailNotificationHelper::displayName($sender),
+            __($langPrefix.'.notification_title'),
+            __($langPrefix.'.notification_body', [
+                'sender' => $senderName,
                 'subject' => $subject,
             ]),
             ['ticket_id' => $ticket->id],
@@ -171,12 +210,17 @@ class SupportTicketNotificationService
         $url = $this->userTicketUrl($ticket, $owner);
 
         MailNotificationHelper::sendIfEmail($owner, function (string $email) use ($owner, $subject, $statusLabel, $url, $ticket): void {
+            $ticketNumber = 'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT);
+
             $this->mailingService->send($email, MailTemplate::SupportTicketResolved, [
                 'name' => MailNotificationHelper::displayName($owner),
                 'subject' => $subject,
                 'status' => $statusLabel,
                 'ctaUrl' => $url,
-                'referenceId' => 'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT),
+                'ctaLabel' => __('mail.support_ticket_resolved.cta'),
+                'referenceId' => $ticketNumber,
+                'ticketNumber' => $ticketNumber,
+                'ticketSubject' => $subject,
             ]);
         });
 

@@ -745,6 +745,19 @@ return [
         'notification_body' => ':sender 回复了 ":subject"。',
     ],
 
+    'support_ticket_reply_admin' => [
+        'subject' => '支持工单有新回复：:subject',
+        'preheader' => '用户回复了支持工单。',
+        'header_title' => '工单新回复',
+        'header_subtitle' => '需要处理',
+        'intro' => ':sender 回复了工单 ":subject"。',
+        'message_heading' => '回复预览',
+        'cta' => '在管理后台打开工单',
+        'footer' => '来自 SourceNest 的管理员通知。',
+        'notification_title' => '工单新回复',
+        'notification_body' => ':sender 回复了 ":subject"。',
+    ],
+
     'support_ticket_resolved' => [
         'subject' => '工单已解决：:subject',
         'preheader' => '您的支持工单已解决。',

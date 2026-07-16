@@ -797,6 +797,19 @@ return [
         'notification_body' => ':sender replied to ":subject".',
     ],
 
+    'support_ticket_reply_admin' => [
+        'subject' => 'New reply on support ticket: :subject',
+        'preheader' => 'A user replied to a support ticket.',
+        'header_title' => 'New Ticket Reply',
+        'header_subtitle' => 'Requires attention',
+        'intro' => ':sender replied to ticket ":subject".',
+        'message_heading' => 'Reply preview',
+        'cta' => 'Open ticket in admin',
+        'footer' => 'Admin notification from SourceNest.',
+        'notification_title' => 'New ticket reply',
+        'notification_body' => ':sender replied to ":subject".',
+    ],
+
     'support_ticket_resolved' => [
         'subject' => 'Ticket resolved: :subject',
         'preheader' => 'Your support ticket has been resolved.',

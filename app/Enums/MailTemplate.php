@@ -52,6 +52,7 @@ enum MailTemplate: string
     case SupportTicketCreated = 'support-ticket-created';
     case SupportTicketCreatedAdmin = 'support-ticket-created-admin';
     case SupportTicketReply = 'support-ticket-reply';
+    case SupportTicketReplyAdmin = 'support-ticket-reply-admin';
     case SupportTicketResolved = 'support-ticket-resolved';
     case ManufacturerApproved = 'manufacturer-approved';
     case ManufacturerRejected = 'manufacturer-rejected';
