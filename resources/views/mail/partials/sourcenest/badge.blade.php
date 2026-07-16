@@ -1,1 +1,0 @@
-<span style="display:inline-block;font:700 9px/1 'Nunito',sans-serif;letter-spacing:0.4px;text-transform:uppercase;padding:4px 12px;border-radius:20px;color:{{ $color ?? '#8A8A8A' }};background-color:{{ $bg ?? '#F8F8F8' }};border:1.5px solid {{ $border ?? '#E6E6E6' }};">{{ $label }}</span>
