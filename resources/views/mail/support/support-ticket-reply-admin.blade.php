@@ -1,19 +1,19 @@
 @php
     $platformName = config('app.name', 'SourceNest');
     $logoUrl = public_url('images/mail/sourcenest-logo.png');
-    $heroIconUrl = public_url('images/mail/svg/support-reply-hero.svg');
+    $heroIconUrl = public_url('images/mail/svg/support-reply-admin-hero.svg');
     $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
     $supportEmail = config('mail.from.address', 'no-reply@sourcenest.com');
     $mailIconStyle = 'display:block;border:0;outline:none;text-decoration:none;margin:0 auto;';
     $ticketNumber = $ticketNumber ?? $referenceId ?? '';
     $ticketSubject = $ticketSubject ?? $subject ?? '';
+    $senderName = $senderName ?? '';
+    $senderType = $senderType ?? 'User';
+    $senderInitials = $senderInitials ?? \App\Support\Mail\MailNotificationHelper::initials($senderName !== '' ? $senderName : 'U');
     $replyPreview = trim(strip_tags((string) ($messageBodyPlain ?? $messageBody ?? '')));
     $repliedAt = $repliedAt ?? '';
-    $supportDisplayName = 'sourceNest Support';
-    $supportSubtitle = 'Admin · sourceNest';
-    $supportInitial = 'S';
-    $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/buyer/support-tickets');
-    $ctaLabel = $ctaLabel ?? 'View Ticket';
+    $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('admin/customer-supports/tickets');
+    $ctaLabel = $ctaLabel ?? 'Open Ticket';
 @endphp
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml"
@@ -27,7 +27,7 @@
     <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
     <meta name="color-scheme" content="light only">
     <meta name="supported-color-schemes" content="light">
-    <title>New reply on your support ticket — {{ $ticketNumber }}</title>
+    <title>User replied on support ticket — {{ $ticketNumber }}</title>
     <!--[if mso]>
     <noscript>
         <xml>
@@ -80,7 +80,7 @@
 
 <body class="email-bg-main" style="margin:0;padding:0;background-color:#F4F0EA;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
     <div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
-        New reply on your support ticket #{{ $ticketNumber }}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+        User replied on support ticket #{{ $ticketNumber }}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
     </div>
 
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="email-bg-main" style="background-color:#F4F0EA;">
@@ -104,7 +104,7 @@
                         </td>
                     </tr>
 
-                    {{-- Hero H5 — admin replied --}}
+                    {{-- Hero H5 — user replied --}}
                     <tr>
                         <td class="email-pad email-hero-bg" bgcolor="#FBF7EE"
                             style="padding:26px 30px;background-color:#FBF7EE;background-image:linear-gradient(135deg,#FBF7EE 0%,#FFFFFF 55%);border-bottom:1.5px solid #E8D5A8;">
@@ -113,8 +113,8 @@
                                     <td class="email-stack email-stack-icon" width="76" valign="middle" style="width:76px;padding-right:18px;">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
-                                                <td width="58" height="58" align="center" valign="middle" bgcolor="#3B2800"
-                                                    style="width:58px;height:58px;background-color:#3B2800;border:1.5px solid #E8D5A8;border-radius:14px;box-shadow:0 2px 10px rgba(59,40,0,0.06);">
+                                                <td width="58" height="58" align="center" valign="middle" bgcolor="#2E2E2E"
+                                                    style="width:58px;height:58px;background-color:#2E2E2E;border:1.5px solid #2E2E2E;border-radius:14px;">
                                                     @if (! empty($heroIconUrl))
                                                         <img src="{{ $heroIconUrl }}" width="26" height="26" alt="" style="{{ $mailIconStyle }}">
                                                     @endif
@@ -126,19 +126,19 @@
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:10px;">
                                             <tr>
                                                 <td>
-                                                    <span style="display:inline-block;padding:4px 11px;border-radius:20px;border:1.5px solid #E8D5A8;background-color:#FBF7EE;">
-                                                        <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background-color:#9A7A3A;vertical-align:middle;margin-right:5px;">&nbsp;</span>
-                                                        <span style="font-weight:800;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#666666;vertical-align:middle;">New Reply</span>
+                                                    <span style="display:inline-block;padding:4px 11px;border-radius:20px;border:1.5px solid #D6D6D6;background-color:#F8F8F8;">
+                                                        <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background-color:#8A8A8A;vertical-align:middle;margin-right:5px;">&nbsp;</span>
+                                                        <span style="font-weight:800;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#666666;vertical-align:middle;">User Replied</span>
                                                     </span>
                                                 </td>
                                             </tr>
                                         </table>
                                         <div class="email-hero-title email-brand-text"
                                             style="font-weight:500;font-size:22px;line-height:1.17;font-family:Georgia,'Times New Roman',serif;color:#3B2800;letter-spacing:-0.2px;">
-                                            The support team <em style="font-style:italic;color:#9A7A3A;">has replied</em> to your ticket.
+                                            The user has <em style="font-style:italic;color:#9A7A3A;">replied</em> to ticket #{{ $ticketNumber }}.
                                         </div>
                                         <div class="email-muted-text" style="padding-top:6px;font-weight:400;font-size:13px;line-height:1.78;font-family:Arial,Helvetica,sans-serif;color:#666666;">
-                                            The sourceNest team has posted a new reply on your support ticket. Open the ticket to read and respond.
+                                            A user has posted a new reply on an open support ticket. Please review and respond.
                                         </div>
                                     </td>
                                 </tr>
@@ -146,7 +146,7 @@
                         </td>
                     </tr>
 
-                    {{-- Ticket details --}}
+                    {{-- Ticket details + From --}}
                     <tr>
                         <td class="email-pad email-pad-white" bgcolor="#FFFFFF" style="padding:28px 30px;background-color:#FFFFFF;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;">
@@ -164,7 +164,7 @@
                                             <tr>
                                                 <td style="font-weight:900;font-size:9px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#8A8A8A;">Ticket Details</td>
                                                 <td align="right">
-                                                    <span style="display:inline-block;padding:2px 10px;border-radius:20px;border:1.5px solid #F0C040;background-color:#FFF8E4;font-weight:800;font-size:9px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#7A4D00;">In Progress</span>
+                                                    <span style="display:inline-block;padding:2px 10px;border-radius:20px;border:1.5px solid #F0C040;background-color:#FFF8E4;font-weight:800;font-size:9px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#7A4D00;">Awaiting Reply</span>
                                                 </td>
                                             </tr>
                                         </table>
@@ -189,32 +189,59 @@
                                     @endif
                                 @endforeach
                             </table>
+
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                style="margin-top:12px;background-color:#FFFFFF;border:1.5px solid #E6E6E6;border-radius:10px;border-collapse:separate;overflow:hidden;">
+                                <tr>
+                                    <td bgcolor="#F8F8F8" style="padding:11px 16px;background-color:#F8F8F8;border-bottom:1px solid #E6E6E6;">
+                                        <span style="font-weight:900;font-size:9px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#8A8A8A;">From</span>
+                                    </td>
+                                </tr>
+                                @foreach ([
+                                    ['Name', $senderName],
+                                    ['Account type', $senderType],
+                                ] as [$label, $value])
+                                    @if (trim((string) $value) !== '')
+                                        <tr>
+                                            <td style="padding:0;">
+                                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                                    <tr>
+                                                        <td class="email-evl-lbl" width="110" bgcolor="#F8F8F8" valign="middle"
+                                                            style="width:110px;padding:11px 16px;background-color:#F8F8F8;border-top:1px solid #F0F0F0;border-right:1px solid #F0F0F0;font-weight:700;font-size:11px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">{{ $label }}</td>
+                                                        <td class="email-evl-val" valign="middle" style="padding:11px 16px;border-top:1px solid #F0F0F0;font-weight:500;font-size:12.5px;line-height:1.4;font-family:Arial,Helvetica,sans-serif;color:#1C1C1C;">{{ $value }}</td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            </table>
                         </td>
                     </tr>
 
-                    {{-- Reply preview --}}
-                    <tr>
-                        <td class="email-pad email-sec-gs" bgcolor="#F8F8F8" style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;">
-                                <tr>
-                                    <td width="3" bgcolor="#E8D5A8" style="width:3px;height:18px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">&nbsp;</td>
-                                    <td class="email-section-title email-brand-text" style="padding-left:9px;font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;">Reply preview</td>
-                                </tr>
-                            </table>
+                    {{-- New reply preview --}}
+                    @if ($replyPreview !== '')
+                        <tr>
+                            <td class="email-pad email-sec-gs" bgcolor="#F8F8F8" style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;">
+                                    <tr>
+                                        <td width="3" bgcolor="#E8D5A8" style="width:3px;height:18px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">&nbsp;</td>
+                                        <td class="email-section-title email-brand-text" style="padding-left:9px;font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;">New reply</td>
+                                    </tr>
+                                </table>
 
-                            @if ($replyPreview !== '')
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                                    style="margin-top:0;background-color:#FFFFFF;border:1.5px solid #E6E6E6;border-radius:10px;border-collapse:separate;overflow:hidden;">
+                                    style="background-color:#FFFFFF;border:1.5px solid #E6E6E6;border-radius:10px;border-collapse:separate;overflow:hidden;">
                                     <tr>
                                         <td bgcolor="#F8F8F8" style="padding:14px 17px;background-color:#F8F8F8;border-bottom:1px solid #E6E6E6;">
                                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                                 <tr>
                                                     <td width="38" valign="middle" style="width:38px;padding-right:12px;">
-                                                        <div style="width:38px;height:38px;background-color:#3B2800;border-radius:8px;text-align:center;line-height:38px;font-weight:600;font-size:14px;font-family:Georgia,'Times New Roman',serif;color:#C8A96A;">{{ $supportInitial }}</div>
+                                                        <div style="width:38px;height:38px;background-color:#3B2800;border-radius:8px;text-align:center;line-height:38px;font-weight:600;font-size:14px;font-family:Georgia,'Times New Roman',serif;color:#C8A96A;">{{ $senderInitials }}</div>
                                                     </td>
                                                     <td valign="middle">
-                                                        <div class="email-brand-text" style="font-weight:800;font-size:13.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#3B2800;">{{ $supportDisplayName }}</div>
-                                                        <div class="email-muted-text" style="font-weight:500;font-size:11.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;margin-top:4px;">{{ $supportSubtitle }}</div>
+                                                        <div class="email-brand-text" style="font-weight:800;font-size:13.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#3B2800;">{{ $senderName !== '' ? $senderName : 'User' }}</div>
+                                                        <div class="email-muted-text" style="font-weight:500;font-size:11.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;margin-top:4px;">{{ $senderType }} · sourceNest</div>
                                                     </td>
                                                     @if ($repliedAt !== '')
                                                         <td class="email-inq-ts" align="right" valign="middle" style="font-weight:500;font-size:11px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;">{{ $repliedAt }}</td>
@@ -229,13 +256,9 @@
                                         </td>
                                     </tr>
                                 </table>
-                            @endif
-
-                            <p class="email-body-text" style="margin:16px 0 0 0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">
-                                Open the ticket page to read the full reply and respond if needed.
-                            </p>
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
+                    @endif
 
                     {{-- CTA --}}
                     <tr>
@@ -249,7 +272,7 @@
                                 </tr>
                             </table>
                             <p class="email-muted-text" style="margin:18px 0 0 0;padding-top:18px;border-top:1px solid #F0F0F0;font-weight:400;font-size:12px;line-height:1.75;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">
-                                Log in to sourceNest to read the full reply and continue the conversation.
+                                Log in to the admin panel to read the full reply and respond.
                             </p>
                         </td>
                     </tr>

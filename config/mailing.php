@@ -253,6 +253,11 @@ return [
       'subject' => 'mail.support_ticket_reply.subject',
       'markdown' => false,
     ],
+    'support-ticket-reply-admin' => [
+      'view' => 'mail.support.support-ticket-reply-admin',
+      'subject' => 'mail.support_ticket_reply_admin.subject',
+      'markdown' => false,
+    ],
     'support-ticket-resolved' => [
       'view' => 'mail.support.support-ticket-resolved',
       'subject' => 'mail.support_ticket_resolved.subject',
