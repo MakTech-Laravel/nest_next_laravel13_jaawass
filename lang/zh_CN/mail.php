@@ -758,6 +758,19 @@ return [
         'notification_body' => ':sender 回复了 ":subject"。',
     ],
 
+    'support_ticket_auto_reply' => [
+        'subject' => '我们已收到您的留言：:subject',
+        'preheader' => '您的支持留言已收到。',
+        'header_title' => '留言已收到',
+        'header_subtitle' => '自动确认',
+        'intro' => '您好 :name，我们已收到您在工单 ":subject" 上的留言。',
+        'message_heading' => '确认说明',
+        'cta' => '查看工单',
+        'footer' => '支持人员将尽快跟进。',
+        'notification_title' => '留言已收到',
+        'notification_body' => '我们已收到您在 ":subject" 上的留言。',
+    ],
+
     'support_ticket_resolved' => [
         'subject' => '工单已解决：:subject',
         'preheader' => '您的支持工单已解决。',

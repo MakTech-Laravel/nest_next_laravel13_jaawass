@@ -24,14 +24,16 @@ final class TicketMessageService
         ?string $message,
         array $attachments = [],
         ?string $sourceLocale = null,
+        bool $isAutoReply = false,
     ): TicketMessage {
-        return DB::transaction(function () use ($ticket, $sender, $message, $attachments, $sourceLocale): TicketMessage {
+        return DB::transaction(function () use ($ticket, $sender, $message, $attachments, $sourceLocale, $isAutoReply): TicketMessage {
             $normalizedMessage = $this->normalizeMessage($message);
 
             $ticketMessage = TicketMessage::query()->create([
                 'ticket_id' => $ticket->id,
                 'user_id' => $sender->id,
                 'message' => $normalizedMessage,
+                'is_auto_reply' => $isAutoReply,
             ]);
 
             $this->storeAttachments($ticket, $ticketMessage, $attachments);

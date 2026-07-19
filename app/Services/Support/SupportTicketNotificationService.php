@@ -192,6 +192,54 @@ class SupportTicketNotificationService
         );
     }
 
+    public function notifyAutoReply(Ticket $ticket, User $sender, ?string $message): void
+    {
+        $ticket->loadMissing(['user']);
+        $owner = $ticket->user;
+
+        if ($owner === null) {
+            return;
+        }
+
+        $subject = (string) $ticket->subject;
+        $preview = $this->messagePreview($message);
+        $url = $this->userTicketUrl($ticket, $owner);
+        $ticketNumber = 'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT);
+
+        MailNotificationHelper::sendIfEmail($owner, function (string $email) use (
+            $owner,
+            $subject,
+            $preview,
+            $url,
+            $ticketNumber,
+        ): void {
+            $this->mailingService->send($email, MailTemplate::SupportTicketAutoReply, [
+                'name' => MailNotificationHelper::displayName($owner),
+                'subject' => $subject,
+                'messageBody' => $preview ? nl2br(e($preview)) : null,
+                'messageBodyPlain' => $preview,
+                'ctaUrl' => $url,
+                'ctaLabel' => __('mail.support_ticket_auto_reply.cta'),
+                'referenceId' => $ticketNumber,
+                'ticketNumber' => $ticketNumber,
+                'ticketSubject' => $subject,
+            ]);
+        });
+
+        $this->dispatchInApp(
+            $owner,
+            $sender,
+            'support.ticket.auto_reply',
+            __('mail.support_ticket_auto_reply.notification_title'),
+            __('mail.support_ticket_auto_reply.notification_body', [
+                'subject' => $subject,
+            ]),
+            ['ticket_id' => $ticket->id],
+            $url,
+            $sender->id,
+        );
+    }
+
     public function notifyStatusChanged(Ticket $ticket, TicketStatus $status, ?User $actor = null): void
     {
         if (! in_array($status, [TicketStatus::Resolved, TicketStatus::Closed], true)) {
