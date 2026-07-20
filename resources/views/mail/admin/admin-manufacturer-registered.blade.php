@@ -3,6 +3,7 @@
     $logoUrl = public_url('images/mail/sourcenest-logo.png');
     $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
     $mailIconStyle = 'display:block;border:0;outline:none;text-decoration:none;margin:0 auto;';
+    $userIconUrl = public_url('images/mail/svg/user-neutral.svg');
     $companyName = trim($company ?? '') !== '' ? trim($company ?? '') : $platformName;
     $referenceId = trim($referenceId ?? '');
     $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('admin/manufacturer-registrations');
@@ -16,6 +17,11 @@
     ];
     $preheaderText = trim($preheader ?? '') !== '' ? trim($preheader) : __('mail.manufacturer_registered_admin.preheader');
     $heroSubheadline = trim($intro ?? '') !== '' ? trim($intro) : __('mail.manufacturer_registered_admin.hero_subheadline');
+    $heroHeadline = str_replace(
+        '<em>',
+        '<em style="font-style:italic;color:#9A7A3A;">',
+        (string) __('mail.manufacturer_registered_admin.hero_headline')
+    );
 @endphp
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -69,9 +75,10 @@
                                                     @endif
                                                 </td>
                                                 <td align="right" valign="middle">
-                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                        style="border-collapse:separate;border-spacing:0;">
                                                         <tr>
-                                                            <td style="padding:4px 11px;border-radius:20px;border:1.5px solid #F0C080;background-color:#FFF5E6;">
+                                                            <td style="padding:4px 11px;border-radius:6px;border:1.5px solid #F0C080;background-color:#FFF5E6;">
                                                                 <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                                                     <tr>
                                                                         <td width="5" valign="middle" style="line-height:0;font-size:0;padding-right:5px;">
@@ -92,19 +99,26 @@
                         </td>
                     </tr>
 
-                    {{-- Hero H6: compact admin gray --}}
+                    {{-- Hero H6: compact admin gray (matches a2-new-reg.html) --}}
                     <tr>
                         <td bgcolor="#F8F8F8" style="padding:22px 30px;background-color:#F8F8F8;border-bottom:1.5px solid #E6E6E6;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
-                                    <td width="44" valign="top" style="padding-right:16px;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                    <td width="44" valign="middle" style="width:44px;padding-right:16px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                            style="border-collapse:separate;border-spacing:0;">
                                             <tr>
-                                                <td width="44" height="44" align="center" valign="middle" bgcolor="#FFFFFF" style="width:44px;height:44px;background-color:#FFFFFF;border:1.5px solid #D6D6D6;border-radius:10px;font-size:18px;line-height:44px;color:#555555;">&#9787;</td>
+                                                <td width="44" height="44" align="center" valign="middle" bgcolor="#FFFFFF"
+                                                    style="width:44px;height:44px;min-width:44px;background-color:#FFFFFF;border:1.5px solid #D6D6D6;border-radius:10px;text-align:center;vertical-align:middle;line-height:44px;mso-line-height-rule:exactly;">
+                                                    @if (!empty($userIconUrl))
+                                                        <img src="{{ $userIconUrl }}" width="20" height="20" alt=""
+                                                            style="display:block;width:20px;height:20px;margin:0 auto;border:0;outline:none;text-decoration:none;">
+                                                    @endif
+                                                </td>
                                             </tr>
                                         </table>
                                     </td>
-                                    <td valign="top">
+                                    <td valign="middle">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:6px;">
                                             <tr>
                                                 <td width="20" valign="middle" style="line-height:0;font-size:0;padding-right:8px;">
@@ -113,10 +127,10 @@
                                                 <td valign="middle" style="font-weight:800;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:2px;text-transform:uppercase;color:#8A8A8A;">{{ __('mail.manufacturer_registered_admin.eyebrow') }}</td>
                                             </tr>
                                         </table>
-                                        <div style="font-weight:500;font-size:22px;line-height:1.17;font-family:Georgia,'Times New Roman',serif;color:#1C1C1C;letter-spacing:-0.2px;">
-                                            {!! __('mail.manufacturer_registered_admin.hero_headline') !!}
+                                        <div style="font-weight:500;font-size:20px;line-height:1.17;font-family:Georgia,'Times New Roman',serif;color:#1C1C1C;letter-spacing:-0.2px;">
+                                            {!! $heroHeadline !!}
                                         </div>
-                                        <div style="padding-top:6px;font-weight:400;font-size:13px;line-height:1.78;font-family:Arial,Helvetica,sans-serif;color:#666666;">{{ $heroSubheadline }}</div>
+                                        <div style="padding-top:4px;font-weight:400;font-size:13px;line-height:1.78;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">{{ $heroSubheadline }}</div>
                                     </td>
                                 </tr>
                             </table>
@@ -188,18 +202,23 @@
                                 </tr>
                             </table>
 
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1.5px solid #E6E6E6;border-radius:10px;border-collapse:separate;background-color:#FFFFFF;">
+                            {{-- Checklist card — div wrapper for reliable border-radius --}}
+                            <!--[if !mso]><!-->
+                            <div style="background-color:#FFFFFF;border:1.5px solid #E6E6E6;border-radius:10px;overflow:hidden;">
+                            <!--<![endif]-->
+                            <!--[if mso]>
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background-color:#FFFFFF;border:1.5px solid #E6E6E6;"><tr><td>
+                            <![endif]-->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                style="width:100%;background-color:#FFFFFF;border-collapse:collapse;">
                                 @foreach ($checklistItems as $item)
                                     <tr>
-                                        <td style="padding:13px 15px;{{ $loop->last ? '' : 'border-bottom:1px solid #F0F0F0;' }}">
+                                        <td bgcolor="#FFFFFF"
+                                            style="padding:13px 15px;background-color:#FFFFFF;{{ $loop->last ? '' : 'border-bottom:1px solid #F0F0F0;' }}">
                                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                                 <tr>
-                                                    <td width="22" valign="top" style="width:22px;padding-right:12px;">
-                                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                                                            <tr>
-                                                                <td width="22" height="22" align="center" valign="middle" bgcolor="#FFF8E4" style="width:22px;height:22px;background-color:#FFF8E4;border:1.5px dashed #F0C040;border-radius:50%;font-size:0;line-height:0;">&nbsp;</td>
-                                                            </tr>
-                                                        </table>
+                                                    <td width="22" valign="top" style="width:22px;padding-right:12px;padding-top:2px;">
+                                                        <span style="display:inline-block;width:22px;height:22px;background-color:#FFF8E4;border:1.5px dashed #F0C040;border-radius:50%;font-size:0;line-height:0;">&nbsp;</span>
                                                     </td>
                                                     <td valign="top">
                                                         <div style="font-weight:700;font-size:13px;line-height:1.3;font-family:Arial,Helvetica,sans-serif;color:#2E2E2E;margin-bottom:3px;">{{ $item['title'] }}</div>
@@ -211,8 +230,22 @@
                                     </tr>
                                 @endforeach
                             </table>
+                            <!--[if mso]>
+                            </td></tr></table>
+                            <![endif]-->
+                            <!--[if !mso]><!-->
+                            </div>
+                            <!--<![endif]-->
 
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:16px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-left:4px solid #9A7A3A;border-radius:8px;border-collapse:separate;">
+                            {{-- Alert note — div wrapper for reliable border-radius --}}
+                            <!--[if !mso]><!-->
+                            <div style="margin-top:16px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-left:4px solid #9A7A3A;border-radius:8px;overflow:hidden;">
+                            <!--<![endif]-->
+                            <!--[if mso]>
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:16px;width:100%;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-left:4px solid #9A7A3A;"><tr><td>
+                            <![endif]-->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                style="width:100%;background-color:#FBF7EE;border-collapse:collapse;">
                                 <tr>
                                     <td style="padding:14px 16px;">
                                         <div style="font-weight:900;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#9A7A3A;margin-bottom:5px;">{{ __('mail.manufacturer_registered_admin.alert_label') }}</div>
@@ -220,6 +253,12 @@
                                     </td>
                                 </tr>
                             </table>
+                            <!--[if mso]>
+                            </td></tr></table>
+                            <![endif]-->
+                            <!--[if !mso]><!-->
+                            </div>
+                            <!--<![endif]-->
                         </td>
                     </tr>
 

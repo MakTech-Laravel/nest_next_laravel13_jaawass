@@ -9,7 +9,16 @@ Route::get('/', function () {
 
 
 Route::get('/test-email', function () {
-    return view('mail.support.support-ticket-created');
+    return view('mail.admin.admin-manufacturer-registered', [
+        'details' => [
+            'Company' => 'Acme Manufacturing Co.',
+            'Contact' => 'Jane Doe',
+            'Contact email' => 'jane@acme.example',
+            'Country' => 'China',
+            'Submitted' => now()->format('M j, Y'),
+            'Registration ID' => 'MFR-10042',
+        ],
+    ]);
 });
 
 

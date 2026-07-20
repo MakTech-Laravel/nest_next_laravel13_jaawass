@@ -79,7 +79,7 @@
                                 style="margin:0 auto 20px;">
                                 <tr>
                                     <td align="center" width="54" height="54" bgcolor="#4A3210"
-                                        style="width:54px;height:54px;background-color:rgba(200,169,106,0.1);border:1.5px solid rgba(200,169,106,0.22);border-radius:12px;text-align:center;vertical-align:middle;">
+                                        style="width:54px;height:54px;background-color:rgba(200,169,106,0.1);border-radius:12px;text-align:center;vertical-align:middle;">
                                         <img src="{{ public_url('images/mail/svg/email.svg') }}" width="24"
                                             height="24" alt=""
                                             style="display:block;border:0;outline:none;text-decoration:none;margin:0 auto;">
@@ -156,9 +156,10 @@
                                                         <tr>
                                                             <td align="center" width="22" height="22"
                                                                 bgcolor="#FBF7EE"
-                                                                style="width:22px;height:22px; background-color:#FBF7EE;border:1px solid #E8D5A8;border-radius:6px;text-align:center;vertical-align:middle;">
+                                                                style="width:22px;height:22px;background-color:#FBF7EE;border:1px solid #E8D5A8;border-radius:6px;text-align:center;vertical-align:middle;">
                                                                 <img src="{{ public_url('images/mail/svg/clock.svg') }}"
-                                                                    width="12" height="12" alt="Clock">
+                                                                    width="12" height="12" alt="Clock"
+                                                                    style="display:block;border:0;outline:none;text-decoration:none;margin:0 auto;">
                                                             </td>
                                                         </tr>
                                                     </table>
@@ -210,10 +211,11 @@
                                                                     <tr>
                                                                         <td align="center" width="26"
                                                                             height="26" bgcolor="#FFFFFF"
-                                                                            style="width:26px; height:26px; background-color:#FFFFFF;border:1.5px solid #D6D6D6;border-radius:7px;text-align:center;vertical-align:middle;">
+                                                                            style="width:26px;height:26px;background-color:#FFFFFF;border:1.5px solid #D6D6D6;border-radius:7px;text-align:center;vertical-align:middle;">
                                                                             <img src="{{ public_url('images/mail/svg/info.svg') }}"
                                                                                 width="12" height="12"
-                                                                                alt="">
+                                                                                alt=""
+                                                                                style="display:block;border:0;outline:none;text-decoration:none;margin:0 auto;">
                                                                         </td>
                                                                     </tr>
                                                                 </table>

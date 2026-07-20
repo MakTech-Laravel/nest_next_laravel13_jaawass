@@ -96,7 +96,7 @@
                         <td bgcolor="#F8F8F8"
                             style="padding:26px 30px 24px;background-color:#F8F8F8;border-bottom:1.5px solid #E6E6E6;">
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-bottom:14px;">
+                                style="margin-bottom:14px;border-collapse:separate;border-spacing:0;">
                                 <tr>
                                     <td
                                         style="padding:4px 11px;border-radius:20px;border:1.5px solid #E8D5A8;background-color:#FBF7EE;">
@@ -260,11 +260,12 @@
                                                         <td width="32" valign="top"
                                                             style="width:32px;padding-top:1px;">
                                                             <table role="presentation" cellspacing="0"
-                                                                cellpadding="0" border="0">
+                                                                cellpadding="0" border="0"
+                                                                style="border-collapse:separate;border-spacing:0;">
                                                                 <tr>
                                                                     <td width="22" height="22" align="center"
                                                                         valign="middle" bgcolor="#FFF8E4"
-                                                                        style="width:22px;height:22px;background-color:#FFF8E4;border:1.5px dashed #F0C040;border-radius:50%;font-size:0;line-height:0;">
+                                                                        style="width:22px;height:22px;min-width:22px;background-color:#FFF8E4;border:1.5px dashed #F0C040;border-radius:50%;font-size:0;line-height:0;">
                                                                         &nbsp;</td>
                                                                 </tr>
                                                             </table>
@@ -356,9 +357,7 @@
                             </p>
                             <span
                                 style="font-weight:600;font-size:10.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;">
-                                <a href="{{ $frontendUrl }}/unsubscribe"
-                                    style="color:#B4B4B4;text-decoration:none;">Unsubscribe</a>
-                                <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>
+                              
                                 <a href="{{ $frontendUrl }}/privacy"
                                     style="color:#B4B4B4;text-decoration:none;">Privacy</a>
                                 <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>

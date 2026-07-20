@@ -398,10 +398,6 @@
                                 </tr>
                             </table>
                             <span style="font-weight:600;font-size:10.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;">
-                                <a href="{{ $frontendUrl }}/unsubscribe" style="color:#B4B4B4;text-decoration:none;">Unsubscribe</a>
-                                <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>
-                                <a href="{{ $frontendUrl }}/preferences" style="color:#B4B4B4;text-decoration:none;">Preferences</a>
-                                <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>
                                 <a href="{{ $frontendUrl }}/privacy" style="color:#B4B4B4;text-decoration:none;">Privacy</a>
                                 <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>
                                 <a href="{{ $frontendUrl }}/terms" style="color:#B4B4B4;text-decoration:none;">Terms</a>
