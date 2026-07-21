@@ -181,7 +181,7 @@
                         <td bgcolor="#FFFFFF"
                             style="padding:28px 30px;background-color:#FFFFFF;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-bottom:18px;">
+                                style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8"
                                         style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">
@@ -249,7 +249,7 @@
                             <td bgcolor="#F8F8F8"
                                 style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
                                 <table role="presentation" cellspacing="0" cellpadding="0" border="0"
-                                    style="margin-bottom:18px;">
+                                    style="margin-bottom:18px;border-collapse:separate;">
                                     <tr>
                                         <td width="3" bgcolor="#E8D5A8"
                                             style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">
@@ -286,7 +286,7 @@
                                                                         <td width="22" height="22"
                                                                             align="center" valign="middle"
                                                                             bgcolor="#FFF8E4"
-                                                                            style="width:22px;height:22px;min-width:22px;background-color:#FFF8E4;border:1.5px dashed #F0C040;border-radius:50%;font-weight:800;font-size:10px;line-height:22px;mso-line-height-rule:exactly;font-family:Arial,Helvetica,sans-serif;color:#7A4D00;text-align:center;">
+                                                                            style="width:22px;height:22px;min-width:22px;background-color:#FFF8E4;border:1.5px dashed #F0C040;border-radius:11px;font-weight:800;font-size:10px;line-height:22px;mso-line-height-rule:exactly;font-family:Arial,Helvetica,sans-serif;color:#7A4D00;text-align:center;">
                                                                             {{ $index + 1 }}</td>
                                                                     </tr>
                                                                 </table>

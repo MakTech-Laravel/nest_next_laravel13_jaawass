@@ -355,7 +355,7 @@
                         <td bgcolor="#F8F8F8"
                             style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                border="0" style="margin-bottom:18px;">
+                                border="0" style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8"
                                         style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">
@@ -471,7 +471,7 @@
                         <td bgcolor="#FFFFFF"
                             style="padding:28px 30px;background-color:#FFFFFF;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0"
-                                border="0" style="margin-bottom:18px;">
+                                border="0" style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8"
                                         style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">

@@ -103,7 +103,7 @@
                                             <tr>
                                                 <td width="46" height="46" align="center" valign="middle"
                                                     bgcolor="#EAFAF2"
-                                                    style="width:46px;height:46px;min-width:46px;background-color:#EAFAF2;border:1.5px solid #6ECFA0;border-radius:50%;text-align:center;vertical-align:middle;line-height:46px;mso-line-height-rule:exactly;">
+                                                    style="width:46px;height:46px;min-width:46px;background-color:#EAFAF2;border:1.5px solid #6ECFA0;border-radius:23px;text-align:center;vertical-align:middle;line-height:46px;mso-line-height-rule:exactly;">
                                                     @if (!empty($checkIconUrl))
                                                         <img src="{{ $checkIconUrl }}" width="20" height="20" alt=""
                                                             style="display:block;width:20px;height:20px;margin:0 auto;border:0;outline:none;text-decoration:none;">

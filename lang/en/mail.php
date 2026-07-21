@@ -1184,7 +1184,7 @@ return [
         'why_4_body' => 'One click to activate and start receiving inquiries today.',
         'cta' => 'Activate Your Account',
         'cta_secondary' => 'View subscription details →',
-        'cta_note' => 'If you no longer wish to proceed, you can <a href=":closeUrl" style="color:#9A7A3A;border-bottom:1px solid rgba(154,122,58,.28);text-decoration:none;">close your account here</a>.',
+        'cta_note' => 'If you no longer wish to proceed, you can <a href=":closeUrl" style="color:#9A7A3A;border-bottom:1px solid rgba(154,122,58,.28);text-decoration:none;">close your account from your settings page</a>.',
         'footer_tag' => 'Global Sourcing Platform',
     ],
 

@@ -140,7 +140,7 @@
                     {{-- Registration details --}}
                     <tr>
                         <td bgcolor="#FFFFFF" style="padding:28px 30px;background-color:#FFFFFF;border-bottom:1px solid #F0F0F0;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8" style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">&nbsp;</td>
                                     <td style="padding-left:9px;font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;">{!! __('mail.manufacturer_registered_admin.details_heading') !!}</td>
@@ -181,7 +181,7 @@
                     @if (!empty($messageBody))
                         <tr>
                             <td bgcolor="#FFFFFF" style="padding:0 30px 28px;background-color:#FFFFFF;border-bottom:1px solid #F0F0F0;">
-                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:14px;">
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:14px;border-collapse:separate;">
                                     <tr>
                                         <td width="3" bgcolor="#E8D5A8" style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">&nbsp;</td>
                                         <td style="padding-left:9px;font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;">{{ $messageHeading ?? __('mail.manufacturer_registered_admin.message_heading') }}</td>
@@ -195,7 +195,7 @@
                     {{-- Review checklist --}}
                     <tr>
                         <td bgcolor="#F8F8F8" style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8" style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">&nbsp;</td>
                                     <td style="padding-left:9px;font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;">{!! __('mail.manufacturer_registered_admin.checklist_heading') !!}</td>

@@ -41,9 +41,9 @@
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:0 auto 16px auto;">
                                 <tr>
                                     <td style="vertical-align:middle;padding-right:8px;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                             <tr>
-                                                <td align="center" style="width:30px;height:30px;border:1.5px solid #b89d5e;border-radius:50%;">
+                                                <td align="center" style="width:30px;height:30px;border:1.5px solid #b89d5e;border-radius:15px;">
                                                     <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background-color:#b89d5e;"></span>
                                                 </td>
                                             </tr>
@@ -73,7 +73,7 @@
                             <p style="margin:0 0 16px 0;font-size:13px;line-height:1.6;color:#7a6e5a;font-family:Arial,Helvetica,sans-serif;">Your account is paused until you complete payment. Once you pay, your subscription will automatically continue and your plan benefits will be restored.</p>                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0;">
                                 <tr>
                                     <td align="center">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto;border-collapse:separate;">
                                             <tr>
                                                 <td style="border-radius:8px;background-color:#2c2517;border:1px solid #b89d5e;">
                                                     <a href="{{ $plansUrl }}" style="display:inline-block;padding:14px 36px;font-size:13px;font-weight:600;letter-spacing:0.08em;color:#d4bc8a;text-decoration:none;font-family:Arial,Helvetica,sans-serif;">Renew now</a>
@@ -100,9 +100,9 @@
                                         </p>
                                     </td>
                                     <td width="34%" align="center" style="vertical-align:bottom;padding:0 12px;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="border-collapse:separate;">
                                             <tr>
-                                                <td align="center" style="width:60px;height:60px;border-radius:50%;background-color:#2c2517;border:2px solid #b89d5e;text-align:center;vertical-align:middle;">
+                                                <td align="center" style="width:60px;height:60px;border-radius:30px;background-color:#2c2517;border:2px solid #b89d5e;text-align:center;vertical-align:middle;">
                                                     <span style="display:block;font-size:16px;color:#b89d5e;line-height:1;">&#10003;</span>
                                                     <span style="display:block;font-size:6px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#d4bc8a;line-height:1.2;margin-top:2px;">Source<br>Nest</span>
                                                 </td>

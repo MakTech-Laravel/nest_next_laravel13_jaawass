@@ -76,7 +76,7 @@
                         <td align="center" bgcolor="#3B2800"
                             style="padding:40px 30px 42px;background-color:#3B2800;border-bottom:1.5px solid #5C3D10;">
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center"
-                                style="margin:0 auto 20px;">
+                                style="margin:0 auto 20px;border-collapse:separate;">
                                 <tr>
                                     <td align="center" width="54" height="54" bgcolor="#4A3210"
                                         style="width:54px;height:54px;background-color:rgba(200,169,106,0.1);border-radius:12px;text-align:center;vertical-align:middle;">
@@ -144,7 +144,7 @@
                             </table>
 
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center"
-                                style="margin:14px auto 0;">
+                                style="margin:14px auto 0;border-collapse:separate;">
                                 <tr>
                                     <td
                                         style="padding:7px 14px;background-color:#FFFFFF;border:1.5px solid #E6E6E6;border-radius:8px;">
@@ -152,7 +152,7 @@
                                             <tr>
                                                 <td width="22" valign="middle" style="padding-right:8px;">
                                                     <table role="presentation" cellspacing="0" cellpadding="0"
-                                                        border="0">
+                                                        border="0" style="border-collapse:separate;">
                                                         <tr>
                                                             <td align="center" width="22" height="22"
                                                                 bgcolor="#FBF7EE"
@@ -207,7 +207,7 @@
                                                             <td width="26" valign="top"
                                                                 style="padding-right:11px;">
                                                                 <table role="presentation" cellspacing="0"
-                                                                    cellpadding="0" border="0">
+                                                                    cellpadding="0" border="0" style="border-collapse:separate;">
                                                                     <tr>
                                                                         <td align="center" width="26"
                                                                             height="26" bgcolor="#FFFFFF"

@@ -243,7 +243,7 @@
                                                                             <td width="34" height="34"
                                                                                 align="center" valign="middle"
                                                                                 bgcolor="{{ $circleBg }}"
-                                                                                style="width:34px;height:34px;background-color:{{ $circleBg }};border:2px solid {{ $circleBorder }};border-radius:50%;">
+                                                                                style="width:34px;height:34px;background-color:{{ $circleBg }};border:2px solid {{ $circleBorder }};border-radius:17px;">
                                                                                 @if (!empty($step['icon']))
                                                                                     <img src="{{ $step['icon'] }}"
                                                                                         width="14" height="14"
@@ -324,7 +324,7 @@
                         <td bgcolor="#F8F8F8"
                             style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-bottom:18px;">
+                                style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8"
                                         style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">
@@ -413,7 +413,7 @@
                         <td bgcolor="#FFFFFF"
                             style="padding:28px 30px;background-color:#FFFFFF;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-bottom:18px;">
+                                style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8"
                                         style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">

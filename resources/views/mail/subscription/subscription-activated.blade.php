@@ -200,7 +200,7 @@
                                 <tr>
                                     <td valign="top">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0"
-                                            style="margin-bottom:14px;">
+                                            style="margin-bottom:14px;border-collapse:separate;">
                                             <tr>
                                                 <td
                                                     style="padding:4px 11px;border-radius:20px;border:1.5px solid #6ECFA0;background-color:#EAFAF2;">
@@ -283,12 +283,13 @@
                                                             <tr>
                                                                 <td align="center" style="padding-bottom:8px;">
                                                                     <table role="presentation" cellspacing="0"
-                                                                        cellpadding="0" border="0" align="center">
+                                                                        cellpadding="0" border="0" align="center"
+                                                                        style="border-collapse:separate;">
                                                                         <tr>
                                                                             <td width="34" height="34"
                                                                                 align="center" valign="middle"
                                                                                 bgcolor="{{ $circleBg }}"
-                                                                                style="width:34px;height:34px;background-color:{{ $circleBg }};border:2px solid {{ $circleBorder }};border-radius:50%;">
+                                                                                style="width:34px;height:34px;background-color:{{ $circleBg }};border:2px solid {{ $circleBorder }};border-radius:17px;">
                                                                                 <img src="{{ $step['icon'] }}"
                                                                                     width="14" height="14" alt=""
                                                                                     style="{{ $mailIconStyle }}">
@@ -344,7 +345,7 @@
                         <td bgcolor="#F8F8F8"
                             style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-bottom:18px;">
+                                style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8"
                                         style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">
@@ -365,7 +366,7 @@
                                             <tr>
                                                 <td width="32" valign="top" style="width:32px;">
                                                     <table role="presentation" cellspacing="0" cellpadding="0"
-                                                        border="0">
+                                                        border="0" style="border-collapse:separate;">
                                                         <tr>
                                                             <td width="32" height="32" align="center"
                                                                 valign="middle" bgcolor="#EAFAF2"
@@ -417,7 +418,7 @@
                         <td bgcolor="#FFFFFF"
                             style="padding:28px 30px;background-color:#FFFFFF;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-bottom:18px;">
+                                style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8"
                                         style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">
@@ -473,7 +474,7 @@
                         <td bgcolor="#F8F8F8"
                             style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-bottom:18px;">
+                                style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8"
                                         style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">
@@ -489,11 +490,12 @@
                                     style="{{ $index < count($nextSteps) - 1 ? 'border-bottom:1px solid #F0F0F0;' : '' }}">
                                     <tr>
                                         <td width="40" valign="top" style="width:40px;padding:15px 0;">
-                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style="border-collapse:separate;">
                                                 <tr>
                                                     <td width="26" height="26" align="center" valign="middle"
                                                         bgcolor="#FBF7EE"
-                                                        style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:50%;font-weight:900;font-size:11px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#9A7A3A;">
+                                                        style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:13px;font-weight:900;font-size:11px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#9A7A3A;">
                                                         {{ $step['n'] }}</td>
                                                 </tr>
                                             </table>
