@@ -9,15 +9,16 @@ Route::get('/', function () {
 
 
 Route::get('/test-email', function () {
-    return view('mail.admin.admin-manufacturer-registered', [
-        'details' => [
-            'Company' => 'Acme Manufacturing Co.',
-            'Contact' => 'Jane Doe',
-            'Contact email' => 'jane@acme.example',
-            'Country' => 'China',
-            'Submitted' => now()->format('M j, Y'),
-            'Registration ID' => 'MFR-10042',
-        ],
+    $pricingUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/').'/pricing';
+
+    return view('mail.manufacturer.manufacturer-registration-reminder', [
+        'name' => 'Jane Doe',
+        'company' => 'Acme Manufacturing Co.',
+        'approvedDate' => now()->format('F j, Y'),  
+        'intro' => __('mail.manufacturer_approved.intro', ['name' => 'Jane Doe', 'company' => 'Acme Manufacturing Co.']),
+        'ctaUrl' => $pricingUrl,
+        'ctaLabel' => __('mail.manufacturer_approved.cta'),
+        'planDetailsUrl' => $pricingUrl,
     ]);
 });
 

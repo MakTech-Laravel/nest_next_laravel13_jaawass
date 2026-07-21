@@ -6,7 +6,8 @@
     $mailIconStyle = 'display:block;border:0;outline:none;text-decoration:none;margin:0 auto;';
     $recipientName = trim($name ?? ($firstName ?? '')) !== '' ? trim($name ?? ($firstName ?? '')) : 'there';
     $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('register');
-    $deleteAccountUrl = $deleteAccountUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('account/delete');
+    $deleteAccountUrl = $deleteAccountUrl
+        ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer/settings');
     $globeWatermarkUrl = public_url('images/mail/svg/globe-hero-watermark.svg');
     $iconMap = [
         'user' => public_url('images/mail/svg/user.svg'),
@@ -113,7 +114,7 @@
                                 <tr>
                                     <td valign="top" style="padding-right:0;">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0"
-                                            style="margin-bottom:14px;">
+                                            style="margin-bottom:14px;border-collapse:separate;border-spacing:0;">
                                             <tr>
                                                 <td
                                                     style="padding:4px 11px;border-radius:20px;border:1.5px solid #E8D5A8;background-color:#FBF7EE;">
@@ -215,11 +216,12 @@
                                     @if (!$loop->last) style="margin-bottom:12px;" @endif>
                                     <tr>
                                         <td width="32" valign="top" style="width:32px;padding-top:1px;">
-                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0"
+                                                style="border-collapse:separate;border-spacing:0;">
                                                 <tr>
                                                     <td width="22" height="22" align="center" valign="middle"
                                                         bgcolor="#FFF8E4"
-                                                        style="width:22px;height:22px;background-color:#FFF8E4;border:1.5px dashed #F0C040;border-radius:50%;font-size:0;line-height:0;">
+                                                        style="width:22px;height:22px;min-width:22px;background-color:#FFF8E4;border:1.5px dashed #F0C040;border-radius:50%;font-size:0;line-height:0;">
                                                         &nbsp;</td>
                                                 </tr>
                                             </table>
@@ -290,11 +292,12 @@
                                                     <tr>
                                                         <td bgcolor="#FFFFFF" style="padding:17px 15px;background-color:#FFFFFF;">
                                                             <table role="presentation" cellspacing="0" cellpadding="0"
-                                                                border="0" style="margin-bottom:10px;">
+                                                                border="0"
+                                                                style="margin-bottom:10px;border-collapse:separate;border-spacing:0;">
                                                                 <tr>
                                                                     <td width="30" height="30" align="center"
                                                                         valign="middle" bgcolor="#FBF7EE"
-                                                                        style="width:30px;height:30px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:8px;">
+                                                                        style="width:30px;height:30px;min-width:30px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:8px;">
                                                                         <img src="{{ $iconUrl }}" width="15"
                                                                             height="15" alt=""
                                                                             style="{{ $mailIconStyle }}">
@@ -383,9 +386,7 @@
                             </table>
                             <span
                                 style="font-weight:600;font-size:10.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;">
-                                <a href="{{ $frontendUrl }}/unsubscribe"
-                                    style="color:#B4B4B4;text-decoration:none;">Unsubscribe</a>
-                                <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>
+                               
                                 <a href="{{ $frontendUrl }}/privacy"
                                     style="color:#B4B4B4;text-decoration:none;">Privacy</a>
                                 <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>

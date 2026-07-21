@@ -78,6 +78,11 @@ return [
       'subject' => 'mail.manufacturer_additional_information.subject',
       'markdown' => false,
     ],
+    'manufacturer-additional-information-received' => [
+      'view' => 'mail.manufacturer.manufacturer-additional-information-received',
+      'subject' => 'mail.manufacturer_additional_information_received.subject',
+      'markdown' => false,
+    ],
     'admin-manufacturer-additional-information-response' => [
       'view' => 'mail.admin.admin-manufacturer-additional-information-response',
       'subject' => 'mail.admin_manufacturer_additional_information_response.subject',

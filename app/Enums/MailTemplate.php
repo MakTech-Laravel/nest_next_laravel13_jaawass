@@ -17,6 +17,7 @@ enum MailTemplate: string
     case PasswordChanged = 'password-changed';
     case AdminNewInquiry = 'admin-new-inquiry';
     case ManufacturerAdditionalInformation = 'manufacturer-additional-information';
+    case ManufacturerAdditionalInformationReceived = 'manufacturer-additional-information-received';
     case AdminManufacturerAdditionalInformationResponse = 'admin-manufacturer-additional-information-response';
     case ManufacturerAdminMessage = 'manufacturer-admin-message';
     case SupplierReportReceived = 'supplier-report-received';
