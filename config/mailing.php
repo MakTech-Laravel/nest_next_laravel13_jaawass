@@ -564,6 +564,4 @@ return [
       'subject' => 'mail.admin_test_email.subject',
       'markdown' => false,
     ],
-  ],
-
-];
+  ];
