@@ -1,13 +1,13 @@
 @php
     $platformName = config('app.name', 'SourceNest');
     $logoUrl = public_url('images/mail/sourcenest-logo.png');
-    $heroIconUrl = public_url('images/mail/svg/support-resolved-hero.svg');
     $frontendUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/');
     $supportEmail = config('mail.from.address', 'no-reply@sourcenest.com');
-    $mailIconStyle = 'display:block;border:0;outline:none;text-decoration:none;margin:0 auto;';
     $ticketNumber = $ticketNumber ?? $referenceId ?? '';
     $ticketSubject = $ticketSubject ?? $subject ?? '';
     $statusLabel = $status ?? 'Resolved';
+    $statusLower = strtolower((string) $statusLabel);
+    $closingMessage = trim(strip_tags((string) ($messageBodyPlain ?? '')));
     $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/buyer/support-tickets');
     $ctaLabel = $ctaLabel ?? 'View Ticket';
 @endphp
@@ -23,7 +23,11 @@
     <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
     <meta name="color-scheme" content="light only">
     <meta name="supported-color-schemes" content="light">
-    <title>Your support ticket {{ $ticketNumber }} has been resolved</title>
+    <title>Your support ticket {{ $ticketNumber }} has been {{ $statusLower }}</title>
+    <!--[if !mso]><!-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap" rel="stylesheet">
+    <!--<![endif]-->
     <!--[if mso]>
     <noscript>
         <xml>
@@ -73,9 +77,9 @@
     </style>
 </head>
 
-<body class="email-bg-main" style="margin:0;padding:0;background-color:#F4F0EA;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+<body class="email-bg-main" style="margin:0;padding:0;background-color:#F4F0EA;font-family:'Nunito',Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
     <div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
-        Your support ticket #{{ $ticketNumber }} has been resolved&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+        Your support ticket #{{ $ticketNumber }} has been {{ $statusLower }}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
     </div>
 
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" class="email-bg-main" style="background-color:#F4F0EA;">
@@ -94,7 +98,7 @@
                                         style="height:48px;width:auto;max-width:180px;display:block;border:0;outline:none;">
                                 </a>
                             @else
-                                <span class="email-brand-text" style="font-weight:900;font-size:21px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#3B2800;">sourcenest</span>
+                                <span class="email-brand-text" style="font-weight:900;font-size:21px;line-height:1;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#3B2800;">sourcenest</span>
                             @endif
                         </td>
                     </tr>
@@ -108,11 +112,10 @@
                                     <td class="email-stack email-stack-icon" width="76" valign="middle" style="width:76px;padding-right:18px;">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
+                                                {{-- Icon drawn with HTML/CSS (no <img>) so it can never appear broken in mail clients. --}}
                                                 <td width="58" height="58" align="center" valign="middle" bgcolor="#0A5C32"
-                                                    style="width:58px;height:58px;background-color:#0A5C32;border:1.5px solid #0A5C32;border-radius:14px;">
-                                                    @if (! empty($heroIconUrl))
-                                                        <img src="{{ $heroIconUrl }}" width="26" height="26" alt="" style="{{ $mailIconStyle }}">
-                                                    @endif
+                                                    style="width:58px;height:58px;background-color:#0A5C32;border-radius:14px;">
+                                                    <div style="width:26px;height:26px;line-height:24px;margin:0 auto;border:1.5px solid #FFFFFF;border-radius:50%;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:bold;color:#FFFFFF;text-align:center;">&#10003;</div>
                                                 </td>
                                             </tr>
                                         </table>
@@ -123,17 +126,17 @@
                                                 <td>
                                                     <span style="display:inline-block;padding:4px 11px;border-radius:20px;border:1.5px solid #6ECFA0;background-color:#EAFAF2;">
                                                         <span style="display:inline-block;width:5px;height:5px;border-radius:50%;background-color:#0E8A4A;vertical-align:middle;margin-right:5px;">&nbsp;</span>
-                                                        <span style="font-weight:800;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#666666;vertical-align:middle;">Ticket Resolved</span>
+                                                        <span style="font-weight:800;font-size:8.5px;line-height:1;font-family:'Nunito',Arial,Helvetica,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#666666;vertical-align:middle;">Ticket {{ $statusLabel }}</span>
                                                     </span>
                                                 </td>
                                             </tr>
                                         </table>
                                         <div class="email-hero-title email-brand-text"
-                                            style="font-weight:500;font-size:22px;line-height:1.17;font-family:Georgia,'Times New Roman',serif;color:#3B2800;letter-spacing:-0.2px;">
-                                            Your support ticket <em style="font-style:italic;color:#9A7A3A;">has been resolved.</em>
+                                            style="font-weight:500;font-size:22px;line-height:1.17;font-family:'Lora',Georgia,'Times New Roman',serif;color:#3B2800;letter-spacing:-0.2px;">
+                                            Your support ticket <em style="font-style:italic;color:#9A7A3A;">has been {{ $statusLower }}.</em>
                                         </div>
-                                        <div class="email-muted-text" style="padding-top:6px;font-weight:400;font-size:13px;line-height:1.78;font-family:Arial,Helvetica,sans-serif;color:#666666;">
-                                            The sourceNest team has closed your ticket. The full conversation history remains available for your records.
+                                        <div class="email-muted-text" style="padding-top:6px;font-weight:400;font-size:13px;line-height:1.78;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#666666;">
+                                            The sourceNest team has marked your ticket as {{ $statusLower }}. The full conversation history remains available for your records.
                                         </div>
                                     </td>
                                 </tr>
@@ -147,7 +150,7 @@
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8" style="width:3px;height:18px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">&nbsp;</td>
-                                    <td class="email-section-title email-brand-text" style="padding-left:9px;font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;">Ticket details</td>
+                                    <td class="email-section-title email-brand-text" style="padding-left:9px;font-weight:500;font-size:17px;line-height:1;font-family:'Lora',Georgia,'Times New Roman',serif;color:#3B2800;">Ticket details</td>
                                 </tr>
                             </table>
 
@@ -157,9 +160,9 @@
                                     <td bgcolor="#F8F8F8" style="padding:11px 16px;background-color:#F8F8F8;border-bottom:1px solid #E6E6E6;">
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
-                                                <td style="font-weight:900;font-size:9px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#8A8A8A;">Ticket Details</td>
+                                                <td style="font-weight:900;font-size:9px;line-height:1;font-family:'Nunito',Arial,Helvetica,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#8A8A8A;">Ticket Details</td>
                                                 <td align="right">
-                                                    <span style="display:inline-block;padding:2px 10px;border-radius:20px;border:1.5px solid #6ECFA0;background-color:#EAFAF2;font-weight:800;font-size:9px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#0A5C32;">{{ $statusLabel }}</span>
+                                                    <span style="display:inline-block;padding:2px 10px;border-radius:20px;border:1.5px solid #6ECFA0;background-color:#EAFAF2;font-weight:800;font-size:9px;line-height:1;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#0A5C32;">{{ $statusLabel }}</span>
                                                 </td>
                                             </tr>
                                         </table>
@@ -175,8 +178,8 @@
                                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                                     <tr>
                                                         <td class="email-evl-lbl" width="110" bgcolor="#F8F8F8" valign="middle"
-                                                            style="width:110px;padding:11px 16px;background-color:#F8F8F8;border-top:1px solid #F0F0F0;border-right:1px solid #F0F0F0;font-weight:700;font-size:11px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">{{ $label }}</td>
-                                                        <td class="email-evl-val" valign="middle" style="padding:11px 16px;border-top:1px solid #F0F0F0;font-weight:500;font-size:12.5px;line-height:1.4;font-family:Arial,Helvetica,sans-serif;color:#1C1C1C;">{{ $value }}</td>
+                                                            style="width:110px;padding:11px 16px;background-color:#F8F8F8;border-top:1px solid #F0F0F0;border-right:1px solid #F0F0F0;font-weight:700;font-size:11px;line-height:1;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#8A8A8A;">{{ $label }}</td>
+                                                        <td class="email-evl-val" valign="middle" style="padding:11px 16px;border-top:1px solid #F0F0F0;font-weight:500;font-size:12.5px;line-height:1.4;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#1C1C1C;">{{ $value }}</td>
                                                     </tr>
                                                 </table>
                                             </td>
@@ -190,20 +193,34 @@
                     {{-- Body copy --}}
                     <tr>
                         <td class="email-pad email-sec-gs" bgcolor="#F8F8F8" style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
-                            <p class="email-body-text" style="margin:0 0 13px 0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">Hello,</p>
-                            <p class="email-body-text" style="margin:0 0 13px 0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">
+                            <p class="email-body-text" style="margin:0 0 13px 0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#464646;">Hello,</p>
+                            <p class="email-body-text" style="margin:0 0 13px 0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#464646;">
                                 Your support ticket <strong style="font-weight:700;color:#1C1C1C;">{{ $ticketNumber }}</strong> has been marked as <strong style="font-weight:700;color:#1C1C1C;">{{ strtolower((string) $statusLabel) }}</strong> by the sourceNest team.
                             </p>
-                            <p class="email-body-text" style="margin:0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">
+                            <p class="email-body-text" style="margin:0 0 13px 0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#464646;">
                                 The full conversation history and any attachments are still accessible from the ticket page.
                             </p>
+
+                            @if ($closingMessage !== '')
+                                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                    style="margin-top:18px;background-color:#FFFFFF;border:1.5px solid #E6E6E6;border-radius:10px;overflow:hidden;">
+                                    <tr>
+                                        <td bgcolor="#F8F8F8" style="padding:11px 16px;background-color:#F8F8F8;border-bottom:1px solid #E6E6E6;">
+                                            <span style="font-weight:900;font-size:9px;line-height:1;font-family:'Nunito',Arial,Helvetica,sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#8A8A8A;">Support reply</span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding:16px 18px;font-weight:400;font-size:13.5px;line-height:1.8;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#464646;">{{ $closingMessage }}</td>
+                                    </tr>
+                                </table>
+                            @endif
 
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
                                 style="margin-top:18px;background-color:#EAFAF2;border:1.5px solid #6ECFA0;border-left:4px solid #0A5C32;border-radius:8px;">
                                 <tr>
                                     <td style="padding:14px 16px;">
-                                        <div style="font-weight:900;font-size:8.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#0A5C32;margin-bottom:5px;">Still need help?</div>
-                                        <div class="email-body-text" style="font-weight:400;font-size:13px;line-height:1.65;font-family:Arial,Helvetica,sans-serif;color:#464646;">
+                                        <div style="font-weight:900;font-size:8.5px;line-height:1;font-family:'Nunito',Arial,Helvetica,sans-serif;letter-spacing:1.6px;text-transform:uppercase;color:#0A5C32;margin-bottom:5px;">Still need help?</div>
+                                        <div class="email-body-text" style="font-weight:400;font-size:13px;line-height:1.65;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#464646;">
                                             If your issue is not fully resolved or you have further questions, please open a new support ticket from the sourceNest Help Center.
                                         </div>
                                     </td>
@@ -219,12 +236,12 @@
                                 <tr>
                                     <td bgcolor="#3B2800" style="border-radius:8px;background-color:#3B2800;">
                                         <a class="email-cta email-cta-btn" href="{{ $ctaUrl }}"
-                                            style="display:inline-block;padding:14px 30px;background-color:#3B2800;color:#FFFFFF;font-weight:900;font-size:12px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.6px;text-transform:uppercase;text-decoration:none;border-radius:8px;">{{ $ctaLabel }}</a>
+                                            style="display:inline-block;padding:14px 30px;background-color:#3B2800;color:#FFFFFF;font-weight:900;font-size:12px;line-height:1;font-family:'Nunito',Arial,Helvetica,sans-serif;letter-spacing:0.6px;text-transform:uppercase;text-decoration:none;border-radius:8px;">{{ $ctaLabel }}</a>
                                     </td>
                                 </tr>
                             </table>
-                            <p class="email-muted-text" style="margin:18px 0 0 0;padding-top:18px;border-top:1px solid #F0F0F0;font-weight:400;font-size:12px;line-height:1.75;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">
-                                Log in to sourceNest to view the resolved ticket and its full history.
+                            <p class="email-muted-text" style="margin:18px 0 0 0;padding-top:18px;border-top:1px solid #F0F0F0;font-weight:400;font-size:12px;line-height:1.75;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#8A8A8A;">
+                                Log in to sourceNest to view the {{ $statusLower }} ticket and its full history.
                             </p>
                         </td>
                     </tr>
@@ -234,8 +251,8 @@
                         <td class="email-pad email-sec-gs" bgcolor="#F8F8F8" style="padding:18px 30px;background-color:#F8F8F8;border-top:1px solid #E6E6E6;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
-                                    <td class="email-brand-text" style="font-weight:900;font-size:13px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#3B2800;letter-spacing:-0.4px;">sourcenest</td>
-                                    <td class="email-footer-tag" align="right" style="font-weight:700;font-size:8px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.8px;text-transform:uppercase;color:#B4B4B4;">Global Sourcing Platform</td>
+                                    <td class="email-brand-text" style="font-weight:900;font-size:13px;line-height:1;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#3B2800;letter-spacing:-0.4px;">sourcenest</td>
+                                    <td class="email-footer-tag" align="right" style="font-weight:700;font-size:8px;line-height:1;font-family:'Nunito',Arial,Helvetica,sans-serif;letter-spacing:0.8px;text-transform:uppercase;color:#B4B4B4;">Global Sourcing Platform</td>
                                 </tr>
                             </table>
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin:10px 0;">
@@ -243,9 +260,9 @@
                                     <td height="1" bgcolor="#E6E6E6" style="height:1px;background-color:#E6E6E6;font-size:0;line-height:0;">&nbsp;</td>
                                 </tr>
                             </table>
-                            <span class="email-muted-text" style="font-weight:600;font-size:10.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">Automated notification — please do not reply to this email.</span>
+                            <span class="email-muted-text" style="font-weight:600;font-size:10.5px;line-height:1;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#8A8A8A;">Automated notification — please do not reply to this email.</span>
                             <span style="font-size:9px;color:#D6D6D6;margin:0 5px;">·</span>
-                            <span class="email-muted-text" style="font-weight:600;font-size:10.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">{{ $supportEmail }}</span>
+                            <span class="email-muted-text" style="font-weight:600;font-size:10.5px;line-height:1;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#8A8A8A;">{{ $supportEmail }}</span>
                         </td>
                     </tr>
 

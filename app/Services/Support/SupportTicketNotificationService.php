@@ -156,8 +156,12 @@ class SupportTicketNotificationService
         $this->sendUserReplyAcknowledgement($ticket, $sender, $subject, $preview, $ticketNumber);
     }
 
-    public function notifyStatusChanged(Ticket $ticket, TicketStatus $status, ?User $actor = null): void
-    {
+    public function notifyStatusChanged(
+        Ticket $ticket,
+        TicketStatus $status,
+        ?User $actor = null,
+        ?string $message = null,
+    ): void {
         if (! in_array($status, [TicketStatus::Resolved, TicketStatus::Closed], true)) {
             return;
         }
@@ -172,8 +176,9 @@ class SupportTicketNotificationService
         $subject = (string) $ticket->subject;
         $statusLabel = $status->label();
         $url = $this->userTicketUrl($ticket, $owner);
+        $preview = $this->messagePreview($message);
 
-        MailNotificationHelper::sendIfEmail($owner, function (string $email) use ($owner, $subject, $statusLabel, $url, $ticket): void {
+        MailNotificationHelper::sendIfEmail($owner, function (string $email) use ($owner, $subject, $statusLabel, $url, $ticket, $preview): void {
             $ticketNumber = 'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT);
 
             $this->mailingService->send($email, MailTemplate::SupportTicketResolved, [
@@ -185,6 +190,7 @@ class SupportTicketNotificationService
                 'referenceId' => $ticketNumber,
                 'ticketNumber' => $ticketNumber,
                 'ticketSubject' => $subject,
+                'messageBodyPlain' => $preview,
             ]);
         });
 

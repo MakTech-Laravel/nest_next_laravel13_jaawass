@@ -138,6 +138,33 @@ test('admin support reply emails only the ticket owner', function () {
     Queue::assertPushed(SendMailJob::class, 1);
 });
 
+test('admin reply with resolved status sends resolved template instead of reply template', function () {
+    $user = User::factory()->create(['role' => UserRole::BUYER->value]);
+    $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+
+    $ticket = Ticket::query()->create([
+        'user_id' => $user->id,
+        'subject' => 'Billing help',
+        'department_type' => 'account',
+        'priority' => 'medium',
+        'status' => TicketStatus::Open->value,
+    ]);
+
+    app(SupportTicketNotificationService::class)->notifyStatusChanged(
+        $ticket,
+        TicketStatus::Resolved,
+        $admin,
+        'Your billing issue is fixed.',
+    );
+
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job): bool => $job->recipient === $user->email
+        && $job->template === MailTemplate::SupportTicketResolved->value
+        && $job->data['status'] === 'Resolved'
+        && $job->data['messageBodyPlain'] === 'Your billing issue is fixed.');
+
+    Queue::assertNotPushed(SendMailJob::class, fn (SendMailJob $job): bool => $job->template === MailTemplate::SupportTicketReply->value);
+});
+
 test('support reply acknowledgement template renders', function () {
     $html = app(MailTemplateRenderer::class)->render(
         MailTemplate::SupportTicketReplyReceived->value,

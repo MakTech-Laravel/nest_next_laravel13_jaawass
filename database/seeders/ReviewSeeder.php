@@ -497,6 +497,9 @@ class ReviewSeeder extends Seeder
             return;
         }
 
+        // Slugs must be globally unique (products.products_slug_unique), so
+        // include the supplier id — otherwise the 2nd supplier without products
+        // collides with the 1st when both try the same fixed slug.
         $catalog = [
             ['name' => 'Organic Cotton T-Shirts', 'slug' => 'organic-cotton-t-shirts'],
             ['name' => 'Recycled Polyester Hoodies', 'slug' => 'recycled-polyester-hoodies'],
@@ -504,10 +507,12 @@ class ReviewSeeder extends Seeder
         ];
 
         foreach ($catalog as $item) {
+            $slug = "{$item['slug']}-{$supplier->id}";
+
             Product::query()->firstOrCreate(
                 [
                     'user_id' => $supplier->id,
-                    'slug' => $item['slug'],
+                    'slug' => $slug,
                 ],
                 [
                     'industry_id' => $industry->id,

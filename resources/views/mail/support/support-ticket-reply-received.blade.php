@@ -88,7 +88,7 @@
 
                             @if ($replyPreview !== '')
                                 <div style="margin-top:18px;padding:16px 18px;background-color:#FBF7EE;border-left:4px solid #9A7A3A;border-radius:8px;">
-                                    <div style="margin-bottom:7px;font-size:9px;font-weight:900;letter-spacing:1.3px;text-transform:uppercase;color:#9A7A3A;">Your reply</div>
+                                    <div style="margin-bottom:7px;font-size:9px;font-weight:900;letter-spacing:1.3px;text-transform:uppercase;color:#9A7A3A;">Your message</div>
                                     <div style="font-size:13px;line-height:1.75;color:#464646;">{{ $replyPreview }}</div>
                                 </div>
                             @endif
