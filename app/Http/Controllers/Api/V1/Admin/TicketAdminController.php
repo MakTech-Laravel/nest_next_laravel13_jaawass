@@ -11,8 +11,8 @@ use App\Http\Requests\Api\V1\Admin\StoreTicketMessageRequest;
 use App\Http\Requests\Api\V1\Admin\UpdateTicketRequest;
 use App\Http\Resources\Api\V1\Admin\TicketAdminResource;
 use App\Models\Ticket;
-use App\Services\TicketMessageService;
 use App\Services\Support\SupportTicketNotificationService;
+use App\Services\TicketMessageService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response as HttpStatus;
@@ -89,34 +89,48 @@ class TicketAdminController extends Controller
 
     public function storeMessage(StoreTicketMessageRequest $request, Ticket $ticket): JsonResponse
     {
+        $message = $request->input('message');
+        $closingStatus = $request->filled('status')
+            ? TicketStatus::from((string) $request->input('status'))
+            : null;
+
         $this->ticketMessageService->sendMessage(
             $ticket,
             $request->user(),
-            $request->input('message'),
+            $message,
             $request->file('attachments', []),
             $request->input('locale'),
         );
 
-        $this->supportTicketNotificationService->notifyReply(
-            $ticket->fresh(['user', 'assignee']),
-            $request->user(),
-            $request->input('message'),
-        );
+        if (in_array($closingStatus, [TicketStatus::Resolved, TicketStatus::Closed], true)) {
+            $ticket->forceFill(['status' => $closingStatus->value])->save();
 
-        if ($ticket->status !== TicketStatus::Closed) {
-            $ticket->forceFill(['status' => TicketStatus::WaitingOnCustomer->value])->save();
+            $this->supportTicketNotificationService->notifyStatusChanged(
+                $ticket->fresh(['user', 'assignee']),
+                $closingStatus,
+                $request->user(),
+                is_string($message) ? $message : null,
+            );
+        } else {
+            $this->supportTicketNotificationService->notifyReply(
+                $ticket->fresh(['user', 'assignee']),
+                $request->user(),
+                $message,
+            );
+
+            if ($ticket->status !== TicketStatus::Closed) {
+                $ticket->forceFill(['status' => TicketStatus::WaitingOnCustomer->value])->save();
+            }
         }
-
-        $ticket->load([
-            'user',
-            'assignee',
-            'messages' => fn ($query) => $query->orderBy('id')->with(['user', 'attachments', 'translations']),
-        ]);
 
         return sendResponse(
             status: true,
             message: __('api.admin_ticket_message_sent_successfully'),
-            data: new TicketAdminResource($ticket),
+            data: new TicketAdminResource($ticket->fresh([
+                'user',
+                'assignee',
+                'messages' => fn ($query) => $query->orderBy('id')->with(['user', 'attachments', 'translations']),
+            ])),
             statusCode: HttpStatus::HTTP_CREATED
         );
     }

@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Api\V1\Admin;
 
+use App\Enums\TicketStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
 use Illuminate\Validation\Validator;
 
@@ -23,6 +25,10 @@ class StoreTicketMessageRequest extends FormRequest
     {
         return [
             'message' => ['nullable', 'string', 'max:20000'],
+            'status' => ['sometimes', 'nullable', 'string', Rule::in([
+                TicketStatus::Resolved->value,
+                TicketStatus::Closed->value,
+            ])],
             'attachments' => ['sometimes', 'array', 'max:'.config('tickets.attachments.max_per_message', 5)],
             'attachments.*' => [
                 'file',

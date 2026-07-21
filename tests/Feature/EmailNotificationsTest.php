@@ -12,14 +12,14 @@ use App\Models\Product;
 use App\Models\RfqSubmission;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Services\Mailing\MailTemplateRenderer;
+use App\Services\Manufacturer\ManufacturerRegistrationNotificationService;
 use App\Services\Manufacturer\ManufacturerStatusNotificationService;
 use App\Services\Rfq\RfqNotificationService;
 use App\Services\Support\SupportTicketNotificationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Laravel\Passport\ClientRepository;
-use Laravel\Passport\Passport;
-use Tests\TestCase;
 
 uses(RefreshDatabase::class);
 
@@ -82,6 +82,109 @@ test('support ticket created sends email to user and admin', function () {
         && $job->template === MailTemplate::SupportTicketCreatedAdmin->value);
 });
 
+test('user support reply emails every admin and acknowledges the user', function () {
+    $user = User::factory()->create(['role' => UserRole::BUYER->value]);
+    $firstAdmin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    $secondAdmin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+
+    $ticket = Ticket::query()->create([
+        'user_id' => $user->id,
+        'subject' => 'Need help with order',
+        'department_type' => 'account',
+        'priority' => 'medium',
+        'status' => TicketStatus::Open->value,
+        'assigned_to' => null,
+    ]);
+
+    app(SupportTicketNotificationService::class)->notifyReply($ticket, $user, 'Here is more information.');
+
+    foreach ([$firstAdmin, $secondAdmin] as $admin) {
+        Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job): bool => $job->recipient === $admin->email
+            && $job->template === MailTemplate::SupportTicketReplyAdmin->value);
+    }
+
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job): bool => $job->recipient === $user->email
+        && $job->template === MailTemplate::SupportTicketReplyReceived->value
+        && $job->data['messageBodyPlain'] === 'Here is more information.');
+
+    Queue::assertPushed(SendMailJob::class, 3);
+});
+
+test('admin support reply emails only the ticket owner', function () {
+    $user = User::factory()->create(['role' => UserRole::MANUFACTURER->value]);
+    $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    $otherAdmin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+
+    $ticket = Ticket::query()->create([
+        'user_id' => $user->id,
+        'subject' => 'Verification question',
+        'department_type' => 'account',
+        'priority' => 'medium',
+        'status' => TicketStatus::WaitingOnCustomer->value,
+        'assigned_to' => $admin->id,
+    ]);
+
+    app(SupportTicketNotificationService::class)->notifyReply($ticket, $admin, 'Please provide the missing document.');
+
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job): bool => $job->recipient === $user->email
+        && $job->template === MailTemplate::SupportTicketReply->value);
+
+    Queue::assertNotPushed(SendMailJob::class, fn (SendMailJob $job): bool => in_array(
+        $job->recipient,
+        [$admin->email, $otherAdmin->email],
+        true,
+    ));
+
+    Queue::assertPushed(SendMailJob::class, 1);
+});
+
+test('admin reply with resolved status sends resolved template instead of reply template', function () {
+    $user = User::factory()->create(['role' => UserRole::BUYER->value]);
+    $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+
+    $ticket = Ticket::query()->create([
+        'user_id' => $user->id,
+        'subject' => 'Billing help',
+        'department_type' => 'account',
+        'priority' => 'medium',
+        'status' => TicketStatus::Open->value,
+    ]);
+
+    app(SupportTicketNotificationService::class)->notifyStatusChanged(
+        $ticket,
+        TicketStatus::Resolved,
+        $admin,
+        'Your billing issue is fixed.',
+    );
+
+    Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job): bool => $job->recipient === $user->email
+        && $job->template === MailTemplate::SupportTicketResolved->value
+        && $job->data['status'] === 'Resolved'
+        && $job->data['messageBodyPlain'] === 'Your billing issue is fixed.');
+
+    Queue::assertNotPushed(SendMailJob::class, fn (SendMailJob $job): bool => $job->template === MailTemplate::SupportTicketReply->value);
+});
+
+test('support reply acknowledgement template renders', function () {
+    $html = app(MailTemplateRenderer::class)->render(
+        MailTemplate::SupportTicketReplyReceived->value,
+        [
+            'name' => 'Buyer One',
+            'subject' => 'Order issue',
+            'ticketNumber' => 'TKT-00001',
+            'ticketSubject' => 'Order issue',
+            'messageBodyPlain' => 'Additional details',
+            'ctaUrl' => 'https://example.com/tickets/1',
+            'ctaLabel' => 'View ticket',
+        ],
+    );
+
+    expect($html)
+        ->toContain('We received')
+        ->toContain('TKT-00001')
+        ->toContain('Additional details');
+});
+
 test('manufacturer approved sends email notification', function () {
     $manufacturer = User::factory()->create([
         'role' => UserRole::MANUFACTURER->value,
@@ -113,7 +216,7 @@ test('manufacturer registration notifies admins by email and in-app', function (
         'notes' => 'Scale-ready factory',
     ]);
 
-    app(\App\Services\Manufacturer\ManufacturerRegistrationNotificationService::class)
+    app(ManufacturerRegistrationNotificationService::class)
         ->notifyAdmins($manufacturer->fresh(['company']));
 
     Queue::assertPushed(SendMailJob::class, fn (SendMailJob $job) => $job->recipient === $admin->email

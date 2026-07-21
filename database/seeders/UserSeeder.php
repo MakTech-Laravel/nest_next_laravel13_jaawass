@@ -25,6 +25,15 @@ class UserSeeder extends Seeder
             'status' => UserStatus::ACTIVE->value,
             'agreed_to_terms' => true,
         ]);
+        User::create([
+            'first_name' => 'Md',
+            'last_name' => 'Sumon',
+            'email' => 'freeinternship90@gmail.com',
+            'password' => Hash::make('freeinternship90@gmail.com'),
+            'role' => UserRole::ADMIN->value,
+            'status' => UserStatus::ACTIVE->value,
+            'agreed_to_terms' => true,
+        ]);
       
         User::create([
             'first_name' => 'Buyer',

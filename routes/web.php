@@ -9,17 +9,7 @@ Route::get('/', function () {
 
 
 Route::get('/test-email', function () {
-    $pricingUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/').'/pricing';
-
-    return view('mail.manufacturer.manufacturer-activation-reminder', [
-        'name' => 'Jane Doe',
-        'company' => 'Acme Manufacturing Co.',
-        'approvedDate' => now()->format('F j, Y'),  
-        'intro' => __('mail.manufacturer_approved.intro', ['name' => 'Jane Doe', 'company' => 'Acme Manufacturing Co.']),
-        'ctaUrl' => $pricingUrl,
-        'ctaLabel' => __('mail.manufacturer_approved.cta'),
-        'planDetailsUrl' => $pricingUrl,
-    ]);
+    return view('mail.support.support-ticket-resolved');
 });
 
 

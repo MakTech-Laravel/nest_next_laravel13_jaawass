@@ -834,17 +834,10 @@ return [
         'notification_body' => ':sender replied to ":subject".',
     ],
 
-    'support_ticket_auto_reply' => [
-        'subject' => 'We received your message: :subject',
-        'preheader' => 'Your support message has been received.',
-        'header_title' => 'Message Received',
-        'header_subtitle' => 'Automatic acknowledgment',
-        'intro' => 'Hello :name, we have received your message on ticket ":subject".',
-        'message_heading' => 'Acknowledgment',
+    'support_ticket_reply_received' => [
+        'subject' => 'We received your reply — :ticketNumber',
+        'preheader' => 'Your support ticket reply has been received.',
         'cta' => 'View ticket',
-        'footer' => 'A support agent will follow up soon.',
-        'notification_title' => 'Message received',
-        'notification_body' => 'We received your message on ":subject".',
     ],
 
     'support_ticket_resolved' => [
