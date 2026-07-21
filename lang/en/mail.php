@@ -810,6 +810,12 @@ return [
         'notification_body' => ':sender replied to ":subject".',
     ],
 
+    'support_ticket_reply_received' => [
+        'subject' => 'We received your reply — :ticketNumber',
+        'preheader' => 'Your support ticket reply has been received.',
+        'cta' => 'View ticket',
+    ],
+
     'support_ticket_resolved' => [
         'subject' => 'Ticket resolved: :subject',
         'preheader' => 'Your support ticket has been resolved.',

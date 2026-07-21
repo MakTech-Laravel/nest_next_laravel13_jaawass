@@ -117,22 +117,6 @@ class SupportTicketNotificationService
         $ticket->loadMissing(['user', 'assignee']);
         $subject = (string) $ticket->subject;
         $preview = $this->messagePreview($message);
-        $recipient = $this->replyRecipient($ticket, $sender);
-
-        if ($recipient === null) {
-            return;
-        }
-
-        $isAdminRecipient = $recipient->role === UserRole::ADMIN;
-        $url = $isAdminRecipient
-            ? $this->adminTicketUrl($ticket)
-            : $this->userTicketUrl($ticket, $recipient);
-        $template = $isAdminRecipient
-            ? MailTemplate::SupportTicketReplyAdmin
-            : MailTemplate::SupportTicketReply;
-        $langPrefix = $isAdminRecipient
-            ? 'mail.support_ticket_reply_admin'
-            : 'mail.support_ticket_reply';
         $ticketNumber = 'TKT-'.str_pad((string) $ticket->id, 5, '0', STR_PAD_LEFT);
         $senderName = MailNotificationHelper::displayName($sender);
         $senderRole = $sender->role instanceof UserRole
@@ -145,51 +129,31 @@ class SupportTicketNotificationService
             default => 'User',
         };
 
-        MailNotificationHelper::sendIfEmail($recipient, function (string $email) use (
-            $recipient,
+        if ($senderRole === UserRole::ADMIN) {
+            $this->notifyUserAboutAdminReply(
+                $ticket,
+                $sender,
+                $senderName,
+                $senderType,
+                $subject,
+                $preview,
+                $ticketNumber,
+            );
+
+            return;
+        }
+
+        $this->notifyAdminsAboutUserReply(
+            $ticket,
             $sender,
             $senderName,
             $senderType,
             $subject,
             $preview,
-            $url,
-            $ticket,
             $ticketNumber,
-            $template,
-            $langPrefix,
-        ): void {
-            $this->mailingService->send($email, $template, [
-                'name' => MailNotificationHelper::displayName($recipient),
-                'senderName' => $senderName,
-                'sender' => $senderName,
-                'subject' => $subject,
-                'messageBody' => $preview ? nl2br(e($preview)) : null,
-                'messageBodyPlain' => $preview,
-                'ctaUrl' => $url,
-                'ctaLabel' => __($langPrefix.'.cta'),
-                'referenceId' => $ticketNumber,
-                'ticketNumber' => $ticketNumber,
-                'ticketSubject' => $subject,
-                'senderType' => $senderType,
-                'senderEmail' => (string) ($sender->email ?? ''),
-                'senderInitials' => MailNotificationHelper::initials($senderName),
-                'repliedAt' => now()->format('M j · g:i A'),
-            ]);
-        });
-
-        $this->dispatchInApp(
-            $recipient,
-            $sender,
-            'support.ticket.reply',
-            __($langPrefix.'.notification_title'),
-            __($langPrefix.'.notification_body', [
-                'sender' => $senderName,
-                'subject' => $subject,
-            ]),
-            ['ticket_id' => $ticket->id],
-            $url,
-            $sender->id,
         );
+
+        $this->sendUserReplyAcknowledgement($ticket, $sender, $subject, $preview, $ticketNumber);
     }
 
     public function notifyStatusChanged(Ticket $ticket, TicketStatus $status, ?User $actor = null): void
@@ -239,21 +203,152 @@ class SupportTicketNotificationService
         );
     }
 
-    private function replyRecipient(Ticket $ticket, User $sender): ?User
-    {
-        if ($ticket->assignee !== null && (int) $ticket->assignee->id !== (int) $sender->id) {
-            return $ticket->assignee;
+    private function notifyUserAboutAdminReply(
+        Ticket $ticket,
+        User $sender,
+        string $senderName,
+        string $senderType,
+        string $subject,
+        ?string $preview,
+        string $ticketNumber,
+    ): void {
+        $recipient = $ticket->user;
+
+        if ($recipient === null || (int) $recipient->id === (int) $sender->id) {
+            return;
         }
 
-        if ($ticket->user !== null && (int) $ticket->user->id !== (int) $sender->id) {
-            return $ticket->user;
-        }
+        $url = $this->userTicketUrl($ticket, $recipient);
 
-        if ($sender->role === UserRole::ADMIN) {
-            return $ticket->user;
-        }
+        MailNotificationHelper::sendIfEmail($recipient, function (string $email) use (
+            $recipient,
+            $sender,
+            $senderName,
+            $senderType,
+            $subject,
+            $preview,
+            $url,
+            $ticketNumber,
+        ): void {
+            $this->mailingService->send($email, MailTemplate::SupportTicketReply, [
+                'name' => MailNotificationHelper::displayName($recipient),
+                'senderName' => $senderName,
+                'sender' => $senderName,
+                'subject' => $subject,
+                'messageBody' => $preview ? nl2br(e($preview)) : null,
+                'messageBodyPlain' => $preview,
+                'ctaUrl' => $url,
+                'ctaLabel' => __('mail.support_ticket_reply.cta'),
+                'referenceId' => $ticketNumber,
+                'ticketNumber' => $ticketNumber,
+                'ticketSubject' => $subject,
+                'senderType' => $senderType,
+                'senderEmail' => (string) ($sender->email ?? ''),
+                'senderInitials' => MailNotificationHelper::initials($senderName),
+                'repliedAt' => now()->format('M j · g:i A'),
+            ]);
+        });
 
-        return $ticket->assignee;
+        $this->dispatchInApp(
+            $recipient,
+            $sender,
+            'support.ticket.reply',
+            __('mail.support_ticket_reply.notification_title'),
+            __('mail.support_ticket_reply.notification_body', [
+                'sender' => $senderName,
+                'subject' => $subject,
+            ]),
+            ['ticket_id' => $ticket->id],
+            $url,
+            $sender->id,
+        );
+    }
+
+    private function notifyAdminsAboutUserReply(
+        Ticket $ticket,
+        User $sender,
+        string $senderName,
+        string $senderType,
+        string $subject,
+        ?string $preview,
+        string $ticketNumber,
+    ): void {
+        $url = $this->adminTicketUrl($ticket);
+
+        foreach (MailNotificationHelper::adminRecipients() as $admin) {
+            MailNotificationHelper::sendIfEmail($admin, function (string $email) use (
+                $admin,
+                $sender,
+                $senderName,
+                $senderType,
+                $subject,
+                $preview,
+                $url,
+                $ticketNumber,
+            ): void {
+                $this->mailingService->send($email, MailTemplate::SupportTicketReplyAdmin, [
+                    'name' => MailNotificationHelper::displayName($admin),
+                    'senderName' => $senderName,
+                    'sender' => $senderName,
+                    'subject' => $subject,
+                    'messageBody' => $preview ? nl2br(e($preview)) : null,
+                    'messageBodyPlain' => $preview,
+                    'ctaUrl' => $url,
+                    'ctaLabel' => __('mail.support_ticket_reply_admin.cta'),
+                    'referenceId' => $ticketNumber,
+                    'ticketNumber' => $ticketNumber,
+                    'ticketSubject' => $subject,
+                    'senderType' => $senderType,
+                    'senderEmail' => (string) ($sender->email ?? ''),
+                    'senderInitials' => MailNotificationHelper::initials($senderName),
+                    'repliedAt' => now()->format('M j · g:i A'),
+                ]);
+            });
+
+            $this->dispatchInApp(
+                $admin,
+                $sender,
+                'support.ticket.reply.admin',
+                __('mail.support_ticket_reply_admin.notification_title'),
+                __('mail.support_ticket_reply_admin.notification_body', [
+                    'sender' => $senderName,
+                    'subject' => $subject,
+                ]),
+                ['ticket_id' => $ticket->id],
+                $url,
+                $sender->id,
+            );
+        }
+    }
+
+    private function sendUserReplyAcknowledgement(
+        Ticket $ticket,
+        User $sender,
+        string $subject,
+        ?string $preview,
+        string $ticketNumber,
+    ): void {
+        $url = $this->userTicketUrl($ticket, $sender);
+
+        MailNotificationHelper::sendIfEmail($sender, function (string $email) use (
+            $sender,
+            $subject,
+            $preview,
+            $url,
+            $ticketNumber,
+        ): void {
+            $this->mailingService->send($email, MailTemplate::SupportTicketReplyReceived, [
+                'name' => MailNotificationHelper::displayName($sender),
+                'subject' => $subject,
+                'messageBodyPlain' => $preview,
+                'ctaUrl' => $url,
+                'ctaLabel' => __('mail.support_ticket_reply_received.cta'),
+                'referenceId' => $ticketNumber,
+                'ticketNumber' => $ticketNumber,
+                'ticketSubject' => $subject,
+                'receivedAt' => now()->format('M j · g:i A'),
+            ]);
+        });
     }
 
     private function messagePreview(?string $message): ?string

@@ -94,7 +94,7 @@
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
                                                 <td width="58" height="58" align="center" valign="middle" bgcolor="#3B2800"
-                                                    style="width:58px;height:58px;background-color:#3B2800;border:1.5px solid #E8D5A8;border-radius:14px;box-shadow:0 2px 10px rgba(59,40,0,0.06);">
+                                                    style="width:58px;height:58px;background-color:#3B2800; solid #E8D5A8;border-radius:14px;box-shadow:0 2px 10px rgba(59,40,0,0.06);">
                                                     @if (! empty($heroIconUrl))
                                                         <img src="{{ $heroIconUrl }}" width="26" height="26" alt="" style="{{ $mailIconStyle }}">
                                                     @endif
