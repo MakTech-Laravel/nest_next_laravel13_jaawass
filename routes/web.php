@@ -9,7 +9,14 @@ Route::get('/', function () {
 
 
 Route::get('/test-email', function () {
-    return view('mail.support.support-ticket-resolved');
+    return view('mail.subscription.subscription-activated', [
+        'manufacturerName' => 'Acme Manufacturing',
+        'planName' => 'Professional',
+        'startsAt' => now()->format('F j, Y'),
+        'endsAt' => now()->addYear()->format('F j, Y'),
+        'status' => 'active',
+        'paidAmountDisplay' => '$299 USD',
+    ]);
 });
 
 
