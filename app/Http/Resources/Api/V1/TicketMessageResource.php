@@ -28,6 +28,7 @@ class TicketMessageResource extends JsonResource
             'ticket_id' => $this->ticket_id,
             'message' => $message,
             'user_id' => $this->user_id,
+            'is_auto_reply' => (bool) $this->is_auto_reply,
             'created_at' => TimezoneFormatter::format($this->created_at),
             'updated_at' => TimezoneFormatter::format($this->updated_at),
             'user' => $this->whenLoaded('user', fn () => $this->user === null ? null : [

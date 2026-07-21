@@ -15,8 +15,9 @@ use App\Http\Requests\Api\V1\StoreTicketRequest;
 use App\Http\Resources\Api\V1\TicketResource;
 use App\Models\Ticket;
 use App\Services\Subscription\PlanEntitlementResolver;
-use App\Services\TicketMessageService;
+use App\Services\Support\SupportTicketAutoReplyService;
 use App\Services\Support\SupportTicketNotificationService;
+use App\Services\TicketMessageService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,7 @@ class TicketController extends Controller
         private readonly TicketMessageService $ticketMessageService,
         private readonly PlanEntitlementResolver $entitlementResolver,
         private readonly SupportTicketNotificationService $supportTicketNotificationService,
+        private readonly SupportTicketAutoReplyService $supportTicketAutoReplyService,
     ) {}
 
     public function options(): JsonResponse
@@ -160,6 +162,11 @@ class TicketController extends Controller
             $ticket->fresh(['user', 'assignee']),
             $request->user(),
             $request->input('message'),
+        );
+
+        $this->supportTicketAutoReplyService->replyOnUserMessage(
+            $ticket,
+            $request->input('locale'),
         );
 
         if ($ticket->status === TicketStatus::WaitingOnCustomer) {

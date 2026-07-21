@@ -81,8 +81,8 @@
                         <td class="email-pad" bgcolor="#FBF7EE" style="padding:26px 30px;background-color:#FBF7EE;background-image:linear-gradient(135deg,#FBF7EE 0%,#FFFFFF 55%);border-bottom:1.5px solid #E8D5A8;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
-                                    <td width="76" valign="middle" style="width:76px;padding-right:18px;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                    <td width="58" valign="top" style="padding-right:18px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                             <tr>
                                                 {{-- Check drawn with HTML/CSS (no <img>) so it never appears broken in mail clients. --}}
                                                 <td width="58" height="58" align="center" valign="middle" bgcolor="#FFFFFF" style="width:58px;height:58px;background-color:#FFFFFF;border:1.5px solid #E8D5A8;border-radius:14px;box-shadow:0 2px 10px rgba(59,40,0,.06),0 0 0 5px #FBF7EE;">
@@ -122,7 +122,7 @@
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
                                                 <td width="34" valign="top" style="padding-right:13px;">
-                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                                         <tr>
                                                             <td width="34" height="34" align="center" valign="middle" bgcolor="#FFFFFF" style="width:34px;height:34px;background-color:#FFFFFF;border:1.5px solid #6ECFA0;border-radius:8px;">
                                                                 <span style="display:inline-block;font-family:'Nunito',Arial,Helvetica,sans-serif;font-size:17px;font-weight:bold;line-height:1;color:#0A5C32;">&#10003;</span>
@@ -144,8 +144,8 @@
 
                     {{-- Steps --}}
                     <tr>
-                        <td class="email-pad" bgcolor="#F8F8F8" style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;">
+                        <td bgcolor="#F8F8F8" style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8" style="background-color:#E8D5A8;border-radius:2px;">&nbsp;</td>
                                     <td style="padding-left:9px;font-weight:500;font-size:17px;line-height:1;font-family:'Lora',Georgia,'Times New Roman',serif;color:#3B2800;">{!! __('mail.rfq_submitted_buyer.steps_title') !!}</td>
@@ -156,9 +156,9 @@
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" @if (! $loop->last) style="margin-bottom:0;border-bottom:1px solid #F0F0F0;" @endif>
                                     <tr>
                                         <td width="40" valign="top" style="padding:15px 0;">
-                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                                 <tr>
-                                                    <td width="26" height="26" align="center" valign="middle" bgcolor="#FBF7EE" style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:50%;font-weight:900;font-size:11px;line-height:1;font-family:'Nunito',Arial,Helvetica,sans-serif;color:#9A7A3A;">{{ $index + 1 }}</td>
+                                                    <td width="26" height="26" align="center" valign="middle" bgcolor="#FBF7EE" style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:13px;font-weight:900;font-size:11px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#9A7A3A;">{{ $index + 1 }}</td>
                                                 </tr>
                                                 @if (! $loop->last)
                                                     <tr>

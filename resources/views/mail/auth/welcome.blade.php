@@ -67,7 +67,7 @@
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
                                     <td style="padding:0 0 14px 0;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                             <tr>
                                                 <td style="padding:4px 11px;border-radius:20px;border:1.5px solid #A8C0F0;background-color:#EDF2FF;">
                                                     <table role="presentation" cellspacing="0" cellpadding="0" border="0">
@@ -117,7 +117,7 @@
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:18px;border:1.5px solid #E6E6E6;border-radius:10px;border-collapse:separate;">
                                 <tr>
                                     <td width="33%" valign="top" bgcolor="#FFFFFF" style="padding:18px 14px;background-color:#FFFFFF;border-right:1.5px solid #E6E6E6;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:10px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:10px;border-collapse:separate;">
                                             <tr>
                                                 <td width="28" height="28" align="center" valign="middle" bgcolor="#FBF7EE" style="width:28px;height:28px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:7px;">
                                                     <img src="{{ $searchIconUrl }}" width="13" height="13" alt="" style="{{ $mailIconStyle }}">
@@ -128,7 +128,7 @@
                                         <div style="font-weight:400;font-size:11.5px;line-height:1.5;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">Contact manufacturers directly — no agents or commissions</div>
                                     </td>
                                     <td width="33%" valign="top" bgcolor="#FFFFFF" style="padding:18px 14px;background-color:#FFFFFF;border-right:1.5px solid #E6E6E6;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:10px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:10px;border-collapse:separate;">
                                             <tr>
                                                 <td width="28" height="28" align="center" valign="middle" bgcolor="#FBF7EE" style="width:28px;height:28px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:7px;">
                                                     <img src="{{ $caseIconUrl }}" width="13" height="13" alt="" style="{{ $mailIconStyle }}">
@@ -139,7 +139,7 @@
                                         <div style="font-weight:400;font-size:11.5px;line-height:1.5;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;">Send sourcing requests to multiple manufacturers in seconds</div>
                                     </td>
                                     <td width="33%" valign="top" bgcolor="#FFFFFF" style="padding:18px 14px;background-color:#FFFFFF;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:10px;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:10px;border-collapse:separate;">
                                             <tr>
                                                 <td width="28" height="28" align="center" valign="middle" bgcolor="#FBF7EE" style="width:28px;height:28px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:7px;">
                                                     <img src="{{ $globeIconUrl }}" width="13" height="13" alt="" style="{{ $mailIconStyle }}">
@@ -227,7 +227,7 @@
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
                                                 <td width="28" valign="top" style="padding-right:14px;">
-                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                                         <tr>
                                                             <td width="28" height="28" align="center" valign="middle" bgcolor="#FBF7EE" style="width:28px;height:28px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:7px;">
                                                                 <img src="{{ $searchIconUrl }}" width="13" height="13" alt="" style="{{ $mailIconStyle }}">
@@ -248,7 +248,7 @@
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
                                                 <td width="28" valign="top" style="padding-right:14px;">
-                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                                         <tr>
                                                             <td width="28" height="28" align="center" valign="middle" bgcolor="#FBF7EE" style="width:28px;height:28px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:7px;">
                                                                 <img src="{{ $caseIconUrl }}" width="13" height="13" alt="" style="{{ $mailIconStyle }}">
@@ -269,7 +269,7 @@
                                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                             <tr>
                                                 <td width="28" valign="top" style="padding-right:14px;">
-                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                                         <tr>
                                                             <td width="28" height="28" align="center" valign="middle" bgcolor="#FBF7EE" style="width:28px;height:28px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:7px;">
                                                                 <img src="{{ $carriculamIconUrl }}" width="13" height="13" alt="" style="{{ $mailIconStyle }}">
@@ -300,9 +300,9 @@
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin-top:18px;">
                                 <tr>
                                     <td width="26" valign="top" style="padding:15px 0;border-bottom:1px solid #F0F0F0;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                             <tr>
-                                                <td align="center" width="26" height="26" bgcolor="#FBF7EE" style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:50%;font-weight:900;font-size:11px;line-height:26px;font-family:Arial,Helvetica,sans-serif;color:#9A7A3A;text-align:center;">1</td>
+                                                <td align="center" width="26" height="26" bgcolor="#FBF7EE" style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:13px;font-weight:900;font-size:11px;line-height:26px;font-family:Arial,Helvetica,sans-serif;color:#9A7A3A;text-align:center;">1</td>
                                             </tr>
                                             <tr>
                                                 <td align="center" style="padding-top:4px;font-size:0;line-height:0;">
@@ -318,9 +318,9 @@
                                 </tr>
                                 <tr>
                                     <td width="26" valign="top" style="padding:15px 0;border-bottom:1px solid #F0F0F0;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                             <tr>
-                                                <td align="center" width="26" height="26" bgcolor="#FBF7EE" style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:50%;font-weight:900;font-size:11px;line-height:26px;font-family:Arial,Helvetica,sans-serif;color:#9A7A3A;text-align:center;">2</td>
+                                                <td align="center" width="26" height="26" bgcolor="#FBF7EE" style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:13px;font-weight:900;font-size:11px;line-height:26px;font-family:Arial,Helvetica,sans-serif;color:#9A7A3A;text-align:center;">2</td>
                                             </tr>
                                             <tr>
                                                 <td align="center" style="padding-top:4px;font-size:0;line-height:0;">
@@ -336,9 +336,9 @@
                                 </tr>
                                 <tr>
                                     <td width="26" valign="top" style="padding:15px 0;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                             <tr>
-                                                <td align="center" width="26" height="26" bgcolor="#FBF7EE" style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:50%;font-weight:900;font-size:11px;line-height:26px;font-family:Arial,Helvetica,sans-serif;color:#9A7A3A;text-align:center;">3</td>
+                                                <td align="center" width="26" height="26" bgcolor="#FBF7EE" style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:13px;font-weight:900;font-size:11px;line-height:26px;font-family:Arial,Helvetica,sans-serif;color:#9A7A3A;text-align:center;">3</td>
                                             </tr>
                                         </table>
                                     </td>
@@ -398,10 +398,6 @@
                                 </tr>
                             </table>
                             <span style="font-weight:600;font-size:10.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;">
-                                <a href="{{ $frontendUrl }}/unsubscribe" style="color:#B4B4B4;text-decoration:none;">Unsubscribe</a>
-                                <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>
-                                <a href="{{ $frontendUrl }}/preferences" style="color:#B4B4B4;text-decoration:none;">Preferences</a>
-                                <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>
                                 <a href="{{ $frontendUrl }}/privacy" style="color:#B4B4B4;text-decoration:none;">Privacy</a>
                                 <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>
                                 <a href="{{ $frontendUrl }}/terms" style="color:#B4B4B4;text-decoration:none;">Terms</a>

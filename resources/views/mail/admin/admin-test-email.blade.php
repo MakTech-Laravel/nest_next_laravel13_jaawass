@@ -43,9 +43,9 @@
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin:0 auto 16px auto;">
                                 <tr>
                                     <td style="vertical-align:middle;padding-right:8px;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                             <tr>
-                                                <td align="center" style="width:30px;height:30px;border:1.5px solid #b89d5e;border-radius:50%;">
+                                                <td align="center" style="width:30px;height:30px;border:1.5px solid #b89d5e;border-radius:15px;">
                                                     <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background-color:#b89d5e;"></span>
                                                 </td>
                                             </tr>
@@ -103,9 +103,9 @@
                                         </p>
                                     </td>
                                     <td width="34%" align="center" style="vertical-align:bottom;padding:0 12px;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="border-collapse:separate;">
                                             <tr>
-                                                <td align="center" style="width:60px;height:60px;border-radius:50%;background-color:#2c2517;border:2px solid #b89d5e;text-align:center;vertical-align:middle;">
+                                                <td align="center" style="width:60px;height:60px;border-radius:30px;background-color:#2c2517;border:2px solid #b89d5e;text-align:center;vertical-align:middle;">
                                                     <span style="display:block;font-size:16px;color:#b89d5e;line-height:1;">&#10003;</span>
                                                     <span style="display:block;font-size:6px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#d4bc8a;line-height:1.2;margin-top:2px;">Source<br>Nest</span>
                                                 </td>

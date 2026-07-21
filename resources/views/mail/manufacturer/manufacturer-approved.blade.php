@@ -138,7 +138,7 @@
                                 <tr>
                                     <td valign="top" style="padding-right:0;">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0"
-                                            style="margin-bottom:14px;">
+                                            style="margin-bottom:14px;border-collapse:separate;border-spacing:0;">
                                             <tr>
                                                 <td
                                                     style="padding:4px 11px;border-radius:20px;border:1.5px solid #F0C040;background-color:#FFF8E4;">
@@ -237,12 +237,13 @@
                                                             <tr>
                                                                 <td align="center" style="padding-bottom:8px;">
                                                                     <table role="presentation" cellspacing="0"
-                                                                        cellpadding="0" border="0" align="center">
+                                                                        cellpadding="0" border="0" align="center"
+                                                                        style="border-collapse:separate;border-spacing:0;">
                                                                         <tr>
                                                                             <td width="34" height="34"
                                                                                 align="center" valign="middle"
                                                                                 bgcolor="{{ $circleBg }}"
-                                                                                style="width:34px;height:34px;background-color:{{ $circleBg }};border:2px solid {{ $circleBorder }};border-radius:50%;">
+                                                                                style="width:34px;height:34px;background-color:{{ $circleBg }};border:2px solid {{ $circleBorder }};border-radius:17px;">
                                                                                 @if (!empty($step['icon']))
                                                                                     <img src="{{ $step['icon'] }}"
                                                                                         width="14" height="14"
@@ -286,7 +287,7 @@
                                             <tr>
                                                 <td width="34" valign="top" style="width:34px;padding-right:13px;">
                                                     <table role="presentation" cellspacing="0" cellpadding="0"
-                                                        border="0">
+                                                        border="0" style="border-collapse:separate;border-spacing:0;">
                                                         <tr>
                                                             <td width="34" height="34" align="center"
                                                                 valign="middle" bgcolor="#E8D5A8"
@@ -323,7 +324,7 @@
                         <td bgcolor="#F8F8F8"
                             style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-bottom:18px;">
+                                style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8"
                                         style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">
@@ -344,7 +345,7 @@
                                             <tr>
                                                 <td width="32" valign="top" style="width:32px;">
                                                     <table role="presentation" cellspacing="0" cellpadding="0"
-                                                        border="0">
+                                                        border="0" style="border-collapse:separate;border-spacing:0;">
                                                         <tr>
                                                             <td width="32" height="32" align="center"
                                                                 valign="middle" bgcolor="#FFF8E4"
@@ -412,7 +413,7 @@
                         <td bgcolor="#FFFFFF"
                             style="padding:28px 30px;background-color:#FFFFFF;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-bottom:18px;">
+                                style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8"
                                         style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">
@@ -523,8 +524,7 @@
                             </table>
                             <span
                                 style="font-weight:600;font-size:10.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;">
-                                <a href="{{ $frontendUrl }}/unsubscribe"
-                                    style="color:#B4B4B4;text-decoration:none;">Unsubscribe</a>
+                              
                                 <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>
                                 <a href="{{ $frontendUrl }}/privacy"
                                     style="color:#B4B4B4;text-decoration:none;">Privacy</a>

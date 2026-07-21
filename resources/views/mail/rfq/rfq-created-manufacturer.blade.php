@@ -75,7 +75,7 @@
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                                 <tr>
                                     <td width="58" valign="top" style="padding-right:18px;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                             <tr>
                                                 <td width="58" height="58" align="center" valign="middle" bgcolor="#FFFFFF" style="width:58px;height:58px;background-color:#FFFFFF;border:1.5px solid #E8D5A8;border-radius:14px;">
                                                     <img src="{{ $heroIconUrl }}" width="24" height="24" alt="" style="{{ $mailIconStyle }}">
@@ -161,7 +161,7 @@
                     {{-- Steps --}}
                     <tr>
                         <td bgcolor="#F8F8F8" style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8" style="background-color:#E8D5A8;border-radius:2px;">&nbsp;</td>
                                     <td style="padding-left:9px;font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;">{!! __('mail.rfq_created_manufacturer.steps_title') !!}</td>
@@ -172,9 +172,9 @@
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" @if (! $loop->last) style="margin-bottom:0;border-bottom:1px solid #F0F0F0;" @endif>
                                     <tr>
                                         <td width="40" valign="top" style="padding:15px 0;">
-                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                                 <tr>
-                                                    <td width="26" height="26" align="center" valign="middle" bgcolor="#FBF7EE" style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:50%;font-weight:900;font-size:11px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#9A7A3A;">{{ $index + 1 }}</td>
+                                                    <td width="26" height="26" align="center" valign="middle" bgcolor="#FBF7EE" style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:13px;font-weight:900;font-size:11px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#9A7A3A;">{{ $index + 1 }}</td>
                                                 </tr>
                                                 @if (! $loop->last)
                                                     <tr>

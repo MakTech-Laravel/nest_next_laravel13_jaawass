@@ -7,7 +7,6 @@
     $companyName = trim($company ?? '') !== '' ? trim($company ?? '') : $platformName;
     $decisionDate = $decisionDate ?? now()->format('F j, Y');
     $rejectionReason = trim($reason ?? '');
-    $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('auth/signin');
     $reasonSteps = [
         [
             'title' => __('mail.manufacturer_rejected.reason_step_1_title'),
@@ -95,7 +94,7 @@
                         <td bgcolor="#F8F8F8"
                             style="padding:26px 30px 24px;background-color:#F8F8F8;border-bottom:1.5px solid #E6E6E6;">
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-bottom:14px;">
+                                style="margin-bottom:14px;border-collapse:separate;">
                                 <tr>
                                     <td
                                         style="padding:4px 11px;border-radius:20px;border:1.5px solid #E8D5A8;background-color:#FBF7EE;">
@@ -115,7 +114,7 @@
                             </table>
                             <div
                                 style="font-weight:500;font-size:25px;line-height:1.17;font-family:Georgia,'Times New Roman',serif;color:#1C1C1C;letter-spacing:-0.2px;">
-                                {!! __('mail.manufacturer_rejected.hero_headline') !!}
+                                {!! str_replace('<em>', '<em style="font-style:italic;color:#9A7A3A;">', __('mail.manufacturer_rejected.hero_headline')) !!}
                             </div>
                             <div
                                 style="padding-top:12px;font-weight:400;font-size:13px;line-height:1.78;font-family:Arial,Helvetica,sans-serif;color:#8A8A8A;max-width:480px;">
@@ -135,7 +134,7 @@
                                 {{ __('mail.manufacturer_rejected.intro_paragraph_1') }}</p>
                             <p
                                 style="margin:0;font-weight:400;font-size:13.5px;line-height:1.88;font-family:Arial,Helvetica,sans-serif;color:#464646;">
-                                {!! __('mail.manufacturer_rejected.intro_paragraph_2') !!}</p>
+                                {!! str_replace('<strong>', '<strong style="font-weight:700;color:#1C1C1C;">', __('mail.manufacturer_rejected.intro_paragraph_2')) !!}</p>
 
                             @if ($rejectionReason !== '')
                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
@@ -208,14 +207,14 @@
                         <td bgcolor="#F8F8F8"
                             style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-bottom:18px;">
+                                style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8"
                                         style="width:3px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">
                                         &nbsp;</td>
                                     <td
                                         style="padding-left:9px;font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;">
-                                        {!! __('mail.manufacturer_rejected.reasons_section_title') !!}</td>
+                                        {!! str_replace('<em>', '<em style="font-style:italic;color:#9A7A3A;">', __('mail.manufacturer_rejected.reasons_section_title')) !!}</td>
                                 </tr>
                             </table>
 
@@ -226,11 +225,11 @@
                                     <tr>
                                         <td width="40" valign="top" style="width:40px;padding:15px 0;">
                                             <table role="presentation" cellspacing="0" cellpadding="0"
-                                                border="0" align="center">
+                                                border="0" align="center" style="border-collapse:separate;">
                                                 <tr>
                                                     <td width="26" height="26" align="center"
                                                         valign="middle" bgcolor="#FBF7EE"
-                                                        style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:50%;font-weight:900;font-size:11px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#9A7A3A;">
+                                                        style="width:26px;height:26px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:13px;font-weight:900;font-size:11px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#9A7A3A;">
                                                         –</td>
                                                 </tr>
                                                 @if (!$loop->last)
@@ -256,7 +255,7 @@
                             @endforeach
 
                             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-top:14px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-left:4px solid #9A7A3A;border-radius:8px;border-collapse:separate;">
+                                style="margin-top:16px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-left:4px solid #9A7A3A;border-radius:8px;border-collapse:separate;">
                                 <tr>
                                     <td style="padding:14px 16px;">
                                         <div
@@ -264,29 +263,8 @@
                                             {{ __('mail.manufacturer_rejected.clarification_heading') }}</div>
                                         <div
                                             style="font-weight:400;font-size:13px;line-height:1.65;font-family:Arial,Helvetica,sans-serif;color:#464646;">
-                                            {!! __('mail.manufacturer_rejected.clarification_body', ['email' => e($supportEmail)]) !!}
+                                            {!! str_replace('<strong>', '<strong style="font-weight:700;color:#1C1C1C;">', __('mail.manufacturer_rejected.clarification_body', ['email' => e($supportEmail)])) !!}
                                         </div>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-
-                    {{-- CTA --}}
-                    <tr>
-                        <td bgcolor="#FFFFFF"
-                            style="padding:26px 30px 30px;background-color:#FFFFFF;border-top:1px solid #F0F0F0;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
-                                <tr>
-                                    <td>
-                                        <a href="{{ $ctaUrl }}"
-                                            style="display:inline-block;padding:14px 30px;background-color:#3B2800;color:#FFFFFF;font-weight:900;font-size:12px;line-height:1;font-family:Arial,Helvetica,sans-serif;letter-spacing:0.6px;text-transform:uppercase;text-decoration:none;border-radius:8px;">{{ $ctaLabel ?? __('mail.manufacturer_rejected.cta') }}</a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding-top:10px;">
-                                        <a href="mailto:{{ $supportEmail }}"
-                                            style="font-weight:600;font-size:12.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;text-decoration:none;">{{ __('mail.manufacturer_rejected.cta_ghost') }}</a>
                                     </td>
                                 </tr>
                             </table>
@@ -317,9 +295,7 @@
                             </table>
                             <span
                                 style="font-weight:600;font-size:10.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;">
-                                <a href="{{ $frontendUrl }}/unsubscribe"
-                                    style="color:#B4B4B4;text-decoration:none;">Unsubscribe</a>
-                                <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>
+                               
                                 <a href="{{ $frontendUrl }}/privacy"
                                     style="color:#B4B4B4;text-decoration:none;">Privacy</a>
                                 <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>

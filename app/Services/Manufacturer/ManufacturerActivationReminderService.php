@@ -39,7 +39,7 @@ class ManufacturerActivationReminderService
                 'approvedAt' => $user->manufacture_status_at?->format('F j, Y'),
                 'ctaUrl' => MailNotificationHelper::frontendUrl('pricing'),
                 'detailsUrl' => MailNotificationHelper::frontendUrl('pricing'),
-                'closeAccountUrl' => MailNotificationHelper::frontendUrl('account/close'),
+                'closeAccountUrl' => MailNotificationHelper::frontendUrl('dashboard/manufacturer/settings'),
             ]);
         });
 

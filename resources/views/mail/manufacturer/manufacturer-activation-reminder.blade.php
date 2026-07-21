@@ -11,7 +11,7 @@
     $approvedAt = $approvedAt ?? ($approvedDate ?? null);
     $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing');
     $detailsUrl = $detailsUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('pricing');
-    $closeAccountUrl = $closeAccountUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('account/close');
+    $closeAccountUrl = $closeAccountUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer/settings');
     $whyCards = [
         [
             'icon' => public_url('images/mail/icons/why-user.png'),
@@ -111,7 +111,7 @@
                                 <tr>
                                     <td valign="top" style="padding-right:12px;">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0"
-                                            style="margin-bottom:14px;">
+                                            style="margin-bottom:14px;border-collapse:separate;">
                                             <tr>
                                                 <td
                                                     style="padding:4px 11px;border-radius:20px;border:1.5px solid #F0C040;background-color:#FFF8E4;">
@@ -214,7 +214,7 @@
                     <tr>
                         <td bgcolor="#FFFFFF"
                             style="padding:26px 30px 30px;background-color:#FFFFFF;border-top:1px solid #F0F0F0;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                 <tr>
                                     <td align="center" bgcolor="#9A7A3A" style="border-radius:8px;background-color:#9A7A3A;">
                                         <a href="{{ $ctaUrl }}"
@@ -255,9 +255,6 @@
                             </table>
                             <span
                                 style="font-weight:600;font-size:10.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;">
-                                <a href="{{ $frontendUrl }}/unsubscribe"
-                                    style="color:#B4B4B4;text-decoration:none;">Unsubscribe</a>
-                                <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>
                                 <a href="{{ $frontendUrl }}/privacy"
                                     style="color:#B4B4B4;text-decoration:none;">Privacy</a>
                                 <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>

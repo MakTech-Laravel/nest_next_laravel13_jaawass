@@ -76,7 +76,7 @@
                     {{-- Hero H2 --}}
                     <tr>
                         <td bgcolor="#FFFFFF" style="padding:34px 30px 32px;background-color:#FFFFFF;border-bottom:2px solid #F0F0F0;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:14px;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:14px;border-collapse:separate;">
                                 <tr>
                                     <td style="padding:4px 11px;border-radius:20px;border:1.5px solid #A8C0F0;background-color:#EDF2FF;">
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0">
@@ -133,7 +133,7 @@
                     {{-- Feature cards --}}
                     <tr>
                         <td bgcolor="#F8F8F8" style="padding:28px 30px;background-color:#F8F8F8;border-bottom:1px solid #F0F0F0;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8" style="background-color:#E8D5A8;border-radius:2px;">&nbsp;</td>
                                     <td style="padding-left:9px;font-weight:500;font-size:17px;line-height:1;font-family:Georgia,'Times New Roman',serif;color:#3B2800;">{!! __('mail.buyer_registration_reminder.unlocks_title') !!}</td>
@@ -155,7 +155,7 @@
                                                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="border:1.5px solid #E6E6E6;border-radius:10px;border-collapse:separate;">
                                                     <tr>
                                                         <td bgcolor="#FFFFFF" style="padding:17px 15px;background-color:#FFFFFF;">
-                                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:10px;">
+                                                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:10px;border-collapse:separate;">
                                                                 <tr>
                                                                     <td width="30" height="30" align="center" valign="middle" bgcolor="#FBF7EE" style="width:30px;height:30px;background-color:#FBF7EE;border:1.5px solid #E8D5A8;border-radius:8px;">
                                                                         <img src="{{ $iconUrl }}" width="13" height="13" alt="" style="{{ $mailIconStyle }}">

@@ -17,6 +17,7 @@ enum MailTemplate: string
     case PasswordChanged = 'password-changed';
     case AdminNewInquiry = 'admin-new-inquiry';
     case ManufacturerAdditionalInformation = 'manufacturer-additional-information';
+    case ManufacturerAdditionalInformationReceived = 'manufacturer-additional-information-received';
     case AdminManufacturerAdditionalInformationResponse = 'admin-manufacturer-additional-information-response';
     case ManufacturerAdminMessage = 'manufacturer-admin-message';
     case SupplierReportReceived = 'supplier-report-received';
@@ -54,6 +55,7 @@ enum MailTemplate: string
     case SupportTicketReply = 'support-ticket-reply';
     case SupportTicketReplyAdmin = 'support-ticket-reply-admin';
     case SupportTicketReplyReceived = 'support-ticket-reply-received';
+    case SupportTicketAutoReply = 'support-ticket-auto-reply';
     case SupportTicketResolved = 'support-ticket-resolved';
     case ManufacturerApproved = 'manufacturer-approved';
     case ManufacturerRejected = 'manufacturer-rejected';
