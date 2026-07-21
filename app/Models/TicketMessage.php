@@ -14,10 +14,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'ticket_id',
     'message',
     'user_id',
+    'is_auto_reply',
 ])]
 class TicketMessage extends Model
 {
     use HasTranslations;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_auto_reply' => 'boolean',
+        ];
+    }
 
     protected function translationModelClass(): string
     {

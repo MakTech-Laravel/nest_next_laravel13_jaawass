@@ -7,6 +7,7 @@ use App\Jobs\Support\SendSupportTicketInAppNotificationJob;
 use App\Models\ManufacturerAdditionalInformationRequest;
 use App\Models\User;
 use App\Services\Mailing\MailingService;
+use App\Support\Mail\MailNotificationHelper;
 
 class ManufacturerAdditionalInformationNotificationService
 {
@@ -34,6 +35,14 @@ class ManufacturerAdditionalInformationNotificationService
                 $mailData,
             );
         }
+
+        MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($mailData): void {
+            $this->mailingService->send(
+                $email,
+                MailTemplate::ManufacturerAdditionalInformationReceived,
+                $mailData,
+            );
+        });
 
         $this->dispatchInAppNotification($request, $admin, $manufacturer, $mailData);
     }
@@ -64,6 +73,7 @@ class ManufacturerAdditionalInformationNotificationService
                 ->values()
                 ->all(),
             'reviewUrl' => $this->reviewUrl($request),
+            'dashboardUrl' => MailNotificationHelper::frontendUrl('dashboard/manufacturer'),
         ];
     }
 

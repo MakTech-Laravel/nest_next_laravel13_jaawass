@@ -118,7 +118,7 @@
                                 <tr>
                                     <td class="email-stack email-stack-icon" width="76" valign="middle"
                                         style="width:76px;padding-right:18px;">
-                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                             <tr>
                                                 <td width="58" height="58" align="center" valign="middle"
                                                     bgcolor="#3B2800"
@@ -165,7 +165,7 @@
                         <td class="email-pad" bgcolor="#FFFFFF"
                             style="padding:28px 30px;background-color:#FFFFFF;border-bottom:1px solid #F0F0F0;">
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0"
-                                style="margin-bottom:18px;">
+                                style="margin-bottom:18px;border-collapse:separate;">
                                 <tr>
                                     <td width="3" bgcolor="#E8D5A8"
                                         style="width:3px;height:18px;background-color:#E8D5A8;border-radius:2px;font-size:0;line-height:0;">
@@ -233,7 +233,7 @@
                     {{-- CTA --}}
                     <tr>
                         <td class="email-pad" bgcolor="#FFFFFF" style="padding:26px 30px 30px;background-color:#FFFFFF;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                 <tr>
                                     <td class="email-cta-cell" bgcolor="#3B2800"
                                         style="border-radius:8px;background-color:#3B2800;">

@@ -78,6 +78,11 @@ return [
       'subject' => 'mail.manufacturer_additional_information.subject',
       'markdown' => false,
     ],
+    'manufacturer-additional-information-received' => [
+      'view' => 'mail.manufacturer.manufacturer-additional-information-received',
+      'subject' => 'mail.manufacturer_additional_information_received.subject',
+      'markdown' => false,
+    ],
     'admin-manufacturer-additional-information-response' => [
       'view' => 'mail.admin.admin-manufacturer-additional-information-response',
       'subject' => 'mail.admin_manufacturer_additional_information_response.subject',
@@ -256,6 +261,11 @@ return [
     'support-ticket-reply-admin' => [
       'view' => 'mail.support.support-ticket-reply-admin',
       'subject' => 'mail.support_ticket_reply_admin.subject',
+      'markdown' => false,
+    ],
+    'support-ticket-auto-reply' => [
+      'view' => 'mail.support.support-ticket-auto-reply',
+      'subject' => 'mail.support_ticket_auto_reply.subject',
       'markdown' => false,
     ],
     'support-ticket-resolved' => [

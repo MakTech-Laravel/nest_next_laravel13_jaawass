@@ -115,6 +115,11 @@ test('manufacturer can submit additional information via public token', function
             && $job->template === 'admin-manufacturer-additional-information-response';
     });
 
+    Queue::assertPushed(SendMailJob::class, function (SendMailJob $job) use ($manufacturer): bool {
+        return $job->recipient === $manufacturer->email
+            && $job->template === 'manufacturer-additional-information-received';
+    });
+
     Queue::assertPushed(SendSupportTicketInAppNotificationJob::class, function (SendSupportTicketInAppNotificationJob $job) use ($admin, $manufacturer): bool {
         return $job->recipientId === $admin->id
             && $job->senderId === $manufacturer->id

@@ -23,4 +23,22 @@ return [
             'zip',
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Support ticket auto-reply
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, a canned acknowledgment is posted (and emailed via the
+    | support-ticket-auto-reply template) after a customer replies on a ticket.
+    | Ticket creation is not auto-replied — notifyCreated already covers that.
+    |
+    */
+    'auto_reply' => [
+        'enabled' => (bool) env('TICKET_AUTO_REPLY_ENABLED', true),
+        // Optional: fixed sender user id. When null, assignee or first admin is used.
+        'user_id' => env('TICKET_AUTO_REPLY_USER_ID') !== null && env('TICKET_AUTO_REPLY_USER_ID') !== ''
+            ? (int) env('TICKET_AUTO_REPLY_USER_ID')
+            : null,
+    ],
 ];
