@@ -11,7 +11,7 @@ Route::get('/', function () {
 Route::get('/test-email', function () {
     $pricingUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/').'/pricing';
 
-    return view('mail.manufacturer.manufacturer-registration-reminder', [
+    return view('mail.manufacturer.manufacturer-rejected', [
         'name' => 'Jane Doe',
         'company' => 'Acme Manufacturing Co.',
         'approvedDate' => now()->format('F j, Y'),  
