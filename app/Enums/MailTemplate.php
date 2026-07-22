@@ -46,6 +46,7 @@ enum MailTemplate: string
     case OrderReviewInvite = 'order-review-invite';
     case ReviewApproved = 'review-approved';
     case NewProductReview = 'new-product-review';
+    case NewProductReviewAdmin = 'new-product-review-admin';
     case RfqCreatedManufacturer = 'rfq-created-manufacturer';
     case RfqQuotedBuyer = 'rfq-quoted-buyer';
     case RfqStatusUpdated = 'rfq-status-updated';

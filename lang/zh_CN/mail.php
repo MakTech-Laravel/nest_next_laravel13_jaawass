@@ -461,6 +461,24 @@ return [
         'notification_body' => ':rfq 现为 :status。',
     ],
 
+    'new_product_review_admin' => [
+        'subject' => '新产品评价待审核 — :productName',
+        'preheader' => '一位买家为 :productName 提交了 :rating/5 评价。请在管理后台审核。',
+        'badge' => '管理员 · 待审核',
+        'pill' => '新评价',
+        'hero_headline' => '一条新的产品评价<br>正在等待<em>审核。</em>',
+        'hero_subheadline' => '买家提交了一条评价，发布前需要您审核。',
+        'greeting' => '您好 :name，',
+        'intro' => ':buyer 为 :product 提交了 :rating/5 评价。请打开管理评价队列以批准、隐藏或标记。',
+        'details_title' => '评价详情',
+        'pending_badge' => '待审核',
+        'review_section_title' => '提交内容',
+        'cta' => '审核提交',
+        'cta_note' => '登录管理后台以审核此评价。',
+        'footer_tag' => '管理通知',
+        'footer' => '自动管理通知 — 请勿回复此邮件。',
+    ],
+
     'order_created_manufacturer' => [
         'subject' => '新订单 :orderNumber 已创建',
         'preheader' => '您为 :buyerName 创建了订单 :orderNumber。',

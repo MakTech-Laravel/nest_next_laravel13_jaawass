@@ -1260,6 +1260,24 @@ return [
         'footer_tag' => 'Admin Notification',
     ],
 
+    'new_product_review_admin' => [
+        'subject' => 'New product review pending moderation — :productName',
+        'preheader' => 'A buyer submitted a :rating/5 review for :productName. Review it in the admin dashboard.',
+        'badge' => 'Admin · Pending review',
+        'pill' => 'New Review',
+        'hero_headline' => 'A new product review<br>is awaiting <em>moderation.</em>',
+        'hero_subheadline' => 'A buyer submitted a review that needs your review before it is published.',
+        'greeting' => 'Dear :name,',
+        'intro' => ':buyer submitted a :rating/5 review for :product. Open the admin reviews queue to approve, hide, or flag it.',
+        'details_title' => 'Review details',
+        'pending_badge' => 'Pending moderation',
+        'review_section_title' => 'Submission',
+        'cta' => 'Review submission',
+        'cta_note' => 'Log in to the admin dashboard to moderate this review.',
+        'footer_tag' => 'Admin Notification',
+        'footer' => 'Automated admin notification — please do not reply to this email.',
+    ],
+
     'demo' => [
         'badges' => [
             'buyer' => 'Buyer Account',
