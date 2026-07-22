@@ -52,7 +52,6 @@
             .email-stack { display: block !important; width: 100% !important; }
             .email-stack-icon { padding-right: 0 !important; padding-bottom: 14px !important; }
             .email-footer-tag { text-align: left !important; display: block !important; padding-top: 6px !important; }
-            .email-cta { display: block !important; width: 100% !important; text-align: center !important; box-sizing: border-box !important; }
             .email-evl-lbl { display: block !important; width: 100% !important; border-right: none !important; border-bottom: 1px solid #F0F0F0 !important; }
             .email-evl-val { display: block !important; width: 100% !important; }
         }
@@ -233,7 +232,7 @@
                     {{-- CTA --}}
                     <tr>
                         <td class="email-pad" bgcolor="#FFFFFF" style="padding:26px 30px 30px;background-color:#FFFFFF;">
-                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border-collapse:separate;">
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:separate;">
                                 <tr>
                                     <td bgcolor="#3B2800" style="border-radius:8px;background-color:#3B2800;">
                                         <a class="email-cta" href="{{ $ctaUrl }}"
