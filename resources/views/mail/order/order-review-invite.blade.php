@@ -52,7 +52,6 @@
             .email-stack { display: block !important; width: 100% !important; }
             .email-stack-icon { padding-right: 0 !important; padding-bottom: 14px !important; }
             .email-footer-tag { text-align: left !important; display: block !important; padding-top: 6px !important; }
-            .email-cta { display: block !important; width: 100% !important; text-align: center !important; box-sizing: border-box !important; }
             .email-evl-lbl { display: block !important; width: 100% !important; border-right: none !important; border-bottom: 1px solid #F0F0F0 !important; }
             .email-evl-val { display: block !important; width: 100% !important; }
         }
