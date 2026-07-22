@@ -55,7 +55,7 @@ final class SupportTicketAutoReplyService
             true,
         );
 
-        $this->supportTicketNotificationService->notifyAutoReply(
+        $this->supportTicketNotificationService->notifyReply(
             $ticket->fresh(['user', 'assignee']),
             $sender,
             $message,

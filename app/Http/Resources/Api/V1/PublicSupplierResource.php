@@ -32,6 +32,7 @@ class PublicSupplierResource extends JsonResource
             'id' => $this->id,
             'name' => $localized['company_name'] ?? $company->company_name,
             'slug' => $company->slug,
+            'logo' => storage_url($company->company_logo),
             'short_description' => $localized['short_description'] ?? $company->short_description,
             'location' => [
                 'city' => $localized['city'] ?? $company->city,
