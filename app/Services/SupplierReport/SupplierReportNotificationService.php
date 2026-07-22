@@ -100,7 +100,7 @@ class SupplierReportNotificationService
      */
     private function notifyAdminsOfNewReport(SupplierReport $report, array $data): void
     {
-        $adminUrl = MailNotificationHelper::frontendUrl('admin/supplier-reports/'.$report->id);
+        $adminUrl = MailNotificationHelper::frontendUrl('admin/reports');
 
         foreach (MailNotificationHelper::adminRecipients() as $admin) {
             MailNotificationHelper::sendIfEmail($admin, function (string $email) use ($data, $report, $adminUrl): void {
