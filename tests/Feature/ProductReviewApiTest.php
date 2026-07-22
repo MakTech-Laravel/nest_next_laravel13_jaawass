@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Enums\MailTemplate;
 use App\Enums\OrderStatus;
 use App\Enums\ReviewStatus;
+use App\Enums\UserRole;
 use App\Jobs\SendMailJob;
+use App\Jobs\Support\SendSupportTicketInAppNotificationJob;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,7 +23,11 @@ beforeEach(function (): void {
         provider: config('auth.guards.api.provider')
     );
 
-    Queue::fake([SendMailJob::class]);
+    Queue::fake([SendMailJob::class, SendSupportTicketInAppNotificationJob::class]);
+    config([
+        'app.frontend_url' => 'http://localhost:3000',
+        'broadcasting.default' => 'null',
+    ]);
 });
 
 /**
@@ -77,6 +84,33 @@ test('buyer can review product only after completed purchase', function (): void
         ->assertJsonPath('data.order.id', $orderId);
 
     expect(Review::query()->count())->toBe(1);
+});
+
+test('product review submit queues admin email with NewProductReviewAdmin template', function (): void {
+    $admin = User::factory()->create(['role' => UserRole::ADMIN->value]);
+    ['buyer' => $buyer, 'product_id' => $productId, 'order_id' => $orderId] = createCompletedOrderForReview();
+
+    Passport::actingAs($buyer);
+
+    $this->postJson("/api/v1/buyer/products/{$productId}/reviews", [
+        'order_id' => $orderId,
+        'rating' => 5,
+        'title' => 'Exceptional quality and communication',
+        'comment' => 'Consistently high quality and responsive team.',
+    ])->assertCreated();
+
+    Queue::assertPushed(SendMailJob::class, function (SendMailJob $job) use ($admin, $orderId): bool {
+        return $job->recipient === $admin->email
+            && $job->template === MailTemplate::NewProductReviewAdmin->value
+            && ($job->data['rating'] ?? null) === 5
+            && ($job->data['orderNumber'] ?? null) === sprintf('ORD-%05d', $orderId)
+            && ($job->data['ctaUrl'] ?? null) === 'http://localhost:3000/admin/reviews';
+    });
+
+    Queue::assertPushed(SendSupportTicketInAppNotificationJob::class, function (SendSupportTicketInAppNotificationJob $job) use ($admin): bool {
+        return $job->recipientId === (int) $admin->id
+            && $job->type === 'review.submitted.admin';
+    });
 });
 
 test('buyer cannot review without completed purchase of product', function (): void {

@@ -218,6 +218,11 @@ return [
             'subject' => 'You received a new product review — :productName',
             'markdown' => false,
         ],
+        'new-product-review-admin' => [
+            'view' => 'mail.review.new-product-review-admin',
+            'subject' => 'mail.new_product_review_admin.subject',
+            'markdown' => false,
+        ],
         'rfq-created-manufacturer' => [
             'view' => 'mail.rfq.rfq-created-manufacturer',
             'subject' => 'mail.rfq_created_manufacturer.subject',
@@ -492,6 +497,11 @@ return [
     'new-product-review' => [
       'view' => 'mail.review.new-product-review',
       'subject' => 'You received a new product review — :productName',
+      'markdown' => false,
+    ],
+    'new-product-review-admin' => [
+      'view' => 'mail.review.new-product-review-admin',
+      'subject' => 'mail.new_product_review_admin.subject',
       'markdown' => false,
     ],
     'rfq-created-manufacturer' => [
