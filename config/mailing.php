@@ -293,6 +293,11 @@ return [
             'subject' => 'mail.admin_test_email.subject',
             'markdown' => false,
         ],
+        'manufacturer-additional-information-received' => [
+            'view' => 'mail.manufacturer.manufacturer-additional-information-received',
+            'subject' => 'mail.manufacturer_additional_information_received.subject',
+            'markdown' => false,
+        ],
     ],
     'password-reset-otp' => [
       'view' => 'mail.auth.otp-security',
