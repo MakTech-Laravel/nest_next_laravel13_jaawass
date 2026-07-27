@@ -17,7 +17,7 @@ class SubscriptionAutoRenewToggleService
     ) {}
 
     /**
-     * @return array{id: string}
+     * @return array{id: string, approve_url: string|null}
      */
     public function createVaultSetupToken(User $manufacturer, string $returnUrl, string $cancelUrl): array
     {
@@ -30,7 +30,24 @@ class SubscriptionAutoRenewToggleService
             throw new PaymentVerificationException(__('subscription.paypal_setup_token_failed'));
         }
 
-        return ['id' => $id];
+        $approveUrl = null;
+        $links = $token['links'] ?? [];
+        if (is_array($links)) {
+            foreach ($links as $link) {
+                if (! is_array($link)) {
+                    continue;
+                }
+                if (($link['rel'] ?? null) === 'approve' && filled($link['href'] ?? null)) {
+                    $approveUrl = (string) $link['href'];
+                    break;
+                }
+            }
+        }
+
+        return [
+            'id' => $id,
+            'approve_url' => $approveUrl,
+        ];
     }
 
     public function disable(User $manufacturer): Subscription
@@ -54,22 +71,20 @@ class SubscriptionAutoRenewToggleService
     {
         $subscription = $this->requireManageableSubscription($manufacturer);
 
-        $vaultId = filled($subscription->paypal_vault_id)
-            ? (string) $subscription->paypal_vault_id
-            : null;
-        $payerId = $subscription->paypal_payer_id;
-
         $setupToken = trim((string) ($payload['vault_setup_token'] ?? ''));
         $payloadVaultId = trim((string) ($payload['paypal_vault_id'] ?? ''));
+        $payerId = $subscription->paypal_payer_id;
+        $vaultId = null;
 
-        if ($vaultId === null && $setupToken !== '') {
+        // Prefer a newly authorized PayPal method so users can update payment method.
+        if ($setupToken !== '') {
             $paymentToken = $this->paypal->createPaymentTokenFromSetupToken($setupToken);
             $vaultId = $this->paypal->extractPaymentTokenId($paymentToken);
             $payerId = $this->paypal->extractPaymentTokenCustomerId($paymentToken) ?? $payerId;
-        }
-
-        if ($vaultId === null && $payloadVaultId !== '') {
+        } elseif ($payloadVaultId !== '') {
             $vaultId = $payloadVaultId;
+        } elseif (filled($subscription->paypal_vault_id)) {
+            $vaultId = (string) $subscription->paypal_vault_id;
         }
 
         if ($vaultId === null || $vaultId === '') {

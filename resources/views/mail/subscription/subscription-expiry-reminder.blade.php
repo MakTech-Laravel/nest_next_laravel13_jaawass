@@ -17,7 +17,7 @@
     <meta name="format-detection" content="telephone=no,address=no,email=no,date=no,url=no">
     <meta name="color-scheme" content="light only">
     <meta name="supported-color-schemes" content="light">
-    <title>Your subscription ends in {{ $daysRemaining }} days</title>
+    <title>{{ __('mail.subscription_expiry_reminder.subject') }}</title>
     <!--[if mso]>
     <noscript>
         <xml>

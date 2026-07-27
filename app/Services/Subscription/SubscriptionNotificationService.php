@@ -37,6 +37,7 @@ class SubscriptionNotificationService
                 'planName' => $subscription->plan?->name ?? __('subscription.plan'),
                 'endsAt' => $subscription->ends_at?->format('F j, Y') ?? '',
                 'daysRemaining' => $daysRemaining,
+                'days' => $daysRemaining,
                 'plansUrl' => $plansUrl,
             ],
         );

@@ -19,7 +19,7 @@ class SubscriptionAutoRenewToggleRequest extends FormRequest
     {
         return [
             'enabled' => ['required', 'boolean'],
-            'vault_setup_token' => ['nullable', 'string', 'max:255'],
+            'vault_setup_token' => ['nullable', 'string', 'max:512'],
             'paypal_vault_id' => ['nullable', 'string', 'max:255'],
             'return_url' => ['nullable', 'url', 'max:2048'],
             'cancel_url' => ['nullable', 'url', 'max:2048'],

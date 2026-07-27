@@ -144,3 +144,40 @@ test('enable auto renew exchanges vault setup token and stores vault id', functi
         ->and($fresh->paypal_vault_id)->toBe('VAULT-FROM-SETUP')
         ->and($fresh->payment_method)->toBe('paypal');
 });
+
+test('enable auto renew replaces existing vault when setup token is provided', function (): void {
+    Http::fake([
+        'https://api-m.sandbox.paypal.com/v1/oauth2/token' => Http::response([
+            'access_token' => 'ACCESS',
+            'expires_in' => 3600,
+        ], 200),
+        'https://api-m.sandbox.paypal.com/v3/vault/payment-tokens' => Http::response([
+            'id' => 'VAULT-UPDATED',
+            'customer' => ['id' => 'CUST-UPDATED'],
+            'payment_source' => [
+                'paypal' => ['payer_id' => 'PAYER-UPDATED'],
+            ],
+        ], 200),
+    ]);
+
+    [$manufacturer, $subscription] = createToggleSubscription([
+        'auto_renew' => true,
+        'paypal_vault_id' => 'VAULT-OLD',
+        'paypal_payer_id' => 'PAYER-OLD',
+    ]);
+    $token = $manufacturer->createToken('test')->accessToken;
+
+    $this->withToken($token)
+        ->postJson('/api/v1/manufacturer/subscriptions/auto-renew', [
+            'enabled' => true,
+            'vault_setup_token' => 'SETUP-TOKEN-UPDATE',
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.auto_renew', true)
+        ->assertJsonPath('data.has_reusable_payment_method', true);
+
+    $fresh = $subscription->fresh();
+    expect($fresh->auto_renew)->toBeTrue()
+        ->and($fresh->paypal_vault_id)->toBe('VAULT-UPDATED')
+        ->and($fresh->paypal_payer_id)->toBe('CUST-UPDATED');
+});
