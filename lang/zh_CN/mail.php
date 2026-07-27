@@ -160,7 +160,7 @@ return [
     ],
 
     'subscription_expiry_reminder' => [
-        'subject' => '您的订阅将在 :days 天后到期',
+        'subject' => '您的订阅即将到期',
         'preheader' => '请在访问权限暂停前续费您的套餐。',
         'badge' => '续费提醒',
         'pill' => '即将到期',

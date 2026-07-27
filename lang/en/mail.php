@@ -212,7 +212,7 @@ return [
     ],
 
     'subscription_expiry_reminder' => [
-        'subject' => 'Your subscription ends in :days days',
+        'subject' => 'Your subscription will expire soon',
         'preheader' => 'Renew your plan before access is paused.',
         'badge' => 'Renewal Reminder',
         'pill' => 'Expiring Soon',
