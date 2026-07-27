@@ -17,12 +17,17 @@ class PaymentFailedNotificationService
     {
         $manufacturer->loadMissing('subscription.plan');
 
-        MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($manufacturer, $planName): void {
+        $resolvedPlanName = $planName
+            ?? $manufacturer->subscription?->plan?->name
+            ?? __('subscription.plan');
+
+        MailNotificationHelper::sendIfEmail($manufacturer, function (string $email) use ($manufacturer, $resolvedPlanName): void {
             $this->mailingService->send($email, MailTemplate::PaymentFailed, [
                 'name' => MailNotificationHelper::displayName($manufacturer),
-                'planName' => $planName ?? $manufacturer->subscription?->plan?->name ?? __('subscription.plan'),
+                'manufacturerName' => MailNotificationHelper::displayName($manufacturer),
+                'planName' => $resolvedPlanName,
                 'failedAt' => now()->format('F j, Y'),
-                'ctaUrl' => MailNotificationHelper::frontendUrl('settings/billing'),
+                'ctaUrl' => MailNotificationHelper::frontendUrl('dashboard/manufacturer/subscription'),
             ]);
         });
     }

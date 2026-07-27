@@ -17,7 +17,7 @@
             : null);
     $ctaUrl = $ctaUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer');
     $productsUrl = $productsUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer/products');
-    $billingUrl = $billingUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('settings/billing');
+    $billingUrl = $billingUrl ?? \App\Support\Mail\MailNotificationHelper::frontendUrl('dashboard/manufacturer/subscription');
     $globeWatermarkUrl = public_url('images/mail/svg/globe-watermark-activated.svg');
     $checkFlowIconUrl = public_url('images/mail/svg/check-flow.svg');
     $checkSuccessIconUrl = public_url('images/mail/svg/check-success.svg');
@@ -598,9 +598,7 @@
                             </table>
                             <span
                                 style="font-weight:600;font-size:10.5px;line-height:1;font-family:Arial,Helvetica,sans-serif;color:#B4B4B4;">
-                                <a href="{{ $frontendUrl }}/unsubscribe"
-                                    style="color:#B4B4B4;text-decoration:none;">Unsubscribe</a>
-                                <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>
+                              
                                 <a href="{{ $frontendUrl }}/privacy"
                                     style="color:#B4B4B4;text-decoration:none;">Privacy</a>
                                 <span style="margin:0 5px;font-size:9px;color:#E6E6E6;">·</span>

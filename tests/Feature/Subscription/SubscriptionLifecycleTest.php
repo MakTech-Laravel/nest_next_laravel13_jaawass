@@ -226,6 +226,6 @@ test('renewal resets expiry reminder timestamp', function () {
 
     Queue::assertPushed(SendMailJob::class, function (SendMailJob $job) use ($manufacturer): bool {
         return $job->recipient === $manufacturer->email
-            && $job->template === MailTemplate::SubscriptionCreated->value;
+            && $job->template === MailTemplate::SubscriptionRenewed->value;
     });
 });
