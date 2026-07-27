@@ -134,8 +134,7 @@ class SubscriptionNotificationService
             return;
         }
 
-        // For now always use the subscription-activated template on any payment.
-        $this->sendActivatedMail($manufacturer, $subscription, $paidAmount);
+        $this->sendRenewedMail($manufacturer, $subscription, $paidAmount);
 
         $this->dispatchInAppNotification(
             $manufacturer,
@@ -174,8 +173,30 @@ class SubscriptionNotificationService
                 'paidAmountDisplay' => $paidAmountDisplay,
                 'ctaUrl' => MailNotificationHelper::frontendUrl('dashboard/manufacturer'),
                 'productsUrl' => MailNotificationHelper::frontendUrl('dashboard/manufacturer/products'),
-                'billingUrl' => MailNotificationHelper::frontendUrl('settings/billing'),
+                'billingUrl' => MailNotificationHelper::frontendUrl('dashboard/manufacturer/subscription'),
                 'ctaLabel' => __('mail.subscription_created.cta'),
+            ]),
+        );
+    }
+
+    private function sendRenewedMail(User $manufacturer, Subscription $subscription, ?float $paidAmount): void
+    {
+        $enrollment = $this->enrollmentMailData($subscription, $paidAmount);
+        $paidRaw = $enrollment['paidAmount'] ?? null;
+        $paidAmountDisplay = $paidRaw !== null && $paidRaw !== ''
+            ? '$'.ltrim((string) $paidRaw, '$').' USD'
+            : null;
+
+        $this->mailingService->send(
+            $manufacturer->email,
+            MailTemplate::SubscriptionRenewed,
+            array_merge($enrollment, [
+                'name' => $this->displayName($manufacturer),
+                'manufacturerName' => $this->displayName($manufacturer),
+                'paidAmountDisplay' => $paidAmountDisplay,
+                'ctaUrl' => MailNotificationHelper::frontendUrl('dashboard/manufacturer/subscription'),
+                'billingUrl' => MailNotificationHelper::frontendUrl('dashboard/manufacturer/subscription'),
+                'ctaLabel' => 'View Your Plan',
             ]),
         );
     }
