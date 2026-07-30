@@ -159,6 +159,40 @@ test('public suppliers map endpoint supports group filter and pagination', funct
         ->and($countries->every(fn (array $country) => $country['group'] === 'Asia'))->toBeTrue();
 });
 
+test('public suppliers map group filter does not leak Asia countries into other regions', function (): void {
+    seedPublicSupplier([
+        'company_name' => 'Leak China Supplier',
+        'slug' => 'leak-china-supplier',
+        'country' => 'China',
+    ]);
+    seedPublicSupplier([
+        'company_name' => 'Leak Bangladesh Supplier',
+        'slug' => 'leak-bangladesh-supplier',
+        'country' => 'Bangladesh',
+    ]);
+
+    foreach (['Africa', 'Americas', 'Europe', 'Oceania'] as $group) {
+        $response = $this->getJson('/api/v1/suppliers/map?group='.$group.'&per_page=250');
+
+        $response->assertOk()
+            ->assertJsonPath('data.filters.group', $group);
+
+        $countries = collect($response->json('data.countries'));
+
+        expect($countries->every(fn (array $country) => $country['group'] === $group))->toBeTrue()
+            ->and($countries->firstWhere('country', 'China'))->toBeNull()
+            ->and($countries->firstWhere('country', 'Bangladesh'))->toBeNull()
+            ->and($countries->firstWhere('country_code', 'CN'))->toBeNull()
+            ->and($countries->firstWhere('country_code', 'BD'))->toBeNull();
+    }
+
+    $asia = $this->getJson('/api/v1/suppliers/map?group=Asia&per_page=250');
+    $asiaCountries = collect($asia->json('data.countries'));
+
+    expect($asiaCountries->firstWhere('country_code', 'CN'))->not->toBeNull()
+        ->and($asiaCountries->firstWhere('country_code', 'BD'))->not->toBeNull();
+});
+
 test('public suppliers map groups endpoint returns total groups and stats', function (): void {
     seedPublicSupplier([
         'company_name' => 'Map Group Supplier',
@@ -213,6 +247,30 @@ test('public suppliers map top countries endpoint returns sorted manufacturers c
         ->and($china['manufacturers_count'])->toBeGreaterThanOrEqual($bangladesh['manufacturers_count'])
         ->and($china['flag_icon'])->toBe('https://flagcdn.com/w40/cn.png')
         ->and($china['flag'])->not->toBeNull();
+});
+
+test('public suppliers map top countries ignores unresolved country codes', function (): void {
+    seedPublicSupplier([
+        'company_name' => 'Named Morocco Supplier',
+        'slug' => 'named-morocco-supplier',
+        'country' => 'Morocco',
+    ]);
+    seedPublicSupplier([
+        'company_name' => 'Raw Iso Morocco Supplier',
+        'slug' => 'raw-iso-morocco-supplier',
+        'country' => 'MA',
+    ]);
+
+    $response = $this->getJson('/api/v1/suppliers/map/top-countries?per_page=50');
+
+    $response->assertOk();
+
+    $countries = collect($response->json('data.countries'));
+
+    expect($countries->every(fn (array $country) => is_string($country['country_code'] ?? null) && strlen($country['country_code']) === 2))->toBeTrue()
+        ->and($countries->firstWhere('country', 'MA'))->toBeNull()
+        ->and($countries->firstWhere('country_code', 'MA'))->not->toBeNull()
+        ->and($countries->firstWhere('country_code', 'MA')['country'])->toBe('Morocco');
 });
 
 test('public supplier show resolves by slug and numeric id', function (): void {
