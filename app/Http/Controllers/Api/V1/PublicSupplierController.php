@@ -126,7 +126,9 @@ class PublicSupplierController extends Controller
         $exportCountsByCode = $this->exportMarketVisibility
             ->exportSupplierCountsByCode($this->supplierCatalogService->publicSupplierBaseQuery());
 
-        $predefined = collect($this->predefinedCountryMapData())
+        $allPredefined = collect($this->predefinedCountryMapData());
+
+        $predefined = $allPredefined
             ->when($group !== null, fn (Collection $items) => $items->where('group', $group))
             ->when($search !== null && $search !== '', function (Collection $items) use ($search): Collection {
                 return $items->filter(
@@ -158,27 +160,9 @@ class PublicSupplierController extends Controller
             })
             ->values();
 
-        // Include any country already in DB but not in predefined list.
-        $extraCountries = $countryCounts
-            ->filter(fn (array $entry, string $key): bool => ! $predefined->contains(
-                fn (array $pre) => strtolower(trim($pre['country'])) === $key
-            ))
-            ->map(fn (array $entry): array => $this->withCountryFlag([
-                'name' => $entry['country'],
-                'country' => $entry['country'],
-                'country_code' => null,
-                'group' => $group ?? 'Other',
-                'subregion' => null,
-                'coordinates' => ['lat' => null, 'lng' => null],
-                'suppliers_count' => $entry['suppliers_count'],
-                'export_suppliers_count' => 0,
-                'has_suppliers' => $entry['suppliers_count'] > 0,
-                'has_export_suppliers' => false,
-            ]))
-            ->values();
-
+        // Catalog-unknown DB country values (e.g. raw ISO codes like "MA") have no
+        // resolvable country_code and are intentionally omitted from the public map.
         $merged = $countries
-            ->concat($extraCountries)
             ->sortBy('country')
             ->values();
 
@@ -295,6 +279,12 @@ class PublicSupplierController extends Controller
                     'subregion' => $meta['subregion'] ?? null,
                     'manufacturers_count' => (int) $row->manufacturers_count,
                 ]);
+            })
+            // Ignore DB country values that do not resolve to a catalog ISO code (e.g. raw "MA").
+            ->filter(function (array $country): bool {
+                $code = $country['country_code'] ?? null;
+
+                return is_string($code) && strlen($code) === 2;
             })
             ->when($group !== null, fn (Collection $items) => $items->where('group', $group))
             ->when($search !== null && $search !== '', function (Collection $items) use ($search): Collection {
